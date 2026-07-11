@@ -1,0 +1,473 @@
+<mat-toolbar class="topbar gap-8">
+  <app-branding></app-branding>
+  <!-- --------------------------------------------------------------- -->
+  <!-- Desktop Menu -->
+  @if(showToggle) {
+  <button
+    mat-icon-button
+    (click)="toggleCollapsed.emit()"
+    class="d-flex justify-content-center"
+  >
+    <i-tabler name="menu-2" class="icon-20 d-flex"></i-tabler>
+  </button>
+  }
+
+  <!-- Mobile Menu -->
+  @if(!showToggle) {
+  <button
+    mat-icon-button
+    (click)="toggleMobileNav.emit()"
+    class="d-flex justify-content-center"
+  >
+    <i-tabler name="menu-2" class="icon-20 d-flex"></i-tabler>
+  </button>
+  }
+  <!-- --------------------------------------------------------------- -->
+
+  <!-- --------------------------------------------------------------- -->
+  <!--  Search -->
+  <!-- --------------------------------------------------------------- -->
+  <button
+    mat-icon-button
+    (click)="openDialog()"
+    class="d-flex justify-content-center"
+  >
+    <i-tabler name="search" class="icon-20 d-flex"></i-tabler>
+  </button>
+
+  <div class="d-none d-xl-flex">
+    <!-- --------------------------------------------------------------- -->
+    <!--  Links -->
+    <!-- --------------------------------------------------------------- -->
+    <!-- <button
+      mat-icon-button
+      [matMenuTriggerFor]="appsmenu"
+      aria-label="Notifications"
+      class="d-flex align-items-center justify-content-center"
+    >
+      <i-tabler name="layout-grid" class="icon-20 d-flex"></i-tabler>
+    </button> -->
+
+    <mat-menu #appsmenu="matMenu" class="apps-dd cardWithShadow">
+      <div class="row">
+        <div class="col-sm-8">
+          <div class="p-l-16 p-t-16">
+            <div class="b-b-1">
+              <div class="row">
+                @for(appdd of apps; track appdd.title) {
+                <div class="col-6 text-hover-primary">
+                  <a
+                    [routerLink]="[appdd.link]"
+                    class="d-flex align-items-center text-decoration-none m-b-20"
+                  >
+                    <span
+                      class="text-{{ appdd.color }} bg-light-{{
+                        appdd.color
+                      }} rounded-circle icon-40 d-flex align-items-center justify-content-center"
+                    >
+                      <i-tabler
+                        class="icon-20 d-flex"
+                        name="{{ appdd.icon }}"
+                      ></i-tabler>
+                    </span>
+
+                    <div class="m-l-16">
+                      <h5
+                        class="f-s-14 f-w-500 m-0 textprimary hover-text lh-sm"
+                      >
+                        {{ appdd.title }}
+                      </h5>
+                      <span class="text-body f-s-12">{{ appdd.subtitle }}</span>
+                    </div>
+                  </a>
+                </div>
+                }
+              </div>
+            </div>
+            <div class="row align-items-center p-y-16">
+              <div class="col-8">
+                <a
+                  [routerLink]="['/']"
+                  class="f-w-500 f-s-14 primary-hover-text text-decoration-none d-flex align-items-center"
+                >
+                  <i-tabler
+                    name="help"
+                    class="f-s-20 m-r-8 icon-18 d-flex"
+                  ></i-tabler>
+                  Frequently Asked Questions
+                </a>
+              </div>
+              <div class="col-4">
+                <div class="d-flex justify-content-end p-r-24">
+                  <button mat-flat-button color="primary">Check</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4 m-l--24">
+          <div class="position-relative p-16 b-l-1 h-100">
+            <h4 class="f-s-18 f-w-500 m-b-16">Quick Links</h4>
+            @for(quicklink of quicklinks; track quicklink.title) {
+            <div class="text-hover-primary m-b-10">
+              <a
+                [routerLink]="[quicklink.link]"
+                class="primary-hover-text text-decoration-none f-s-14 f-w-500 d-block"
+                >{{ quicklink.title }}</a
+              >
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </mat-menu>
+  </div>
+
+  <span class="flex-1-auto"></span>
+
+  <app-toolbar-notifications class="toolbar-button"></app-toolbar-notifications>
+
+  <!-- Botones oscuros (notify-cap) — desactivados temporalmente
+  <div
+    class="notify-cap d-flex"
+    [class.notify-cap--login-quiet]="!notifLoginSpotlight"
+  >
+    <button
+      type="button"
+      class="notify-cap__btn"
+      [class.notify-cap__btn--live]="avisosCount > 0"
+      [matMenuTriggerFor]="menuAvisos"
+      aria-label="Vencimientos y renovaciones de contratos"
+    >
+      <span class="notify-cap__fill" aria-hidden="true"></span>
+      <span class="notify-cap__shine" aria-hidden="true"></span>
+      <i-tabler name="file-description" class="notify-cap__ico d-flex"></i-tabler>
+      @if (avisosCount > 0) {
+      <span class="notify-cap__badge" aria-hidden="true">{{ avisosCount }}</span>
+      }
+    </button>
+    <button
+      type="button"
+      class="notify-cap__btn notify-cap__btn--b"
+      [class.notify-cap__btn--live]="inmueblesNotifCount > 0"
+      [matMenuTriggerFor]="menuNotifInmuebles"
+      aria-label="Pagos de servicios"
+    >
+      <span class="notify-cap__fill" aria-hidden="true"></span>
+      <span class="notify-cap__shine" aria-hidden="true"></span>
+      <i-tabler name="receipt" class="notify-cap__ico d-flex"></i-tabler>
+      @if (inmueblesNotifCount > 0) {
+      <span class="notify-cap__badge" aria-hidden="true">{{ inmueblesNotifCount }}</span>
+      }
+    </button>
+    <button
+      type="button"
+      class="notify-cap__btn notify-cap__btn--c"
+      [class.notify-cap__btn--live]="prediosNotifCount > 0"
+      [matMenuTriggerFor]="menuNotifPredios"
+      aria-label="Pagos de arrendatarios"
+    >
+      <span class="notify-cap__fill" aria-hidden="true"></span>
+      <span class="notify-cap__shine" aria-hidden="true"></span>
+      <i-tabler name="users" class="notify-cap__ico d-flex"></i-tabler>
+      @if (prediosNotifCount > 0) {
+      <span class="notify-cap__badge" aria-hidden="true">{{ prediosNotifCount }}</span>
+      }
+    </button>
+  </div>
+  -->
+
+  <!-- --------------------------------------------------------------- -->
+  <!-- langugage Dropdown -->
+  <!-- --------------------------------------------------------------- -->
+  <!-- <button
+    [matMenuTriggerFor]="flags"
+    mat-icon-button
+    class="m-r-5 d-none d-lg-flex align-items-center justify-content-center"
+  >
+    <img
+      [src]="selectedLanguage.icon"
+      class="rounded-circle object-cover icon-20"
+    />
+  </button> -->
+  <mat-menu #flags="matMenu" class="cardWithShadow" xPosition="before">
+    @for(lang of languages; track lang.icon) {
+    <button mat-menu-item (click)="changeLanguage(lang)">
+      <div class="d-flex align-items-center">
+        <img
+          [src]="lang.icon"
+          class="rounded-circle object-cover m-r-8 icon-20"
+        />
+        <span class="f-s-14">{{ lang.language }}</span>
+      </div>
+    </button>
+    }
+  </mat-menu>
+<!-- 
+  @if(options.theme=='light'){
+  <button
+    mat-icon-button
+    aria-label="lightdark"
+    class="d-flex justify-content-center"
+    (click)="setlightDark('dark')"
+  >
+    <i-tabler class="d-flex icon-22" [name]="'moon'"></i-tabler>
+  </button>
+  }@else{
+  <button
+    mat-icon-button
+    aria-label="lightdark"
+    class="d-flex justify-content-center"
+    (click)="setlightDark('light')"
+  >
+    <i-tabler class="d-flex icon-22" [name]="'sun'"></i-tabler>
+  </button>
+  } -->
+
+  <!-- --------------------------------------------------------------- -->
+  <!-- Mobile Profile Trigger -->
+  <!-- --------------------------------------------------------------- -->
+  <button
+    mat-icon-button
+    extended
+    [matMenuTriggerFor]="profilemenu"
+    aria-label="Perfil"
+    class="position-relative d-flex d-xl-none align-items-center justify-content-center profile-btn-dd"
+  >
+    <img
+      src="assets/images/logos/logout.webp"
+      class="rounded-circle icon-30 object-cover profile-dd d-flex align-items-center justify-content-center m-l-2 m-t-2"
+      width="30"
+      height="30"
+    />
+  </button>
+  <mat-menu
+    #menuAvisos="matMenu"
+    class="notify-hub-panel notify-hub-panel--avisos dd-notifications"
+    xPosition="before"
+  >
+    <div class="notify-hub-frame">
+      <header class="notify-hub-frame__hero notify-hub-frame__hero--contracts">
+        <div class="notify-hub-frame__hero-badge" aria-hidden="true">
+          <i-tabler name="file-description" class="notify-hub-frame__hero-ico d-flex"></i-tabler>
+        </div>
+        <div class="notify-hub-frame__hero-main">
+          <span class="notify-hub-frame__kicker">Contratos</span>
+          <p class="notify-hub-frame__lede m-0">Vencimientos y Renovaciones</p>
+        </div>
+        <div class="notify-hub-frame__metric" aria-label="Avisos en lista">
+          <span class="notify-hub-frame__metric-value">{{ avisosCount }}</span>
+          <span class="notify-hub-frame__metric-label">pendientes</span>
+        </div>
+      </header>
+
+      <div class="notify-hub-frame__stream notify-hub-frame__stream--scroll">
+        @for (a of avisosLista; track a.id) {
+        <button
+          type="button"
+          mat-menu-item
+          class="notify-hub-aviso"
+          [class.notify-hub-aviso--tone-success]="a.tone === 'success'"
+          [class.notify-hub-aviso--tone-warning]="a.tone === 'warning'"
+          [class.notify-hub-aviso--tone-amber]="a.tone === 'amber'"
+          [class.notify-hub-aviso--tone-danger]="a.tone === 'danger'"
+          (click)="onAvisoContratoClick(a, $event)"
+        >
+          <div class="notify-hub-aviso__strip">
+            <span class="notify-hub-aviso__glyph" aria-hidden="true"></span>
+            <div class="notify-hub-aviso__body">
+              <span class="notify-hub-aviso__title">{{ titleCase(a.title) }}</span>
+              <span class="notify-hub-aviso__sub">{{ a.subtitle }}</span>
+            </div>
+          </div>
+        </button>
+        }
+      </div>
+
+      <!-- <footer class="notify-hub-frame__foot">
+        <button
+          type="button"
+          mat-flat-button
+          class="bg-secondary w-100 notify-hub-frame__cta"
+          (click)="verTodoAvisos()"
+        >
+          Ver todo
+          <i-tabler name="chevron-right" class="icon-16 d-flex"></i-tabler>
+        </button> 
+      </footer>-->
+    </div>
+  </mat-menu>
+
+  <mat-menu
+    #menuNotifInmuebles="matMenu"
+    class="notify-hub-panel notify-hub-panel--inmuebles dd-notifications"
+    xPosition="before"
+  >
+    <div class="notify-hub-frame">
+      <header class="notify-hub-frame__hero notify-hub-frame__hero--services">
+        <div class="notify-hub-frame__hero-badge" aria-hidden="true">
+          <i-tabler name="receipt" class="notify-hub-frame__hero-ico d-flex"></i-tabler>
+        </div>
+        <div class="notify-hub-frame__hero-main">
+          <span class="notify-hub-frame__kicker">Next</span>
+          <p class="notify-hub-frame__lede m-0">Pagos de Servicios</p>
+        </div>
+        <div class="notify-hub-frame__metric" aria-label="Recibos listados">
+          <span class="notify-hub-frame__metric-value">{{ inmueblesNotifCount }}</span>
+          <span class="notify-hub-frame__metric-label">recibos</span>
+        </div>
+      </header>
+
+      <div class="notify-hub-frame__stream">
+        @for (r of recibosInmuebles; track r.id) {
+        <button
+          type="button"
+          mat-menu-item
+          class="notify-hub-recibo d-flex align-items-center text-start w-100 flex-row"
+          (click)="onReciboContratoClick(r, $event)"
+        >
+          <span class="notify-hub-recibo__tile flex-shrink-0 notify-hub-recibo__tile--{{ r.tone }}">
+            <i-tabler [name]="r.icon" class="d-flex"></i-tabler>
+          </span>
+          <span class="notify-hub-recibo__text flex-grow-1 min-w-0">
+            <span class="notify-hub-recibo__label d-block text-start">{{ titleCase(r.label) }}</span>
+            @if (r.detail) {
+            <span class="notify-hub-recibo__detail d-block text-start">{{ r.detail }}</span>
+            }
+          </span>
+          <span class="notify-hub-recibo__chev flex-shrink-0" aria-hidden="true">
+            <i-tabler name="chevron-right" class="d-flex notify-hub-recibo__chev-ico"></i-tabler>
+          </span>
+        </button>
+        }
+      </div>
+
+      <!-- <footer class="notify-hub-frame__foot">
+        Ver catálogo de clientes
+        <button
+          type="button"
+          mat-flat-button
+          class="bg-secondary w-100 notify-hub-frame__cta"
+          (click)="verTodoInmueblesNotif()"
+        >
+          Ver todo
+          <i-tabler name="chevron-right" class="icon-16 d-flex"></i-tabler>
+        </button>
+      </footer>-->
+    </div>
+  </mat-menu>
+
+  <mat-menu
+    #menuNotifPredios="matMenu"
+    class="notify-hub-panel notify-hub-panel--predios dd-notifications"
+    xPosition="before"
+  >
+    <div class="notify-hub-frame">
+      <header class="notify-hub-frame__hero notify-hub-frame__hero--tenants">
+        <div class="notify-hub-frame__hero-badge" aria-hidden="true">
+          <i-tabler name="users" class="notify-hub-frame__hero-ico d-flex"></i-tabler>
+        </div>
+        <div class="notify-hub-frame__hero-main">
+          <span class="notify-hub-frame__kicker">Arrendatarios</span>
+          <p class="notify-hub-frame__lede m-0">Pagos y Seguimiento</p>
+        </div>
+        <div class="notify-hub-frame__metric" aria-label="Casos listados">
+          <span class="notify-hub-frame__metric-value">{{ prediosNotifCount }}</span>
+          <span class="notify-hub-frame__metric-label">casos</span>
+        </div>
+      </header>
+
+      <div class="notify-hub-frame__stream">
+        @for (r of recibosPredios; track r.id) {
+        <button
+          type="button"
+          mat-menu-item
+          class="notify-hub-recibo d-flex align-items-center text-start w-100 flex-row"
+          (click)="onReciboContratoClick(r, $event)"
+        >
+          <span class="notify-hub-recibo__tile flex-shrink-0 notify-hub-recibo__tile--{{ r.tone }}">
+            <i-tabler [name]="r.icon" class="d-flex"></i-tabler>
+          </span>
+          <span class="notify-hub-recibo__text flex-grow-1 min-w-0">
+            <span class="notify-hub-recibo__label d-block text-start">{{ titleCase(r.label) }}</span>
+            @if (r.detail) {
+            <span class="notify-hub-recibo__detail d-block text-start">{{ r.detail }}</span>
+            }
+          </span>
+          <span class="notify-hub-recibo__chev flex-shrink-0" aria-hidden="true">
+            <i-tabler name="chevron-right" class="d-flex notify-hub-recibo__chev-ico"></i-tabler>
+          </span>
+        </button>
+        }
+      </div>
+
+      <!-- <footer class="notify-hub-frame__foot">
+        Ver todo: arrendatarios / seguimiento 
+        <button
+          type="button"
+          mat-flat-button
+          class="bg-secondary w-100 notify-hub-frame__cta"
+          (click)="verTodoArrendatariosNotif()"
+        >
+          Ver todo
+          <i-tabler name="chevron-right" class="icon-16 d-flex"></i-tabler>
+        </button> 
+      </footer>-->
+    </div>
+  </mat-menu>
+
+  <!-- --------------------------------------------------------------- -->
+  <!-- profile Dropdown -->
+  <!-- --------------------------------------------------------------- -->
+  <button
+    mat-icon-button
+    extended
+    [matMenuTriggerFor]="profilemenu"
+    aria-label="Notifications"
+    class="position-relative align-items-center justify-content-center profile-btn-dd d-none d-xl-flex"
+  >
+    <img
+      src="assets/images/logos/logout.webp"
+      class="rounded-circle icon-30 object-cover profile-dd d-flex align-items-center justify-content-center m-l-2 m-t-2"
+      width="30"
+      height="30"
+    />
+  </button>
+  <mat-menu
+    #profilemenu="matMenu"
+    class="topbar-dd cardWithShadow dd-notifications profile-menu-custom"
+  >
+    <div class="p-x-16 p-y-20 b-b-1 profile-menu-custom__head">
+      <div class="d-flex align-items-center">
+        <div class="m-l-16">
+          <h6 class="f-s-14 f-w-600 m-0 d-flex align-items-center profile-menu-custom__name">
+            {{showNombre+ ' ' + showApellidoPaterno + ' ' + showApellidoMaterno}} - 
+            <span class="f-s-14 d-block text-success m-l-4 profile-menu-custom__role"> {{showRol}} </span>
+          </h6>
+          <span class="profile-menu-custom__email"> {{showEmail}} </span>
+        </div>
+      </div>
+    </div>
+    <div class="p-16 profile-menu-custom__list">
+      @for(profile of profiledd; track profile.title) {
+      <a
+        class="p-8 d-block text-header profile-menu-custom__item"
+        [routerLink]="isLogoutProfile(profile) ? null : [profile.link]"
+        (click)="onProfileAction(profile, $event)"
+      >
+        <div class="d-flex align-items-center">
+          <h5 class="f-s-14 f-w-500 m-0 hover-text">
+            {{ profile.title }}
+          </h5>
+          @if(profile.new) {
+          <span
+            class="bg-light-error text-error rounded p-x-8 p-y-2 f-w-500 f-s-12 m-l-8"
+            >5</span
+          >
+          }
+        </div>
+      </a>
+      }
+    </div>
+  </mat-menu>
+</mat-toolbar>

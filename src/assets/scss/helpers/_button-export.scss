@@ -1,0 +1,19 @@
+/* Color unificado para todos los botones de exportar */
+.mon-hist__btn--export,
+[class*='__btn--export'] {
+  border-color: var(--app-export-border) !important;
+  background: var(--app-export-bg) !important;
+  color: #f8fafc !important;
+  box-shadow: none !important;
+
+  &:hover:not(:disabled) {
+    background: var(--app-export-bg-hover) !important;
+    border-color: var(--app-export-border-hover) !important;
+  }
+}
+
+/* Etiquetas de estado activo (antes reutilizaban --export) */
+.mon-hist__btn--active {
+  border-color: rgba(74, 222, 128, 0.42);
+  background: rgba(22, 163, 74, 0.22);
+}

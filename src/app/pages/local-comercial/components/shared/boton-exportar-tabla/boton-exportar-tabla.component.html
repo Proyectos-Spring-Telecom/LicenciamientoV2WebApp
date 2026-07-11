@@ -1,0 +1,6 @@
+<button *ngIf="tipoBoton == 'grid'" id="guardarBoton" mat-raised-button class="btn btn-success"
+	(click)="exportarExcel()" [disabled]="buttonDisabled" style="margin-right: 15px;" [ngStyle]="style"><i
+		class="fas fa-file-excel"></i>&nbsp;&nbsp;Exportar</button>
+
+<button id="boton" *ngIf="tipoBoton == 'monitoreo'" type="submit" class="btn btn-success" (click)="exportarExcel()"
+	[disabled]="buttonDisabled"><i class="fas fa-file-excel"></i>Exportar</button>

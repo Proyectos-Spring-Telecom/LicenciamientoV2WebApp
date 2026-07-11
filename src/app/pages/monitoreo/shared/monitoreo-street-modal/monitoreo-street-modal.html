@@ -1,0 +1,26 @@
+<!--
+  Panel flotante Street View — Monitoreo.
+  Solo markup estático de referencia; posicionamiento y panorama se implementan aparte.
+-->
+<div class="monitoreo-street-modal monitoreo-street-modal--visible" role="dialog" aria-modal="true" aria-label="Street View">
+  <div class="monitoreo-street-modal__panel">
+    <header class="monitoreo-street-modal__head">
+      <h3>Street View</h3>
+      <button type="button" class="monitoreo-street-modal__close" aria-label="Cerrar Street View">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
+        </svg>
+      </button>
+    </header>
+    <div id="street-panorama" class="monitoreo-street-modal__view"></div>
+  </div>
+</div>
+
+<!-- Hint opcional — modo “elige punto en el mapa” -->
+<div class="monitoreo-map-hint monitoreo-map-hint--street" role="status">
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/>
+  </svg>
+  <span>Haz clic en el mapa para abrir Street View</span>
+  <button type="button" class="monitoreo-map-hint__cancel">Cancelar</button>
+</div>

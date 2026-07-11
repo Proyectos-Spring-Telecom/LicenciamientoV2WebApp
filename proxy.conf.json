@@ -1,0 +1,29 @@
+{
+  "/dev/devsionapi": {
+    "target": "https://springtelecom.mx",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "silent"
+  },
+  "/aliadoAPI": {
+    "target": "https://springtelecom.mx",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "silent"
+  },
+  "/api-springpanel": {
+    "target": "https://spcode.ddns.net",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "silent"
+  },
+  "/demo-pdf-proxy": {
+    "target": "https://www.w3.org",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/demo-pdf-proxy": ""
+    },
+    "logLevel": "silent"
+  }
+}

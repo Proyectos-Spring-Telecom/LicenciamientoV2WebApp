@@ -1,0 +1,33 @@
+@if (showOnMapa) {
+  <div class="toolbar-notifications">
+    <button
+      type="button"
+      class="button-message button-message--cta"
+      [class.open]="isOpen"
+      (click)="toggleDropdown(); $event.stopPropagation()"
+      aria-label="Ver simbología del mapa"
+      title="Ver simbología del mapa"
+    >
+      <span class="button-message__pulse" aria-hidden="true"></span>
+      <span class="button-message__pulse button-message__pulse--delayed" aria-hidden="true"></span>
+      <mat-icon class="icon">location_on</mat-icon>
+    </button>
+
+    <div class="dropdown" [class.open]="isOpen" (click)="$event.stopPropagation()">
+      <div class="symbology-card">
+        <div class="dropdown-header text-center">
+          <div class="symbology-title-line">Simbología para conocer el estado en el</div>
+          <div class="symbology-title-line">se encuentra el establecimiento comercial.</div>
+        </div>
+        <div class="dropdown-content">
+          @for (notification of notifications; track notification.name) {
+            <div [ngClass]="notification.color" class="notification">
+              <mat-icon class="icon">{{ notification.icon }}</mat-icon>
+              <div class="name">{{ notification.name }}</div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

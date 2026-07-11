@@ -1,0 +1,17 @@
+import { Component, Input, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-quick-info-widget',
+  templateUrl: './quick-info-widget.component.html',
+  styleUrls: ['./quick-info-widget.component.scss'],
+  standalone: false,
+})
+export class QuickInfoWidgetComponent implements OnInit {
+  @Input() value: string;
+  @Input() label: string;
+  @Input() background: string;
+  @Input() color: string;
+  @Input() icon: string;
+
+  ngOnInit(): void {}
+}

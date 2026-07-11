@@ -1,0 +1,1424 @@
+﻿node.exe : npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm 
+help npmrc` for supported config options.
+En línea: 1 Carácter: 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...config options.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+> Building...
+ÔêÜ Building...
+Application bundle generation failed. [9.061 seconds]
+
+Ôû▓ [WARNING] NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its 
+type, therefore the '?.' operator can be replaced with the '.' operator. [plugin angular-compiler]
+
+    src/app/layouts/full/shared/assistant-chat/assistant-chat.component.html:131:95:
+      131 Ôöé ...send" (click)="send()" [disabled]="busy || !input.value?.trim()">
+          ÔòÁ                                                             ~~~~
+
+  Error occurs in the template of component AssistantChatComponent.
+
+    src/app/layouts/full/shared/assistant-chat/assistant-chat.component.ts:29:15:
+      29 Ôöé   templateUrl: './assistant-chat.component.html',
+         ÔòÁ                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/app/pages/authentication/cambio-password/cambio-password.component.scss:1:8:
+      1 Ôöé @import '../styles/auth-flow-shell.scss';
+        ÔòÁ         ^
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/app/pages/authentication/cambio-password/cambio-password.component.scss:2:8:
+      2 Ôöé @import '../styles/auth-password-card-blocks.scss';
+        ÔòÁ         ^
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/app/pages/authentication/side-login/side-login.component.scss:1:8:
+      1 Ôöé @import '../styles/auth-flow-shell.scss';
+        ÔòÁ         ^
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/app/pages/authentication/solicitud-cambio-password/solicitud-cambio-password.component.scss:1:8:
+      1 Ôöé @import '../styles/auth-flow-shell.scss';
+        ÔòÁ         ^
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/app/pages/authentication/solicitud-cambio-password/solicitud-cambio-password.component.scss:2:8:
+      2 Ôöé @import '../styles/auth-password-card-blocks.scss';
+        ÔòÁ         ^
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/app/pages/local-comercial/components/formulario/seleccion-ubicacion-modal/seleccion-ubicacion-modal.component.s
+css:1:9:
+      1 Ôöé @import '../../../monitoreo/shared/monitoreo-street-modal/monitoreo...
+        ÔòÁ          ^
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+
+Ôû▓ [WARNING] Expected identifier but found whitespace [plugin angular-compiler] [css-syntax-error]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.css:13:13:
+      13 Ôöé   font-style: italic;
+         ÔòÁ              ^
+
+
+Ôû▓ [WARNING] Unexpected ";" [plugin angular-compiler] [css-syntax-error]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.css:13:20:
+      13 Ôöé   font-style: italic;
+         ÔòÁ                     ^
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/app/pages/local-comercial/components/shared/file-uploader-card/file-uploader-card.component.scss:1:8:
+      1 Ôöé @import '../../styles/file-uploader';
+        ÔòÁ         ^
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/assets/scss/_variables.scss:28:7:
+      28 Ôöé   @if (lightness($color) > 55%) { @return $dark; }
+         ÔòÁ        ^
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.lightness instead.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/assets/scss/_variables.scss:28:7:
+      28 Ôöé   @if (lightness($color) > 55%) { @return $dark; }
+         ÔòÁ        ^
+
+
+  lightness() is deprecated. Suggestion:
+  
+  color.channel($color, "lightness", $space: hsl)
+  
+  More info: https://sass-lang.com/d/color-functions
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/assets/scss/_variables.scss:28:7:
+      28 Ôöé   @if (lightness($color) > 55%) { @return $dark; }
+         ÔòÁ        ^
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.lightness instead.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/assets/scss/_variables.scss:28:7:
+      28 Ôöé   @if (lightness($color) > 55%) { @return $dark; }
+         ÔòÁ        ^
+
+
+  lightness() is deprecated. Suggestion:
+  
+  color.channel($color, "lightness", $space: hsl)
+  
+  More info: https://sass-lang.com/d/color-functions
+
+
+Ôû▓ [WARNING] 3 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings. [plugin angular-sass]
+
+    angular:styles/global:styles:5:8:
+      5 Ôöé @import 'src/styles.scss';
+        ÔòÁ         ~~~~~~~~~~~~~~~~~
+
+  null
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/assets/scss/_variables.scss:28:7:
+      28 Ôöé   @if (lightness($color) > 55%) { @return $dark; }
+         ÔòÁ        ^
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.lightness instead.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:5:8:
+      5 Ôöé @import 'src/styles.scss';
+        ÔòÁ         ~~~~~~~~~~~~~~~~~
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/assets/scss/_variables.scss:28:7:
+      28 Ôöé   @if (lightness($color) > 55%) { @return $dark; }
+         ÔòÁ        ^
+
+
+  lightness() is deprecated. Suggestion:
+  
+  color.channel($color, "lightness", $space: hsl)
+  
+  More info: https://sass-lang.com/d/color-functions
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:5:8:
+      5 Ôöé @import 'src/styles.scss';
+        ÔòÁ         ~~~~~~~~~~~~~~~~~
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/assets/scss/_variables.scss:28:7:
+      28 Ôöé   @if (lightness($color) > 55%) { @return $dark; }
+         ÔòÁ        ^
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.lightness instead.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:4:8:
+      4 Ôöé @import 'src/assets/scss/style.scss';
+        ÔòÁ         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/assets/scss/_variables.scss:28:7:
+      28 Ôöé   @if (lightness($color) > 55%) { @return $dark; }
+         ÔòÁ        ^
+
+
+  lightness() is deprecated. Suggestion:
+  
+  color.channel($color, "lightness", $space: hsl)
+  
+  More info: https://sass-lang.com/d/color-functions
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:4:8:
+      4 Ôöé @import 'src/assets/scss/style.scss';
+        ÔòÁ         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/styles.scss:3:8:
+      3 Ôöé @import './dx-data-grid-app-theme';
+        ÔòÁ         ^
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:5:8:
+      5 Ôöé @import 'src/styles.scss';
+        ÔòÁ         ~~~~~~~~~~~~~~~~~
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/styles.scss:4:8:
+      4 Ôöé @import './app/shared/styles/swal-estatus-local.scss';
+        ÔòÁ         ^
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:5:8:
+      5 Ôöé @import 'src/styles.scss';
+        ÔòÁ         ~~~~~~~~~~~~~~~~~
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/styles.scss:5:8:
+      5 Ôöé @import './app/pages/swal-estatus-local.scss';
+        ÔòÁ         ^
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:5:8:
+      5 Ôöé @import 'src/styles.scss';
+        ÔòÁ         ~~~~~~~~~~~~~~~~~
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/styles.scss:6:8:
+      6 Ôöé @import './assets/scss/layouts/mono-pago-contract-modal';
+        ÔòÁ         ^
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:5:8:
+      5 Ôöé @import 'src/styles.scss';
+        ÔòÁ         ~~~~~~~~~~~~~~~~~
+
+
+Ôû▓ [WARNING] Deprecation [plugin angular-sass]
+
+    src/styles.scss:7:8:
+      7 Ôöé @import './assets/scss/layouts/contract-docs';
+        ÔòÁ         ^
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: https://sass-lang.com/d/import
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:5:8:
+      5 Ôöé @import 'src/styles.scss';
+        ÔòÁ         ~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] Can't find stylesheet to import.
+  ÔòÀ
+1 Ôöé @import '../../styles/file-uploader';
+  Ôöé         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ÔòÁ
+  src\app\pages\local-comercial\components\shared\file-uploader-card\file-uploader-card.component.scss 1:9  root 
+stylesheet [plugin angular-sass]
+
+
+X [ERROR] Can't find stylesheet to import.
+  ÔòÀ
+1 Ôöé ´╗┐@import '../../../monitoreo/shared/monitoreo-street-modal/monitoreo-street-modal';
+  Ôöé          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ÔòÁ
+  
+src\app\pages\local-comercial\components\formulario\seleccion-ubicacion-modal\seleccion-ubicacion-modal.component.scss 
+1:10  root stylesheet [plugin angular-sass]
+
+
+X [ERROR] TS2322: Type 'string' is not assignable to type 'number'. [plugin angular-compiler]
+
+    src/app/layouts/full/vertical/sidebar/sidebar-data.ts:16:6:
+      16 Ôöé       LicenciamientoPermiso.ConsultarLocalesComerciales,
+         ÔòÁ       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2322: Type '"7"' is not assignable to type 'number | number[] | undefined'. [plugin angular-compiler]
+
+    src/app/layouts/full/vertical/sidebar/sidebar-data.ts:33:8:
+      33 Ôöé         permission: LicenciamientoPermiso.ConsultarLocalesComercia...
+         ÔòÁ         ~~~~~~~~~~
+
+  The expected type comes from property 'permission' which is declared here on type 'NavItem'
+
+    src/app/layouts/full/vertical/sidebar/nav-item/nav-item.ts:15:4:
+      15 Ôöé     permission?: number | number[]; // Permiso(s) requerido(s) par...
+         ÔòÁ     ~~~~~~~~~~
+
+
+X [ERROR] TS7034: Variable 'currentInfoWindow' implicitly has type 'any' in some locations where its type cannot be 
+determined. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:19:4:
+      19 Ôöé var currentInfoWindow = null;
+         ÔòÁ     ~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'coloniaNombreComercial' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:108:9:
+      108 Ôöé   public coloniaNombreComercial;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'coloniaSapac' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:109:9:
+      109 Ôöé   public coloniaSapac;
+          ÔòÁ          ~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'calleNombreComercial' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:110:9:
+      110 Ôöé   public calleNombreComercial;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'calleSapac' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:111:9:
+      111 Ôöé   public calleSapac;
+          ÔòÁ          ~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'localidadNombreComercial' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:112:9:
+      112 Ôöé   public localidadNombreComercial;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'localidadSapac' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:113:9:
+      113 Ôöé   public localidadSapac;
+          ÔòÁ          ~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2352: Conversion of type '{ direccion: direccion; direccionSapac: direccionSapac; contacto: contacto; 
+representante: representante; proteccionCivil: proteccionCivil; fotos: never[]; NombreProteccionCivil: null; ... 5 
+more ...; VistoBueno: null; }' to type 'DetalleLocal' may be a mistake because neither type sufficiently overlaps with 
+the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'TelefonoProteccionCivil' are incompatible.
+    Type 'null' is not comparable to type 'number'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:139:11:
+      139 Ôöé     return {
+          ÔòÁ            ^
+
+
+X [ERROR] TS7008: Member 'idColoniaLicenciaComercial' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:483:9:
+      483 Ôöé   public idColoniaLicenciaComercial;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'idColoniaSapac' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:484:9:
+      484 Ôöé   public idColoniaSapac;
+          ÔòÁ          ~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'idLocalidadLicenciaComercial' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:485:9:
+      485 Ôöé   public idLocalidadLicenciaComercial;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'idLocalidadSapac' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:486:9:
+      486 Ôöé   public idLocalidadSapac;
+          ÔòÁ          ~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'idCalleLicenciaComercial' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:487:9:
+      487 Ôöé   public idCalleLicenciaComercial;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'idCalleSapac' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:488:9:
+      488 Ôöé   public idCalleSapac;
+          ÔòÁ          ~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'idMunicipio' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:489:9:
+      489 Ôöé   public idMunicipio;
+          ÔòÁ          ~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'nombreComercial' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:491:9:
+      491 Ôöé   public nombreComercial;
+          ÔòÁ          ~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'direccionNombreEntidadFederativa' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:492:9:
+      492 Ôöé   public direccionNombreEntidadFederativa;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2322: Type 'number' is not assignable to type 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:551:2:
+      551 Ôöé     this.interval = setInterval(async () => {
+          ÔòÁ     ~~~~~~~~~~~~~
+
+
+X [ERROR] TS2345: Argument of type 'null' is not assignable to parameter of type 'number | undefined'. [plugin 
+angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:557:16:
+      557 Ôöé     clearInterval(this.interval);
+          ÔòÁ                   ~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'imagenLicencia' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:578:9:
+      578 Ôöé   public imagenLicencia;
+          ÔòÁ          ~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'imagenReciboPredial' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:579:9:
+      579 Ôöé   public imagenReciboPredial;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'imagenReciboSapac' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:580:9:
+      580 Ôöé   public imagenReciboSapac;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'imagenCaratulaMedidor' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:581:9:
+      581 Ôöé   public imagenCaratulaMedidor;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'imagenCuadroMedidor' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:582:9:
+      582 Ôöé   public imagenCuadroMedidor;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'imagenFachadaEstablecimiento' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:583:9:
+      583 Ôöé   public imagenFachadaEstablecimiento;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'imagenEstacionamiento' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:584:9:
+      584 Ôöé   public imagenEstacionamiento;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'imagenBodega' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:585:9:
+      585 Ôöé   public imagenBodega;
+          ÔòÁ          ~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'imagenVistoBueno' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:586:9:
+      586 Ôöé   public imagenVistoBueno;
+          ÔòÁ          ~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'typePeople' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:587:9:
+      587 Ôöé   public typePeople;
+          ÔòÁ          ~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'typeEmpresa' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:595:9:
+      595 Ôöé   public typeEmpresa;
+          ÔòÁ          ~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'typePrograma' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:596:9:
+      596 Ôöé   public typePrograma;
+          ÔòÁ          ~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'typeEstacionamiento' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:597:9:
+      597 Ôöé   public typeEstacionamiento;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7005: Variable 'currentInfoWindow' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:835:12:
+      835 Ôöé         if (currentInfoWindow != null && currentInfoWindow !== in...
+          ÔòÁ             ~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7005: Variable 'currentInfoWindow' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:835:41:
+      835 Ôöé ...(currentInfoWindow != null && currentInfoWindow !== infowindow) {
+          ÔòÁ                                  ~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7005: Variable 'currentInfoWindow' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:836:10:
+      836 Ôöé           currentInfoWindow.close();
+          ÔòÁ           ~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7005: Variable 'currentInfoWindow' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:853:14:
+      853 Ôöé           if (currentInfoWindow === infowindow) {
+          ÔòÁ               ~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7005: Variable 'currentInfoWindow' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:867:12:
+      867 Ôöé         if (currentInfoWindow === infowindow) {
+          ÔòÁ             ~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'idMunicipio' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:880:21:
+      880 Ôöé   obtenerLocalidades(idMunicipio) {
+          ÔòÁ                      ~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'idMunicipio' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:893:26:
+      893 Ôöé   obtenerLocalidadesSapac(idMunicipio) {
+          ÔòÁ                           ~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'idColonia' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:906:24:
+      906 Ôöé   obtenerCallesLicencia(idColonia) {
+          ÔòÁ                         ~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'idColonia' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:915:29:
+      915 Ôöé   obtenerCallesLicenciaSapac(idColonia) {
+          ÔòÁ                              ~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'idLocalidad' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:924:26:
+      924 Ôöé   obtenerColoniasLicencia(idLocalidad) {
+          ÔòÁ                           ~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'idLocalidad' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:938:31:
+      938 Ôöé   obtenerColoniasLicenciaSapac(idLocalidad) {
+          ÔòÁ                                ~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'data' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:952:16:
+      952 Ôöé   processSVData(data, status): void {
+          ÔòÁ                 ~~~~
+
+
+X [ERROR] TS7006: Parameter 'status' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:952:22:
+      952 Ôöé   processSVData(data, status): void {
+          ÔòÁ                       ~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'nombreEstatus' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:1053:17:
+      1053 Ôöé   cambiarEstatus(nombreEstatus) {
+           ÔòÁ                  ~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'nombreEstatus' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:1078:23:
+      1078 Ôöé   cambiarEstatusSecond(nombreEstatus) {
+           ÔòÁ                        ~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'nombreEstatus' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:1103:22:
+      1103 Ôöé   cambiarEstatusThird(nombreEstatus) {
+           ÔòÁ                       ~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'nombreEstatus' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:1128:23:
+      1128 Ôöé   cambiarEstatusFourth(nombreEstatus) {
+           ÔòÁ                        ~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'data' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/detalle/detalle-local-comercial.component.ts:1163:10:
+      1163 Ôöé   onClick(data) {
+           ÔòÁ           ~~~~
+
+
+X [ERROR] TS2307: Cannot find module './../../../../src/app/entities/User' or its corresponding type declarations. 
+[plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:18:21:
+      18 Ôöé import { User } from './../../../../src/app/entities/User';
+         ÔòÁ                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'tieneprograma' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:117:9:
+      117 Ôöé   public tieneprograma;
+          ÔòÁ          ~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'tieneestacionamiento' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:118:9:
+      118 Ôöé   public tieneestacionamiento;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'value' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:120:9:
+      120 Ôöé   public value;
+          ÔòÁ          ~~~~~
+
+
+X [ERROR] TS7008: Member 'idLocalidadGeneral' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:121:9:
+      121 Ôöé   public idLocalidadGeneral;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'idColoniaGeneral' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:122:9:
+      122 Ôöé   public idColoniaGeneral;
+          ÔòÁ          ~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'calleLicenciaTemp' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:123:9:
+      123 Ôöé   public calleLicenciaTemp;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'idLocalidadLicencia' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:125:9:
+      125 Ôöé   public idLocalidadLicencia;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'idColoniaLicenciaV' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:126:9:
+      126 Ôöé   public idColoniaLicenciaV;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'idObtenerColoniasLicencias' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:127:9:
+      127 Ôöé   public idObtenerColoniasLicencias;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'idObtenerLocalidadesLicencia' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:128:9:
+      128 Ôöé   public idObtenerLocalidadesLicencia;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'idCalleLicenciaV' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:129:9:
+      129 Ôöé   public idCalleLicenciaV;
+          ÔòÁ          ~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'idObtenerCallesLicencia' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:130:9:
+      130 Ôöé   public idObtenerCallesLicencia;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'nombreObtenerLocalidadesLicencia' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:131:9:
+      131 Ôöé   public nombreObtenerLocalidadesLicencia;
+          ÔòÁ          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'checked' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:540:14:
+      540 Ôöé   changeValue(checked) {
+          ÔòÁ               ~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:556:16:
+      556 Ôöé     let local = this.localForm.get('EsEmpresa').value;
+          ÔòÁ                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:571:12:
+      571 Ôöé             this.localForm.get('IdEntidadFederativaLicencia').set...
+          ÔòÁ             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:586:12:
+      586 Ôöé             this.localForm.get('IdMunicipioLicencia').setValue(da...
+          ÔòÁ             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'id' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:597:21:
+      597 Ôöé   obtenerTipoPersona(id) {
+          ÔòÁ                      ~~
+
+
+X [ERROR] TS7006: Parameter 'value' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:631:27:
+      631 Ôöé   obtenerTipoPersonaSelect(value) {
+          ÔòÁ                            ~~~~~
+
+
+X [ERROR] TS18047: 'control' is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:735:4:
+      735 Ôöé     control.setValue(archivo);
+          ÔòÁ     ~~~~~~~
+
+
+X [ERROR] TS18047: 'control' is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:736:4:
+      736 Ôöé     control.setErrors(null);
+          ÔòÁ     ~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:867:13:
+      867 Ôöé         lat: this.localForm.get('Lat').value,
+          ÔòÁ              ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:868:13:
+      868 Ôöé         lng: this.localForm.get('Lng').value
+          ÔòÁ              ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1025:41:
+      1025 Ôöé ...stino}`]: this.localForm.get(`IdEntidadFederativa${origen}`)....
+           ÔòÁ              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1026:33:
+      1026 Ôöé ...o${destino}`]: this.localForm.get(`IdMunicipio${origen}`).value,
+           ÔòÁ                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1027:33:
+      1027 Ôöé ...d${destino}`]: this.localForm.get(`IdLocalidad${origen}`).value,
+           ÔòÁ                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1028:37:
+      1028 Ôöé ...estino}`]: this.localForm.get(`NombreLocalidad${origen}`).value,
+           ÔòÁ               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1029:31:
+      1029 Ôöé ...nia${destino}`]: this.localForm.get(`IdColonia${origen}`).value,
+           ÔòÁ                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1030:35:
+      1030 Ôöé ...{destino}`]: this.localForm.get(`NombreColonia${origen}`).value,
+           ÔòÁ                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1031:29:
+      1031 Ôöé ...Calle${destino}`]: this.localForm.get(`IdCalle${origen}`).value,
+           ÔòÁ                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1032:33:
+      1032 Ôöé ...e${destino}`]: this.localForm.get(`NombreCalle${origen}`).value,
+           ÔòÁ                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1033:32:
+      1033 Ôöé ...or${destino}`]: this.localForm.get(`NoInterior${origen}`).value,
+           ÔòÁ                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1034:32:
+      1034 Ôöé ...or${destino}`]: this.localForm.get(`NoExterior${origen}`).value,
+           ÔòÁ                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1035:24:
+      1035 Ôöé       [`CP${destino}`]: this.localForm.get(`CP${origen}`).value,
+           ÔòÁ                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1057:37:
+      1057 Ôöé ...aLicencia: this.localForm.get('IdEntidadFederativaSapac').value,
+           ÔòÁ               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1067:34:
+      1067 Ôöé ...ivaSapac: this.localForm.get('IdEntidadFederativaLicencia').v...
+           ÔòÁ              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1150:33:
+      1150 Ôöé ...lidadLicencia: this.localForm.get('NombreLocalidadSapac').value,
+           ÔòÁ                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1158:31:
+      1158 Ôöé ...ColoniaLicencia: this.localForm.get('NombreColoniaSapac').value,
+           ÔòÁ                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1166:29:
+      1166 Ôöé ...mbreCalleLicencia: this.localForm.get('NombreCalleSapac').value,
+           ÔòÁ                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1174:30:
+      1174 Ôöé ...lidadSapac: this.localForm.get('NombreLocalidadLicencia').value,
+           ÔòÁ                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1182:28:
+      1182 Ôöé ...ColoniaSapac: this.localForm.get('NombreColoniaLicencia').value,
+           ÔòÁ                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1190:26:
+      1190 Ôöé ...mbreCalleSapac: this.localForm.get('NombreCalleLicencia').value,
+           ÔòÁ                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1203:12:
+      1203 Ôöé             this.localForm.get('IdEntidadFederativaSapac').setVa...
+           ÔòÁ             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1217:12:
+      1217 Ôöé             this.localForm.get('IdMunicipioSapac').setValue(data...
+           ÔòÁ             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'idMunicipio' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1232:21:
+      1232 Ôöé   obtenerLocalidades(idMunicipio) {
+           ÔòÁ                      ~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1236:28:
+      1236 Ôöé ...onst idLocalidad = this.localForm.get('IdLocalidadSapac').value;
+           ÔòÁ                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'idMunicipio' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1250:29:
+      1250 Ôöé   obtenerLocalidadesLicencia(idMunicipio) {
+           ÔòÁ                              ~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1254:28:
+      1254 Ôöé ...t idLocalidad = this.localForm.get('IdLocalidadLicencia').value;
+           ÔòÁ                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'idCalle' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1268:15:
+      1268 Ôöé   obtenerCalle(idCalle, origen: 'sapac' | 'licencia') {
+           ÔòÁ                ~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1277:8:
+      1277 Ôöé       ? this.localForm.get('IdColoniaSapac').value
+           ÔòÁ         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1278:8:
+      1278 Ôöé       : this.localForm.get('IdColoniaLicencia').value;
+           ÔòÁ         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'idLocalidad' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1319:18:
+      1319 Ôöé   obtenerColonias(idLocalidad, origen: 'sapac' | 'licencia') {
+           ÔòÁ                   ~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1344:28:
+      1344 Ôöé ...   const idColonia = this.localForm.get('IdColoniaSapac').value;
+           ÔòÁ                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1353:28:
+      1353 Ôöé ...const idColonia = this.localForm.get('IdColoniaLicencia').value;
+           ÔòÁ                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'idColonia' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1372:16:
+      1372 Ôöé   obtenerCalles(idColonia, origen: 'sapac' | 'licencia') {
+           ÔòÁ                 ~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1396:26:
+      1396 Ôöé           const idCalle = this.localForm.get('IdCalleSapac').value;
+           ÔòÁ                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1406:26:
+      1406 Ôöé ...    const idCalle = this.localForm.get('IdCalleLicencia').value;
+           ÔòÁ                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'idColonia' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1424:24:
+      1424 Ôöé   obtenerCallesLicencia(idColonia) {
+           ÔòÁ                         ~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'tipoPersona' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1471:21:
+      1471 Ôöé   validarTipoPersona(tipoPersona) {
+           ÔòÁ                      ~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'estacionamiento' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1479:25:
+      1479 Ôöé   validarEstacionamiento(estacionamiento) {
+           ÔòÁ                          ~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'tipoEmpresa' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1487:17:
+      1487 Ôöé   validarEmpresa(tipoEmpresa) {
+           ÔòÁ                  ~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'tipoPrograma' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/local-comercial-formulario.component.ts:1495:18:
+      1495 Ôöé   validarPrograma(tipoPrograma) {
+           ÔòÁ                   ~~~~~~~~~~~~
+
+
+X [ERROR] Could not resolve "../../utils/documentos-local.config"
+
+    src/app/pages/local-comercial/components/formulario/subir-documento-modal/subir-documento-modal.component.ts:3:36:
+      3 Ôöé ...{ esRutaArchivoValida } from '../../utils/documentos-local.config';
+        ÔòÁ                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../utils/documentos-local.config' or its corresponding type declarations. 
+[plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/formulario/subir-documento-modal/subir-documento-modal.component.ts:4:36:
+      4 Ôöé ...{ esRutaArchivoValida } from '../../utils/documentos-local.config';
+        ÔòÁ                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'fechaInicio' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:52:9:
+      52 Ôöé   public fechaInicio;
+         ÔòÁ          ~~~~~~~~~~~
+
+
+X [ERROR] TS7008: Member 'fechaFinal' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:53:9:
+      53 Ôöé   public fechaFinal;
+         ÔòÁ          ~~~~~~~~~~
+
+
+X [ERROR] TS2322: Type 'number' is not assignable to type 'null'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:146:2:
+      146 Ôöé     this.interval = setInterval(async () => {
+          ÔòÁ     ~~~~~~~~~~~~~
+
+
+X [ERROR] TS2345: Argument of type 'null' is not assignable to parameter of type 'number | undefined'. [plugin 
+angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:158:16:
+      158 Ôöé     clearInterval(this.interval);
+          ÔòÁ                   ~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'fechaInicio' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:165:35:
+      165 Ôöé     obtenerListaLocalesComerciales(fechaInicio, fechaFinal) {
+          ÔòÁ                                    ~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'fechaFinal' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:165:48:
+      165 Ôöé     obtenerListaLocalesComerciales(fechaInicio, fechaFinal) {
+          ÔòÁ                                                 ~~~~~~~~~~
+
+
+X [ERROR] TS2345: Argument of type '{ RFC: any; 'Nombre Comercial': string; Giro: string; Capturista: any; Estatus: 
+any; 'Fecha Expedicion': string | null; }' is not assignable to parameter of type 'never'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:218:26:
+      218 Ôöé       this.datosReporte.push({
+          ÔòÁ                              ^
+
+
+X [ERROR] TS2345: Argument of type '{ RFC: any; 'Nombre Comercial': string; Giro: string; Capturista: any; Estatus: 
+any; 'Fecha Expedicion': string | null; }' is not assignable to parameter of type 'never'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:258:26:
+      258 Ôöé       this.datosReporte.push({
+          ÔòÁ                              ^
+
+
+X [ERROR] TS7006: Parameter 'id' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:280:19:
+      280 Ôöé     cambiarEstatuss(id, nombreEstatus) {
+          ÔòÁ                     ~~
+
+
+X [ERROR] TS7006: Parameter 'nombreEstatus' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:280:23:
+      280 Ôöé     cambiarEstatuss(id, nombreEstatus) {
+          ÔòÁ                         ~~~~~~~~~~~~~
+
+
+X [ERROR] TS2663: Cannot find name 'Permiso'. Did you mean the instance member 'this.Permiso'? [plugin 
+angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:326:9:
+      326 Ôöé     return Permiso;
+          ÔòÁ            ~~~~~~~
+
+
+X [ERROR] TS2663: Cannot find name 'Permiso'. Did you mean the instance member 'this.Permiso'? [plugin 
+angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:330:24:
+      330 Ôöé     this.permisoLocales = Permiso.ConsultarLocalesComerciales;
+          ÔòÁ                           ~~~~~~~
+
+
+X [ERROR] TS2663: Cannot find name 'Permiso'. Did you mean the instance member 'this.Permiso'? [plugin 
+angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:331:28:
+      331 Ôöé     this.permisoAltaLocales = Permiso.AgregarLocalComerial;
+          ÔòÁ                               ~~~~~~~
+
+
+X [ERROR] TS2663: Cannot find name 'Permiso'. Did you mean the instance member 'this.Permiso'? [plugin 
+angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:332:34:
+      332 Ôöé ...this.permisoActualizarLocales = Permiso.ActualizarLocalComercial;
+          ÔòÁ                                    ~~~~~~~
+
+
+X [ERROR] TS2663: Cannot find name 'Permiso'. Did you mean the instance member 'this.Permiso'? [plugin 
+angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:333:32:
+      333 Ôöé     this.permisoEliminarLocales = Permiso.EliminarLocalComercial;
+          ÔòÁ                                   ~~~~~~~
+
+
+X [ERROR] TS2663: Cannot find name 'Permiso'. Did you mean the instance member 'this.Permiso'? [plugin 
+angular-compiler]
+
+    src/app/pages/local-comercial/components/lista/lista-local-comercial.component.ts:334:34:
+      334 Ôöé     this.permisoVisualizarDetalle = Permiso.VisualizarDetalle;
+          ÔòÁ                                     ~~~~~~~
+
+
+X [ERROR] TS-996008: Component SeleccionUbicacionModalComponent is standalone, and cannot be declared in an NgModule. 
+Did you mean to import it instead? [plugin angular-compiler]
+
+    src/app/pages/local-comercial/local-comercial.module.ts:46:4:
+      46 Ôöé     SeleccionUbicacionModalComponent,
+         ÔòÁ     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996008: Component SubirDocumentoModalComponent is standalone, and cannot be declared in an NgModule. Did 
+you mean to import it instead? [plugin angular-compiler]
+
+    src/app/pages/local-comercial/local-comercial.module.ts:47:4:
+      47 Ôöé     SubirDocumentoModalComponent,
+         ÔòÁ     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'formdata' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/services/local-comercial.service.ts:23:24:
+      23 Ôöé   agregarLocalComercial(formdata) {
+         ÔòÁ                         ~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'formData' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/services/local-comercial.service.ts:27:18:
+      27 Ôöé   actualizarLocal(formData): Observable<any> {
+         ÔòÁ                   ~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'fechaInicio' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/services/local-comercial.service.ts:35:20:
+      35 Ôöé   obtenerListaLocal(fechaInicio, fechaFinal): Observable<LocalCome...
+         ÔòÁ                     ~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'fechaFinal' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/services/local-comercial.service.ts:35:33:
+      35 Ôöé ...nerListaLocal(fechaInicio, fechaFinal): Observable<LocalComerci...
+         ÔòÁ                               ~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'id' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/services/local-comercial.service.ts:72:17:
+      72 Ôöé   cambiarEstatus(id, nombreEstatus) {
+         ÔòÁ                  ~~
+
+
+X [ERROR] TS7006: Parameter 'nombreEstatus' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/services/local-comercial.service.ts:72:21:
+      72 Ôöé   cambiarEstatus(id, nombreEstatus) {
+         ÔòÁ                      ~~~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'idMunicipio' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/services/local-comercial.service.ts:85:34:
+      85 Ôöé ...tenerLocalidadesMunicipio(idMunicipio): Observable<FormGenerico...
+         ÔòÁ                              ~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'idLocalidad' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/services/local-comercial.service.ts:89:31:
+      89 Ôöé ... obtenerColoniasLocalidad(idLocalidad): Observable<FormGenerico...
+         ÔòÁ                              ~~~~~~~~~~~
+
+
+X [ERROR] TS7006: Parameter 'idColonia' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/services/local-comercial.service.ts:93:27:
+      93 Ôöé       obtenerCallesColonia(idColonia): Observable<FormGenerico[]> {
+         ÔòÁ                            ~~~~~~~~~
+
+
+X [ERROR] TS2538: Type 'undefined' cannot be used as an index type. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/utils/documentos-local.config.ts:69:45:
+      69 Ôöé     const controlName = CONTROL_BY_TIPO_FOTO[foto.idTipoFoto];
+         ÔòÁ                                              ~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS18048: 'foto.ruta' is possibly 'undefined'. [plugin angular-compiler]
+
+    src/app/pages/local-comercial/utils/documentos-local.config.ts:71:26:
+      71 Ôöé       urls[controlName] = foto.ruta.trim();
+         ÔòÁ                           ~~~~~~~~~
+
+

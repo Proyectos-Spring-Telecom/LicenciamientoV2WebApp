@@ -1,0 +1,745 @@
+<div [@routeAnimation] class="card card--panel perm-wrapper">
+  <header class="perm-head" role="region" aria-label="Secci&oacute;n: Detalle Local Comercial">
+    <div class="perm-head__icon" aria-hidden="true">
+      <mat-icon>storefront</mat-icon>
+    </div>
+    <div class="perm-head__text">
+      <span class="eyebrow">Secci&oacute;n</span>
+      <h2>Detalle Local Comercial</h2>
+    </div>
+    <nav class="perm-head__crumbs" aria-label="Ruta">
+      <span class="crumb">Locales Comerciales</span>
+      <span class="sep">/</span>
+      <span class="crumb active">Detalle</span>
+    </nav>
+  </header>
+
+  <div class="surface"><section id="detalle">
+  <div class="container-fluid detalle-page" *ngIf="datosCargados">
+
+      <!-- A) Header: nombre + badge + regresar + B) direcci&oacute;n -->
+      <div class="card detalle-info-card advanced-forms route-animations-elements">
+        <div class="card-header detalle-info-card__header">
+          <div class="detalle-info-card__heading">
+            <div class="card-title detalle-nombre-comercial-heading" style="font-size: 26px;">
+              <span class="detalle-nombre-comercial-label">Nombre Comercial:</span>
+              <span class="detalle-nombre-comercial-valor" *ngIf="tieneValor(nombreComercial)">&nbsp;{{nombreComercial}}</span>
+              <span class="detalle-nombre-comercial-valor" *ngIf="!tieneValor(nombreComercial)">
+                Sin Nombre Comercial
+              </span>
+            </div>
+            <div class="card-subtitle detalle-estatus-wrap">
+              <div
+                class="detalle-estatus-badge"
+                [ngClass]="estatusBadgeClass"
+                role="status"
+                [attr.aria-label]="'Estatus del local: ' + estatusLabel">
+                <i class="fa" [ngClass]="estatusIconClass" aria-hidden="true"></i>
+                <span class="detalle-estatus-badge__label">Estatus:</span>
+                <span class="detalle-estatus-badge__text">{{ estatusLabel }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-header-actions">
+            <button type="button" class="button-back detalle-regresar-btn" (click)="regresar()">
+              <i class="fa fa-arrow-left"></i>&nbsp;&nbsp;Regresar
+            </button>
+          </div>
+        </div>
+        <mat-divider class="detalle-info-card-divisor"></mat-divider>
+        <div class="detalle-info-card-cuerpo">
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-globe"></i> &nbsp;&nbsp;
+              <div class="informacion">Estado:</div>
+              <div class="respuesta">{{direccionNombreEntidadFederativa}}</div>
+              <div class="respuesta_null" *ngIf="informacion.direccion.idEntidadFederativaLicencia == null || informacion.direccion.nombreEntidadFederativaLicencia == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-compass"></i> &nbsp;&nbsp;
+              <div class="informacion">Municipio:</div>
+              <div class="respuesta">{{informacion.direccion.nombreMuncipioLicencia}}</div>
+              <div class="respuesta_null" *ngIf="informacion.direccion.idMunicipioLicencia == null || informacion.direccion.nombreMuncipioLicencia == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-flag"></i> &nbsp;&nbsp;
+              <div class="informacion">Localidad:</div>
+              <div class="respuesta">{{localidadNombreComercial}}</div>
+              <div class="respuesta_tipo_direcciones" *ngIf="localidadNombreComercial == null">{{informacion.direccion.nombreLocalidadLicencia}}</div>
+              <div class="respuesta_null_second" *ngIf="informacion.direccion.idLocalidadLicencia == null && informacion.direccion.nombreLocalidadLicencia == null">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div><br>
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-map-marker"></i> &nbsp;&nbsp;
+              <div class="informacion">Colonia:</div>
+              <div class="respuesta">{{coloniaNombreComercial}}</div>
+              <div class="respuesta_tipo_direcciones" *ngIf="coloniaNombreComercial == null">{{informacion.direccion.nombreColoniaLicencia}}</div>
+              <div class="respuesta_null_second" *ngIf="informacion.direccion.idColoniaLicencia == null && informacion.direccion.nombreColoniaLicencia == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-road"></i> &nbsp;&nbsp;
+              <div class="informacion">Calle:</div>
+              <div class="respuesta">{{calleNombreComercial}}</div>
+              <div class="respuesta_tipo_direcciones" *ngIf="calleNombreComercial == null">{{informacion.direccion.nombreCalleLicencia}}</div>
+              <div class="respuesta_null_second" *ngIf="informacion.direccion.idCalleLicencia == null && informacion.direccion.nombreCalleLicencia == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-sort-numeric-asc"></i> &nbsp;&nbsp;
+              <div class="informacion">No. Interior:</div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.direccion.noInteriorLicencia)">{{ formatearNumeroInterior(informacion.direccion.noInteriorLicencia) }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.direccion.noInteriorLicencia)">Sin Informaci&oacute;n
+              </div>
+            </div>
+          </div>
+        </div><br>
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-sort-numeric-desc"></i> &nbsp;&nbsp;
+              <div class="informacion">No. Exterior:</div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.direccion.noExteriorLicencia)">{{ formatearNumeroExterior(informacion.direccion.noExteriorLicencia) }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.direccion.noExteriorLicencia)">Sin Informaci&oacute;n
+              </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-tag"></i> &nbsp;&nbsp;
+              <div class="informacion">C&oacute;digo Postal:</div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.direccion.cpLicencia)">{{ formatearCodigoPostal(informacion.direccion.cpLicencia) }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.direccion.cpLicencia)">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div><br>
+        </div>
+      </div>
+    <br>
+
+      <!-- C) Sapac -->
+      <div class="card detalle-info-card advanced-forms route-animations-elements">
+        <div class="card-header detalle-seccion-header">
+          <div class="detalle-seccion-heading detalle-seccion-heading--sapac">
+            <div class="detalle-seccion-heading__title"><i class="fa fa-tint" aria-hidden="true"></i><span>Sapac</span></div>
+            <div class="detalle-seccion-heading__sub">Sistema de Agua Potable y Alcantarillado</div>
+          </div>
+        </div>
+        <mat-divider class="detalle-info-card-divisor"></mat-divider>
+        <div class="detalle-info-card-cuerpo">
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-tag"></i> &nbsp;&nbsp;
+              <div class="informacion">N&uacute;mero de Cuenta:</div>
+              <div class="respuesta">{{informacion.numeroCuenta}}</div>
+              <div class="respuesta_null" *ngIf="informacion.numeroCuenta == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-user"></i> &nbsp;&nbsp;
+              <div class="informacion">Titular:</div>
+              <div class="respuesta" *ngIf="nombreSapacCompleto">{{ nombreSapacCompleto }}</div>
+              <div class="respuesta_null" *ngIf="!nombreSapacCompleto">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-user"></i> &nbsp;&nbsp;
+              <div class="informacion">RFC:</div>
+              <div class="respuesta">{{informacion.rfcsapac}}</div>
+              <div class="respuesta_null" *ngIf="informacion.rfcsapac == null">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div><br>
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-globe"></i> &nbsp;&nbsp;
+              <div class="informacion">Estado:</div>
+              <div class="respuesta">{{informacion.direccionSapac.nombreEntidadFederativaSapac}}</div>
+              <div class="respuesta_null" *ngIf="informacion.direccionSapac.idEntidadFederativaSapac == null || informacion.direccionSapac.nombreEntidadFederativaSapac == null">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div><br>
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-compass"></i> &nbsp;&nbsp;
+              <div class="informacion">Municipio:</div>
+              <div class="respuesta">{{informacion.direccionSapac.nombreMuncipioSapac}}</div>
+              <div class="respuesta_null" *ngIf="informacion.direccionSapac.idMunicipioSapac == null || informacion.direccionSapac.nombreMuncipioSapac == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-flag"></i> &nbsp;&nbsp;
+              <div class="informacion">Localidad:</div>
+              <div class="respuesta">{{localidadSapac}}</div>
+              <div class="respuesta_tipo_direcciones" *ngIf="localidadSapac == null">{{informacion.direccionSapac.nombreLocalidadSapac}}</div>
+              <div class="respuesta_null_second" *ngIf="informacion.direccionSapac.idLocalidadSapac == null && informacion.direccionSapac.nombreLocalidadSapac == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-map-marker"></i> &nbsp;&nbsp;
+              <div class="informacion">Colonia:</div>
+              <div class="respuesta">{{coloniaSapac}}</div>
+              <div class="respuesta_tipo_direcciones" *ngIf="coloniaSapac == null">{{informacion.direccionSapac.nombreColoniaSapac}}</div>
+              <div class="respuesta_null_second" *ngIf="informacion.direccionSapac.idColoniaSapac == null && informacion.direccionSapac.nombreColoniaSapac == null">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div><br>
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-road"></i> &nbsp;&nbsp;
+              <div class="informacion">Calle:</div>
+              <div class="respuesta">{{calleSapac}}</div>
+              <div class="respuesta_tipo_direcciones" *ngIf="calleSapac == null">{{informacion.direccionSapac.nombreCalleSapac}}</div>
+              <div class="respuesta_null_second" *ngIf="informacion.direccionSapac.idCalleSapac == null && informacion.direccionSapac.nombreCalleSapac == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-sort-numeric-asc"></i> &nbsp;&nbsp;
+              <div class="informacion">No. Interior:</div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.direccionSapac.noInteriorSapac)">{{ formatearNumeroInterior(informacion.direccionSapac.noInteriorSapac) }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.direccionSapac.noInteriorSapac)">Sin Informaci&oacute;n
+              </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-sort-numeric-desc"></i> &nbsp;&nbsp;
+              <div class="informacion">No. Exterior:</div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.direccionSapac.noExteriorSapac)">{{ formatearNumeroExterior(informacion.direccionSapac.noExteriorSapac) }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.direccionSapac.noExteriorSapac)">Sin Informaci&oacute;n
+              </div>
+            </div>
+          </div>
+        </div><br>
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-tag"></i> &nbsp;&nbsp;
+              <div class="informacion">C&oacute;digo Postal:</div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.direccionSapac.cpSapac)">{{ formatearCodigoPostal(informacion.direccionSapac.cpSapac) }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.direccionSapac.cpSapac)">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-map-marker"></i> &nbsp;&nbsp;
+              <div class="informacion">Sector:</div>
+              <div class="respuesta">{{informacion.sector}}</div>
+              <div class="respuesta_null" *ngIf="informacion.sector == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-location-arrow"></i> &nbsp;&nbsp;
+              <div class="informacion">Ruta:</div>
+              <div class="respuesta">{{informacion.ruta}}</div>
+              <div class="respuesta_null" *ngIf="informacion.ruta == null">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div><br>
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-file-text-o"></i> &nbsp;&nbsp;
+              <div class="informacion">Folio:</div>
+              <div class="respuesta">{{informacion.folio}}</div>
+              <div class="respuesta_null" *ngIf="informacion.folio == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-briefcase"></i> &nbsp;&nbsp;
+              <div class="informacion">Tipo de Servicio:</div>
+              <div class="respuesta_tipo">&nbsp;{{informacion.nombreTipoServicio}} </div>
+              <div class="respuesta_null" *ngIf="informacion.nombreTipoServicio == null || !this.informacion.idTipoServicio ==null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-barcode"></i> &nbsp;&nbsp;
+              <div class="informacion">Medidor:</div>
+              <div class="respuesta_tipo">{{informacion.medidor}}</div>
+              <div class="respuesta_null" *ngIf="informacion.medidor == null">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div><br>
+        </div>
+      </div>
+    <br>
+
+      <!-- D) Catastral -->
+      <div class="card detalle-info-card advanced-forms route-animations-elements">
+        <div class="card-header detalle-seccion-header">
+          <div class="detalle-seccion-heading detalle-seccion-heading--catastral">
+            <div class="detalle-seccion-heading__title"><i class="fa fa-home" aria-hidden="true"></i><span>Catastral</span></div>
+            <div class="detalle-seccion-heading__sub">Predial de Cuernavaca</div>
+          </div>
+        </div>
+        <mat-divider class="detalle-info-card-divisor"></mat-divider>
+        <div class="detalle-info-card-cuerpo">
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-lock"></i> &nbsp;&nbsp;
+              <div class="informacion">Clave Catastral:</div>
+              <div class="respuesta">{{informacion.clave}}</div>
+              <div class="respuesta_null" *ngIf="informacion.clave == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-arrows-h"></i> &nbsp;&nbsp;
+              <div class="informacion">Metros Cuadrados:</div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.m2)">{{ formatearMetrosCuadrados(informacion.m2) }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.m2)">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-area-chart"></i> &nbsp;&nbsp;
+              <div class="informacion">Superficie:</div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.superficie)">{{ formatearSuperficie(informacion.superficie) }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.superficie)">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-briefcase"></i> &nbsp;&nbsp;
+              <div class="informacion">Uso de Suelo:</div>
+              <div class="respuesta_tipo">{{informacion.usoSuelo}}</div>
+              <div class="respuesta_null_second" *ngIf="informacion.usoSuelo == null">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    <br>
+
+      <!-- E) Licencia -->
+      <div class="card detalle-info-card advanced-forms route-animations-elements">
+        <div class="card-header detalle-seccion-header">
+          <div class="detalle-seccion-heading detalle-seccion-heading--licencia">
+            <div class="detalle-seccion-heading__title"><i class="fa fa-certificate" aria-hidden="true"></i><span>Licencia</span></div>
+            <div class="detalle-seccion-heading__sub">Licencias de Funcionamiento de Establecimientos</div>
+          </div>
+        </div>
+        <mat-divider class="detalle-info-card-divisor"></mat-divider>
+        <div class="detalle-info-card-cuerpo">
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-credit-card"></i> &nbsp;&nbsp;
+              <div class="informacion">Registro Municipal:</div>
+              <div class="respuesta">{{informacion.registro}}</div>
+              <div class="respuesta_null" *ngIf="informacion.registro == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-vcard-o"></i> &nbsp;&nbsp;
+              <div class="informacion">Nombre Comercial:</div>
+              <div class="respuesta">{{informacion.nombreComercial}}</div>
+              <div class="respuesta_null" *ngIf="informacion.nombreComercial == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-shopping-cart"></i> &nbsp;&nbsp;
+              <div class="informacion">Giro:</div>
+              <div class="respuesta">{{informacion.nombreGiro}}</div>
+              <div class="respuesta_null" *ngIf="informacion.nombreGiro == null">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div><br>
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-vcard"></i> &nbsp;&nbsp;
+              <div class="informacion">Licencias de Uso de Suelo:</div>
+              <div class="respuesta">{{informacion.licenciaSuelo}}</div>
+              <div class="respuesta_null" *ngIf="informacion.licenciaSuelo == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-user"></i> &nbsp;&nbsp;
+              <div class="informacion">Propietario:</div>
+              <div class="respuesta" *ngIf="nombrePropietarioCompleto">{{ nombrePropietarioCompleto }}</div>
+              <div class="respuesta_null" *ngIf="!nombrePropietarioCompleto">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-cogs"></i> &nbsp;&nbsp;
+              <div class="informacion">Tipo de Persona:</div>
+              <div class="respuesta" *ngIf="tieneTipoPersona">{{ tipoPersonaTexto }}</div>
+              <div class="respuesta_null" *ngIf="!tieneTipoPersona">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-credit-card"></i> &nbsp;&nbsp;
+              <div class="informacion">RFC:</div>
+              <div class="respuesta">{{informacion.rfc}}</div>
+              <div class="respuesta_null" *ngIf="informacion.rfc == null">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div>
+        <br *ngIf="!mostrarContenido">
+        <div *ngIf="!mostrarContenido" class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-file-text-o"></i> &nbsp;&nbsp;
+              <div class="informacion">Raz&oacute;n Social:</div>
+              <div class="respuesta">{{informacion.razonSocial}}</div>
+              <div class="respuesta_null" *ngIf="informacion.razonSocial == null || !this.informacion.razonSocial == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-user-secret"></i> &nbsp;&nbsp;
+              <div class="informacion">Representante Legal:</div>
+              <div class="respuesta" *ngIf="nombreRepresentanteCompleto">{{ nombreRepresentanteCompleto }}</div>
+              <div class="respuesta_null" *ngIf="!nombreRepresentanteCompleto"> Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-phone"></i> &nbsp;&nbsp;
+              <div class="informacion">Representante Legal Tel&eacute;fono:</div>
+              <div class="respuesta">{{informacion.representante.representanteLegalTelefono}}</div>
+              <div class="respuesta_null" *ngIf="informacion.representante.representanteLegalTelefono == null || !this.informacion.representante.representanteLegalTelefono==null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-inbox"></i> &nbsp;&nbsp;
+              <div class="informacion">Representante Legal Correo Electr&oacute;nico:</div>
+              <div class="respuesta">{{informacion.representante.representanteLegalEmail}}</div>
+              <div class="respuesta_null" *ngIf="informacion.representante.representanteLegalEmail == null || !this.informacion.representante.representanteLegalEmail==null">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div>
+        <br>
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-user"></i> &nbsp;&nbsp;
+              <div class="informacion">Contacto:</div>
+              <div class="respuesta" *ngIf="nombreContactoCompleto">{{ nombreContactoCompleto }}</div>
+              <div class="respuesta_null" *ngIf="!nombreContactoCompleto">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-phone"></i> &nbsp;&nbsp;
+              <div class="informacion">Tel&eacute;fono del Contacto:</div>
+              <div class="respuesta">{{informacion.contacto.contactoTelefono}}</div>
+              <div class="respuesta_null" *ngIf="informacion.contacto.contactoTelefono == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-envelope"></i> &nbsp;&nbsp;
+              <div class="informacion">Correo Electr&oacute;nico del Contacto:</div>
+              <div class="respuesta">{{informacion.contacto.contactoEmail}}</div>
+              <div class="respuesta_null" *ngIf="informacion.contacto.contactoEmail == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-calendar"></i> &nbsp;&nbsp;
+              <div class="informacion">Fecha de Expedici&oacute;n:</div>
+              <div class="respuesta_tipo">{{informacion.fechaExpedicion | date: 'yyyy-MM-dd - h:mm a'}}</div>
+              <div class="respuesta_null" *ngIf="informacion.fechaExpedicion == null">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div><br>
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-calendar"></i> &nbsp;&nbsp;
+              <div class="informacion">Fecha de Refrendo:</div>
+              <div class="respuesta">{{informacion.fechaRefrendo | date: 'yyyy-MM-dd - h:mm a'}}</div>
+              <div class="respuesta_null" *ngIf="informacion.fechaRefrendo == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-globe"></i> &nbsp;&nbsp;
+              <div class="informacion">Estado:</div>
+              <div class="respuesta">{{informacion.direccion.nombreEntidadFederativaLicencia}}</div>
+              <div class="respuesta_null" *ngIf="informacion.direccion.idEntidadFederativaLicencia == null || informacion.direccion.nombreEntidadFederativaLicencia == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-compass"></i> &nbsp;&nbsp;
+              <div class="informacion">Municipio:</div>
+              <div class="respuesta">{{informacion.direccion.nombreMuncipioLicencia}}</div>
+              <div class="respuesta_null" *ngIf="informacion.direccion.idMunicipioLicencia == null || informacion.direccion.nombreMuncipioLicencia == null">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div><br>
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-flag"></i> &nbsp;&nbsp;
+              <div class="informacion">Localidad:</div>
+              <div class="respuesta">{{localidadNombreComercial}}</div>
+              <div class="respuesta_tipo_direcciones" *ngIf="localidadNombreComercial == null">{{informacion.direccion.nombreLocalidadLicencia}}</div>
+              <div class="respuesta_null_second" *ngIf="informacion.direccion.idLocalidadLicencia == null && informacion.direccion.nombreLocalidadLicencia == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-map-marker"></i> &nbsp;&nbsp;
+              <div class="informacion">Colonia:</div>
+              <div class="respuesta">{{coloniaNombreComercial}}</div>
+              <div class="respuesta_tipo_direcciones" *ngIf="coloniaNombreComercial == null">{{informacion.direccion.nombreColoniaLicencia}}</div>
+              <div class="respuesta_null_second" *ngIf="informacion.direccion.idColoniaLicencia == null && informacion.direccion.nombreColoniaLicencia == null">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-road"></i> &nbsp;&nbsp;
+              <div class="informacion">Calle:</div>
+              <div class="respuesta">{{calleNombreComercial}}</div>
+              <div class="respuesta_tipo_direcciones" *ngIf="calleNombreComercial == null"> {{informacion.direccion.nombreCalleLicencia}}</div>
+              <div class="respuesta_null_second" *ngIf="informacion.direccion.idCalleLicencia == null && informacion.direccion.nombreCalleLicencia == null">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div><br>
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-sort-numeric-asc"></i> &nbsp;&nbsp;
+              <div class="informacion">No. Interior:</div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.direccion.noInteriorLicencia)">{{ formatearNumeroInterior(informacion.direccion.noInteriorLicencia) }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.direccion.noInteriorLicencia)">Sin Informaci&oacute;n
+              </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-sort-numeric-desc"></i> &nbsp;&nbsp;
+              <div class="informacion">No. Exterior:</div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.direccion.noExteriorLicencia)">{{ formatearNumeroExterior(informacion.direccion.noExteriorLicencia) }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.direccion.noExteriorLicencia)">Sin Informaci&oacute;n
+              </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-tag"></i> &nbsp;&nbsp;
+              <div class="informacion">C&oacute;digo Postal:</div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.direccion.cpLicencia)">{{ formatearCodigoPostal(informacion.direccion.cpLicencia) }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.direccion.cpLicencia)">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div><br>
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-car"></i> &nbsp;&nbsp;
+              <div class="informacion">Cuenta con Estacionamiento:</div>
+              <div class="respuesta" *ngIf="formatearSiNo(informacion.estacionamiento)">{{ formatearSiNo(informacion.estacionamiento) }}</div>
+              <div class="respuesta_null" *ngIf="!formatearSiNo(informacion.estacionamiento)">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div><br>
+        </div>
+      </div>
+    <br>
+
+      <!-- F) Protecci&oacute;n Civil -->
+      <div class="card detalle-info-card advanced-forms route-animations-elements">
+        <div class="card-header detalle-seccion-header">
+          <div class="detalle-seccion-heading detalle-seccion-heading--pc">
+            <div class="detalle-seccion-heading__title"><i class="fa fa-shield" aria-hidden="true"></i><span>Protecci&oacute;n Civil</span></div>
+            <div class="detalle-seccion-heading__sub">Coordinaci&oacute;n Estatal de Protecci&oacute;n Civil Morelos</div>
+          </div>
+        </div>
+        <mat-divider class="detalle-info-card-divisor"></mat-divider>
+        <div class="detalle-info-card-cuerpo">
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-shopping-cart"></i> &nbsp;&nbsp;
+              <div class="informacion">&iquest;La gesti&oacute;n se realiza por una empresa?:</div>
+              <div class="respuesta" *ngIf="formatearSiNo(informacion.proteccionCivil.esEmpresa)">{{ formatearSiNo(informacion.proteccionCivil.esEmpresa) }}</div>
+              <div class="respuesta_null" *ngIf="!formatearSiNo(informacion.proteccionCivil.esEmpresa)">Sin Informaci&oacute;n </div>
+            </div>
+            <div *ngIf="!showRazonSocialPC" class="route-animations-elements detalle-campo">
+              <i class="fa fa-user"></i> &nbsp;&nbsp;
+              <div class="informacion">Raz&oacute;n Social:</div>
+              <div class="respuesta">{{informacion.proteccionCivil.razonSocial}}</div>
+              <div class="respuesta_null" *ngIf="informacion.proteccionCivil.razonSocial == null || !this.informacion.proteccionCivil.razonSocial">Sin Informaci&oacute;n </div>
+            </div>
+            <div *ngIf="!showRFCPC" class="route-animations-elements detalle-campo">
+              <i class="fa fa-lock"></i> &nbsp;&nbsp;
+              <div class="informacion">RFC:</div>
+              <div class="respuesta">{{informacion.proteccionCivil.rfc}}</div>
+              <div class="respuesta_null" *ngIf="informacion.proteccionCivil.rfc == null || !this.informacion.proteccionCivil.rfc">Sin Informaci&oacute;n </div>
+            </div>
+          </div>
+        </div><br>
+        <div class="detalle-campos-fila">
+          <div class="detalle-campos-grid">
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-lock"></i> &nbsp;&nbsp;
+              <div class="informacion">Representante Legal:</div>
+              <div class="respuesta" *ngIf="nombreProteccionCivilCompleto">{{ nombreProteccionCivilCompleto }}</div>
+              <div class="respuesta_null" *ngIf="!nombreProteccionCivilCompleto">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-phone"></i> &nbsp;&nbsp;
+              <div class="informacion">Tel&eacute;fono del Representante Legal:</div>
+              <div class="respuesta">{{informacion.proteccionCivil.telefono}}</div>
+              <div class="respuesta_null" *ngIf="informacion.proteccionCivil.telefono == null || !this.informacion.proteccionCivil.telefono">Sin Informaci&oacute;n </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-folder"></i> &nbsp;&nbsp;
+              <div class="informacion">Registro de Acreditaci&oacute;n:</div>
+              <div class="respuesta">{{informacion.proteccionCivil.registroAcreditacion}}</div>
+              <div class="respuesta_null" *ngIf="informacion.proteccionCivil.registroAcreditacion == null || !this.informacion.proteccionCivil.registroAcreditacion">Sin Informaci&oacute;n
+              </div>
+            </div>
+            <div class="route-animations-elements detalle-campo">
+              <i class="fa fa-dashboard"></i> &nbsp;&nbsp;
+              <div class="informacion">&iquest;Cuenta con Programa Civil?:</div>
+              <div class="respuesta" *ngIf="formatearSiNo(informacion.proteccionCivil.tienePrograma)">{{ formatearSiNo(informacion.proteccionCivil.tienePrograma) }}</div>
+              <div class="respuesta_null" *ngIf="!formatearSiNo(informacion.proteccionCivil.tienePrograma)">Sin Informaci&oacute;n</div>
+            </div>
+          </div>
+        </div><br>
+        </div>
+      </div>
+    <br>
+
+      <!-- G) Licencia imagen + Ubicaci&oacute;n -->
+        <div class="row g-3">
+          <div class="col-12 col-lg-6">
+            <div class="card advanced-forms route-animations-elements h-100">
+            <div class="card-header detalle-media-header">
+              <div class="card-title detalle-seccion-titulo">
+                <i class="fa fa-file-text-o" aria-hidden="true"></i><span>Licencia</span>
+              </div>
+            </div>
+            <mat-divider></mat-divider>
+            <div class="card-body detalle-media-body licencia-card-content">
+              <div class="licencia-imagen-wrap">
+                <img *ngIf="!showImage" class="licencia-imagen" [src]="imgValidate" alt="Licencia" (error)="onImageError($event)">
+              </div>
+            </div>
+          </div>
+          </div>
+          <div class="col-12 col-lg-6">
+            <div class="card advanced-forms route-animations-elements h-100">
+            <div class="card-header detalle-media-header">
+              <div class="card-title detalle-seccion-titulo">
+                <i class="fa fa-map-marker" aria-hidden="true"></i><span>Ubicaci&oacute;n</span>
+              </div>
+            </div>
+            <mat-divider></mat-divider>
+            <div class="card-body detalle-media-body">
+              <div *ngIf="tieneUbicacionMapa" id="map" class="detalle-map"></div>
+              <div *ngIf="!tieneUbicacionMapa" class="not-street text-center detalle-map">
+                <p class="street"><i class="fa fa-map-marker"></i>&nbsp;&nbsp;Sin ubicaci&oacute;n registrada</p>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
+      <br>
+
+      <!-- H) Street View + Documentos -->
+        <div class="row g-3">
+          <div class="col-12 col-lg-6">
+            <div class="card advanced-forms route-animations-elements h-100">
+            <div class="card-header detalle-media-header">
+              <div class="card-title detalle-seccion-titulo">
+                <i class="fa fa-street-view" aria-hidden="true"></i><span>Street View</span>
+              </div>
+            </div>
+            <mat-divider></mat-divider>
+            <div class="card-body detalle-media-body">
+              <div *ngIf="!tieneUbicacionMapa" class="not-street text-center detalle-street">
+                <p class="street"><i class="fa fa-map-marker"></i>&nbsp;&nbsp;Sin ubicaci&oacute;n registrada</p>
+              </div>
+              <div *ngIf="tieneUbicacionMapa && isAvailable" id="street-view" class="detalle-street"></div>
+              <div class="not-street text-center detalle-street"
+                *ngIf="tieneUbicacionMapa && !isAvailable">
+                <p class="street"><i class="fa fa-exclamation-triangle"></i>&nbsp;&nbsp;Street View No Disponible</p>
+              </div>
+            </div>
+          </div>
+          </div>
+          <div class="col-12 col-lg-6">
+            <div class="card advanced-forms route-animations-elements h-100">
+            <div class="card-header detalle-media-header">
+              <div class="card-title detalle-seccion-titulo">
+                <i class="fa fa-folder-open" aria-hidden="true"></i><span>Documentos</span>
+              </div>
+            </div>
+            <mat-divider></mat-divider>
+            <div class="card-body detalle-media-body galeria-card-content">
+              <div class="galeria-header" *ngIf="informacion?.fotos?.length">
+                <div class="galeria-tipo" [@galeriaMeta]="i">
+                  <span class="galeria-tipo__icon" aria-hidden="true">
+                    <i class="fa fa-file-image-o"></i>
+                  </span>
+                  <div class="galeria-tipo__copy">
+                    <span class="galeria-tipo__label">Tipo de documento</span>
+                    <strong class="galeria-tipo__value">{{ tipoFotoActual }}</strong>
+                  </div>
+                </div>
+                <span class="galeria-counter-pill">{{ i + 1 }} / {{ informacion?.fotos?.length || 0 }}</span>
+              </div>
+
+              <div class="galeria-stage">
+                <ng-container *ngFor="let slide of [galeriaSlide]; trackBy: trackGaleriaSlide">
+                  <div class="galeria-stage__frame" [@galeriaPhoto]="galeriaDireccion">
+                    <img
+                      [src]="slide.url"
+                      class="galeria-imagen"
+                      [alt]="slide.tipo"
+                      (error)="onImageError($event)">
+                    <div class="galeria-stage__placeholder" *ngIf="esFotoActualPlaceholder()">
+                      <i class="fa fa-picture-o"></i>
+                      <span>Sin imagen disponible</span>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+
+              <div class="galeria-dots" *ngIf="!ocultaBtns && informacion?.fotos?.length">
+                <button
+                  type="button"
+                  class="galeria-dots__item"
+                  *ngFor="let foto of informacion.fotos; let idx = index"
+                  [class.is-active]="idx === i"
+                  [attr.aria-label]="'Ver ' + (foto.tipoFoto || 'documento ' + (idx + 1))"
+                  [attr.title]="foto.tipoFoto || 'Documento ' + (idx + 1)"
+                  (click)="irAFoto(idx)">
+                </button>
+              </div>
+
+              <div *ngIf="!ocultaBtns" class="galeria-nav">
+                <button type="button" class="galeria-nav__btn" (click)="prev()" aria-label="Documento anterior">
+                  <i class="fa fa-chevron-left"></i>
+                </button>
+                <strong class="galeria-nav__counter">{{ i + 1 }} / {{ informacion?.fotos?.length || 0 }}</strong>
+                <button type="button" class="galeria-nav__btn" (click)="next()" aria-label="Documento siguiente">
+                  <i class="fa fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
+      
+    
+    </div>
+
+    <!-- I) Barra inferior de acciones -->
+    <div class="detalle-acciones" *ngIf="datosCargados">
+      <div class="detalle-acciones__inner">
+          <ng-container *appHasPermission="'12'">
+            <button type="button" class="mt-3 btn btn-warning" (click)="cambiarEstatus(1)"
+              *ngIf="this.informacion.estatus ==1 || this.informacion.estatus !==3">
+              <span class="loader" *ngIf="loadIndicatorVisible"></span>
+              <span class="dx-button-text"> <i class="fa fa-folder-open" *ngIf="icon"></i>&nbsp;{{ buttonText }}</span>
+            </button>
+          </ng-container>
+          <ng-container *appHasPermission="'13'">
+            <button type="button" class="mt-3 btn btn-primary" (click)="cambiarEstatusSecond(4)"
+              *ngIf="this.informacion.estatus ==4 || this.informacion.estatus !==3">
+              <span class="loader" *ngIf="loadIndicatorVisibleSecond"></span>
+              <span class="dx-button-text"> <i class="fa fa-pencil-square-o" *ngIf="iconSecond"></i>&nbsp;{{ buttonTextSecond }}</span>
+            </button>
+          </ng-container>
+          <ng-container *appHasPermission="'14'">
+            <button type="button" class="mt-3 btn btn-danger" (click)="cambiarEstatusThird(2)"
+              *ngIf="this.informacion.estatus ==2 || this.informacion.estatus !==3">
+              <span class="loader" *ngIf="loadIndicatorVisibleThird"></span>
+                <span class="dx-button-text"> <i class="fa fa-ban" *ngIf="iconThird"></i>&nbsp;{{ buttonTextThird }}</span>
+            </button>
+          </ng-container>
+          <ng-container *appHasPermission="'15'">
+            <button type="button" class="mt-3 btn btn-sucess" (click)="cambiarEstatusFourth(3)"
+              *ngIf="this.informacion.estatus ==4 || this.informacion.estatus !==3">
+              <span class="loader" *ngIf="loadIndicatorVisibleFourth"></span>
+                <span class="dx-button-text"> <i class="fa fa-check-circle" *ngIf="iconFourth"></i>&nbsp;{{ buttonTextFourth }}</span>
+            </button>
+          </ng-container>
+          <button type="button" class="mt-3 btn btn-secondary" (click)="regresar()">
+            <span class="loader" *ngIf="loadIndicatorVisibleFifth"></span>
+            <span class="dx-button-text"> <i class="fa fa-arrow-left" *ngIf="iconFifth"></i>&nbsp;Regresar</span>
+          </button>
+        </div>
+      </div>
+</section>
+  </div>
+</div>
+
+<dx-load-panel
+  shadingColor="rgba(0,0,0,0.4)"
+  [visible]="loadingVisible"
+  (visibleChange)="loadingVisible = $event"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+  (onShown)="onShown()"
+  [message]="loadingMessage">
+</dx-load-panel>

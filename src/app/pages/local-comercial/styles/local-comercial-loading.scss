@@ -1,0 +1,44 @@
+/* NO BORRAR — Estilos de alertas/cargando Local Comercial (sin fondo azul). */
+.swal2-container.swal2-backdrop-show {
+  background: rgba(0, 0, 0, 0.55) !important;
+}
+
+/* NO BORRAR — Popup de cargando SweetAlert */
+.swal-local-cargando.swal2-popup {
+  background: #141a21 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+}
+
+.swal-local-cargando .swal2-title,
+.swal-local-cargando .swal2-html-container {
+  color: #ffffff !important;
+}
+
+.swal-local-cargando .swal2-loader,
+.swal2-popup.swal-local-cargando .swal2-loader {
+  border-color: #961641 transparent #961641 transparent !important;
+}
+
+/* NO BORRAR — DevExtreme load panel (sin azul) */
+.dx-loadpanel-content {
+  background-color: #1c252e !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dx-loadpanel-message {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.dx-loadpanel-content .dx-loadindicator-segment-inner,
+.dx-loadpanel-content .dx-loadindicator-icon {
+  border-color: #961641 !important;
+  color: #961641 !important;
+}
+
+.dx-overlay-shader {
+  background-color: rgba(0, 0, 0, 0.55) !important;
+}

@@ -1,0 +1,48 @@
+<div class="uploader-wrap">
+  <label class="uploader-doc-label" *ngIf="label" [ngClass]="labelColorClass()">{{ label }}</label>
+  <div class="uploader-hero">
+    <div
+      class="uploader"
+      [class.dragging]="dragging"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)">
+      <div class="uploader__glow"></div>
+      <div class="uploader__body">
+        <div class="uploader__icon">
+          <mat-icon>{{ icon }}</mat-icon>
+        </div>
+        <h5 class="uploader__title">{{ uploadTitle }}</h5>
+        <p class="uploader__subtitle">Arrastra y suelta aquí o</p>
+        <div class="uploader__cta">
+          <button mat-flat-button color="primary" type="button" (click)="openFilePicker()">
+            Seleccionar archivo
+          </button>
+          <button
+            *ngIf="urlRemota() as url"
+            type="button"
+            class="uploader__badge uploader__badge--file"
+            [ngClass]="badgeFileColorClass()"
+            [title]="etiquetaBadge()"
+            (click)="onBadgeClick($event)">
+            {{ etiquetaBadge() }}
+          </button>
+          <span
+            *ngIf="!urlRemota()"
+            class="uploader__badge"
+            [class.uploader__badge--file]="tieneArchivoEnBadge()"
+            [ngClass]="tieneArchivoEnBadge() ? badgeFileColorClass() : null"
+            [title]="etiquetaBadge()">
+            {{ etiquetaBadge() }}
+          </span>
+        </div>
+        <input
+          #fileInput
+          type="file"
+          [accept]="accept"
+          (change)="onFileSelected($event)"
+          class="uploader__input" />
+      </div>
+    </div>
+  </div>
+</div>

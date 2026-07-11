@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d4d4d8"/>
+      <stop offset="1" stop-color="#71717a"/>
+    </linearGradient>
+    <linearGradient id="cabin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#27272a"/>
+      <stop offset="1" stop-color="#09090b"/>
+    </linearGradient>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.72  0 0 0 0 0.72  0 0 0 0 0.72  0 0 0 0.18 0"/>
+    </filter>
+  </defs>
+
+  <rect width="1280" height="720" fill="#09090b"/>
+  <rect x="0" y="0" width="1280" height="290" fill="url(#sky)" opacity="0.92"/>
+  <path d="M0 250 L220 205 L420 188 L700 178 L980 188 L1180 215 L1280 245 L1280 0 L0 0 Z" fill="#a1a1aa" opacity="0.35"/>
+  <rect x="0" y="250" width="1280" height="470" fill="url(#cabin)"/>
+
+  <path d="M90 720 L180 430 L250 360 L1030 360 L1100 430 L1190 720 Z" fill="#18181b" opacity="0.95"/>
+  <path d="M250 360 L1030 360 L980 300 L300 300 Z" fill="#3f3f46" opacity="0.55"/>
+  <rect x="300" y="300" width="680" height="18" rx="4" fill="#71717a" opacity="0.45"/>
+
+  <ellipse cx="640" cy="470" rx="170" ry="205" fill="#52525b"/>
+  <ellipse cx="640" cy="455" rx="118" ry="138" fill="#a1a1aa"/>
+  <path d="M560 390 Q640 350 720 390 L705 470 Q640 500 575 470 Z" fill="#3f3f46"/>
+  <rect x="548" y="500" width="184" height="120" rx="36" fill="#27272a"/>
+  <path d="M585 520 L695 620" stroke="#d4d4d8" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="700" cy="625" r="16" fill="#d4d4d8"/>
+
+  <rect x="180" y="430" width="920" height="290" rx="28" fill="#111827" opacity="0.28"/>
+  <rect width="1280" height="720" filter="url(#grain)" opacity="0.55"/>
+  <rect x="0" y="0" width="1280" height="720" fill="#000000" opacity="0.08"/>
+</svg>

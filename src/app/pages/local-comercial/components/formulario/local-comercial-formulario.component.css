@@ -1,0 +1,405 @@
+.text-danger {
+  color: #fb434a;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+:host ::ng-deep .perm-ig .form-floating > label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:host ::ng-deep .perm-ig .form-floating > .form-control,
+:host ::ng-deep .perm-ig .form-floating > .form-select {
+  height: calc(3.5rem + 2px);
+  min-height: calc(3.5rem + 2px);
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
+}
+
+:host ::ng-deep .perm-ig .form-floating > .perm-date-input.form-control {
+  padding-right: 0.75rem;
+  color-scheme: dark;
+}
+
+:host ::ng-deep .perm-ig .perm-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.75;
+  cursor: pointer;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 80px;
+  height: 40px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.toggle-switch input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-switch-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(75, 85, 99, 0.85);
+  border-radius: 20px;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.12);
+  transition: background-color 0.3s ease-in-out;
+}
+
+.toggle-switch-handle {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 30px;
+  height: 30px;
+  background-color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease-in-out;
+}
+
+.toggle-switch input[type="checkbox"]:checked + .toggle-switch-background {
+  background-color: #681330;
+  box-shadow: inset 0 0 0 2px #961641;
+}
+
+.toggle-switch input[type="checkbox"]:checked + .toggle-switch-background .toggle-switch-handle {
+  transform: translateX(40px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2), 0 0 0 3px rgba(150, 22, 65, 0.55);
+}
+
+.proteccion-empresa-field {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: currentColor;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: calc(3.5rem + 2px);
+}
+
+.proteccion-empresa-title {
+  font-size: inherit;
+  color: currentColor;
+  margin: 0;
+  font-weight: 400;
+  line-height: 1.4;
+  flex: 0 1 auto;
+}
+
+.proteccion-empresa-title .fas.fa-store {
+  color: currentColor;
+}
+
+.catastral {
+  font-size: 26px;
+  color: #72bb53;
+}
+
+.licenciamiento {
+  font-size: 26px;
+  color: #aa671d;
+}
+
+.sapac {
+  font-size: 26px;
+  color: #1da1f2;
+}
+
+.imagenes.row {
+  color: #959494;
+  font-size: 12px;
+}
+
+/**/
+.fas.fa-list-ol{
+  color: white;
+}
+
+.fas.fa-folder-plus{
+  color: white;
+}
+
+.fas.fa-store-alt{
+  color: white;
+}
+
+.fas.fa-industry{
+  color: white;
+}
+
+.subtitulo-documentos {
+  font-size: 25px;
+  color: #959494;
+}
+
+.subtitulo {
+  font-size: 17px;
+  color: #353535;
+}
+
+.fas,
+.fa {
+  color: #bfbfbf;
+}
+
+.local-form-tab-nav__btn .fa {
+  color: inherit;
+}
+
+.fas.fa-sort-numeric-up-alt{
+  color: white;
+}
+
+
+.success {
+  background-color: #52bb56;
+  border: none;
+  width: 150px;
+  color: white;
+  height: 35px;
+  /* font-weight: lighter */
+  /* font-size: 18px; */
+}
+
+.success:hover {
+  background-color: #026105;
+}
+
+.ubication{
+  background-color: #174173;
+  border: none;
+  width: 150px;
+  color: white;
+  height: 35px;
+  /* font-weight: lighter */
+}
+
+.ubication:hover{
+  background-color: #002047;
+}
+
+.primary{
+  background-color: #1da1f2;
+  border: none;
+  width: 150px;
+  color: white;
+  height: 35px;
+  /* font-weight: lighter */
+}
+
+.primary:hover{
+  background-color: #004a79;
+}
+
+.warning {
+  background-color: #ffa834;
+  border: none;
+  color: white;
+  width: 150px;
+  height: 35px;
+  /* font-weight: lighter */
+}
+
+.warning:hover {
+  background-color: #a75e00;
+}
+
+.danger {
+  background-color: #ff3823;
+  border: none;
+  color: white;
+  width: 150px;
+  height: 35px;
+  /* font-weight: lighter */
+}
+
+.danger:hover {
+  background-color: #830d00;
+}
+
+.dangerr {
+  background-color: #fb434a;
+  border: none;
+  color: white;
+  font-size: 18px;
+  width: 800px;
+  height: 40px;
+  /* font-weight: lighter */
+  transition: 0.3s ease-in-out all;
+}
+
+.dangerr:hover {
+  background-color: #a50005;
+} 
+
+.fas.fa-camera{
+  color: white;
+}
+.successs {
+  background-color: #52bb56;
+  border: none;
+  width: 800px;
+  color: white;
+  height: 40px;
+  font-size: 18px;
+  transition: 0.3s ease-in-out all;
+  /* font-weight: lighter */
+}
+
+.successs:hover {
+  background-color: #008604;
+}
+
+/* .successs:hover {
+  background-color: #026105;
+  color: white;
+} */
+
+.fas.fa-check {
+  color: white;
+}
+
+.btn-final{
+  display: flex;
+  justify-content: center;
+}
+
+.fas.fa-user-alt {
+  color: #bfbfbf;
+}
+
+.form-control:disabled,
+.form-control[readonly] {
+  background-color: white;
+  opacity: 1;
+}
+
+.proteccion-civil-heading {
+  color: #d5238b !important;
+  font-size: 25px;
+}
+
+.input-proteccion {
+  border-color: #bfbfbf;
+}
+
+/* .form-control {
+  border-color: #163b61;
+} */
+
+.fas.fa-times {
+  color: white;
+}
+
+.fas.fa-store{
+  color: #bfbfbf;
+}
+
+.fas.fa-id-card-alt {
+  color: #bfbfbf;
+}
+
+.fas.fa-envelope {
+  color: #bfbfbf;
+}
+
+.swal2-icon.swal2-success .swal2-success-ring {
+  position: absolute;
+  z-index: 2;
+  top: -0.25em;
+  left: -0.25em;
+  box-sizing: content-box;
+  width: 100%;
+  height: 100%;
+  border: 0.25em solid #28a745;
+  border-radius: 50%;
+}
+
+.alert{
+  text-align: center;
+  align-items: center;
+  background-color: #f8d7da;
+  border-color: #ff6d79;
+  height: 35px;
+  border-radius: 5%;
+  color: #721c24;
+  transition: 0.3s ease-in-out all;
+  /* margin-top: 3%; */
+}
+
+.direccion{
+  text-align: center;
+  align-items: center;
+  background-color: #1da1f2;
+  border: #004a79;
+  border-radius: 8%;
+  height: 35px;
+  width: 100px;
+  transition: 0.3s ease-in-out all;
+}
+
+.direccion:hover{
+  background-color: #004a79;
+  border-color: #1da1f2;
+  transition: 0.3s ease-in-out all;
+  color: white;
+}
+
+::ng-deep .form {
+  padding: 10px 0 0 10px;
+}
+
+::ng-deep .label {
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+::ng-deep .label:not(:first-child) {
+  margin-top: 30px;
+}
+
+::ng-deep #small-indicator,
+#medium-indicator,
+#large-indicator {
+  vertical-align: middle;
+  margin-right: 10px;
+}
+
+::ng-deep #button,
+::ng-deep #button .dx-button-content {
+  padding: 0;
+}
+
+::ng-deep #button .button-indicator {
+  height: 32px;
+  width: 32px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+::ng-deep .indicators {
+  display: flex;
+  align-items: center;
+}
+.fas.fa-camera{
+  color: white;
+}

@@ -1,0 +1,321 @@
+.documento-modal {
+  display: flex;
+  flex-direction: column;
+  max-height: 95vh;
+  width: 100%;
+  min-height: 0;
+  background-color: #1c252e;
+  color: #ffffff;
+}
+
+.documento-modal-title {
+  flex-shrink: 0;
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  margin: 0;
+  padding: 16px 20px 8px;
+  line-height: 1.35;
+  color: #ffffff;
+}
+
+.documento-modal-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0 20px 12px !important;
+  margin: 0;
+  max-height: none !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+  color: #ffffff;
+}
+
+.documento-modal-hint {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.documento-modal-preview {
+  width: 100%;
+  min-height: 180px;
+  border-radius: 8px;
+  overflow: visible;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+  box-sizing: border-box;
+}
+
+.documento-modal-preview-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 120px;
+  max-height: min(38vh, 320px);
+  overflow: hidden;
+  flex-shrink: 1;
+}
+
+.documento-modal-preview-media img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: min(38vh, 320px);
+  object-fit: contain;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.documento-modal-preview--empty {
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.92rem;
+  text-align: center;
+  padding: 24px 16px 20px;
+  min-height: 200px;
+}
+
+.documento-modal-preview--sin-archivo {
+  color: rgba(255, 180, 180, 0.82);
+}
+
+.documento-modal-preview--sin-archivo i {
+  color: rgba(255, 255, 255, 0.9);
+  opacity: 1;
+}
+
+.documento-modal-preview--empty i {
+  font-size: 2.25rem;
+  opacity: 0.7;
+}
+
+.documento-modal-empty-text {
+  margin-bottom: 2px;
+  padding: 0 8px;
+  font-weight: 600;
+}
+
+.documento-modal-empty-subtext {
+  margin: 0 0 4px;
+  padding: 0 12px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.documento-modal-pdf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 160px;
+  padding: 24px 16px 12px;
+  box-sizing: border-box;
+}
+
+.documento-modal-pdf .fa-file-pdf {
+  font-size: 3rem;
+  color: #ff6b6b;
+}
+
+.documento-modal-pdf-name {
+  max-width: min(320px, 80vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.documento-modal-pdf-link {
+  color: #1da1f2;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.documento-modal-pdf-link:hover {
+  text-decoration: underline;
+}
+
+.documento-modal-preview--filled {
+  align-items: stretch;
+  padding: 0;
+  gap: 0;
+}
+
+.documento-modal-preview-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  flex-shrink: 0;
+  padding: 10px 12px 14px;
+  box-sizing: border-box;
+}
+
+.documento-modal-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  max-width: calc(100% - 24px);
+  padding: 6px 14px;
+  background: rgba(29, 161, 242, 0.12);
+  border: 1px solid rgba(29, 161, 242, 0.3);
+  border-radius: 20px;
+  box-sizing: border-box;
+}
+
+.documento-modal-file .fa-paperclip {
+  flex-shrink: 0;
+  color: #1da1f2;
+  font-size: 0.9rem;
+}
+
+.documento-modal-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: min(280px, 65vw);
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.documento-modal-upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  max-width: 100%;
+}
+
+.documento-modal-upload--inline {
+  margin-top: 0;
+}
+
+.documento-modal-upload input {
+  display: none;
+}
+
+.documento-modal-upload span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  background-color: #1da1f2;
+  color: #fff;
+  font-size: clamp(0.82rem, 2.5vw, 0.95rem);
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+
+.documento-modal-upload:hover span {
+  background-color: #1788cc;
+}
+
+.documento-modal-actions {
+  flex-shrink: 0;
+  padding: 8px 16px 28px !important;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 0;
+}
+
+.documento-modal .dangerr {
+  background-color: #fb434a;
+  border: none;
+  color: white;
+  font-size: 16px;
+  min-width: 140px;
+  height: 40px;
+}
+
+.documento-modal .dangerr:hover {
+  background-color: #a50005;
+}
+
+.documento-modal .successs {
+  background-color: #52bb56;
+  border: none;
+  color: white;
+  font-size: 16px;
+  min-width: 140px;
+  height: 40px;
+}
+
+.documento-modal .successs:hover:not(:disabled) {
+  background-color: #008604;
+}
+
+.documento-modal .successs:disabled {
+  background-color: #3d5c3f;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.documento-modal .fas.fa-times,
+.documento-modal .fas.fa-upload,
+.documento-modal .fas.fa-check {
+  color: white;
+}
+
+@media (max-width: 599px) {
+  .documento-modal-title {
+    padding: 12px 16px 6px;
+  }
+
+  .documento-modal-content {
+    padding: 0 16px 10px !important;
+  }
+
+  .documento-modal-preview {
+    min-height: 160px;
+  }
+
+  .documento-modal-preview--empty {
+    padding: 20px 12px 16px;
+    min-height: 180px;
+  }
+
+  .documento-modal-preview-media {
+    max-height: min(32vh, 260px);
+  }
+
+  .documento-modal-preview-media img {
+    max-height: min(32vh, 260px);
+    padding: 8px;
+  }
+
+  .documento-modal-preview-footer {
+    padding: 8px 10px 12px;
+  }
+
+  .documento-modal-upload span {
+    padding: 9px 14px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .documento-modal-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    padding: 8px 12px 24px !important;
+  }
+
+  .documento-modal-actions button {
+    width: 100%;
+    margin: 0 !important;
+    min-width: 0;
+  }
+}

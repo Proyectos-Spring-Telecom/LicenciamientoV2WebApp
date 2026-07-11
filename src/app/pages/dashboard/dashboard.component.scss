@@ -1,0 +1,88 @@
+.dashboard {
+  padding-bottom: 16px;
+
+  .dashboard-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+    background: var(--bs-card-bg, #1e293b);
+
+    &__header {
+      background: transparent;
+      border: none;
+      padding: 16px 16px 12px;
+    }
+
+    &__title {
+      color: #e6f1ff;
+      font-size: 22px;
+      line-height: 1.3;
+      font-weight: 600;
+
+      .fas {
+        color: rgba(255, 255, 255, 0.67);
+        font-size: 20px;
+      }
+    }
+  }
+
+  .encabezado-h3 {
+    font-size: 28px;
+  }
+
+  .fas.fa-id-badge {
+    color: rgba(255, 255, 255, 0.67);
+  }
+
+  mat-divider {
+    margin-top: 0;
+  }
+
+  .dashboard-filters {
+    width: 100%;
+  }
+
+  .data-grid {
+    padding-top: 8px;
+  }
+
+  .rep-filters {
+    margin-bottom: 12px;
+    border-radius: 0;
+  }
+}
+
+/* Fallback por si DevExtreme ignora dxo-font en algún nodo */
+:host ::ng-deep .dashboard-chart {
+  .dxc-title text,
+  .dxc-legend-item text,
+  .dxc-arg-elements text,
+  .dxc-val-elements text {
+    fill: #e6f1ff !important;
+  }
+}
+
+.rosa {
+  background: rgba(213, 35, 139, 0.38);
+  border: 1px solid rgba(240, 100, 180, 0.85);
+  color: #ffffff;
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.22),
+    0 0 0 1px rgba(213, 35, 139, 0.28);
+  text-align: center;
+  font-weight: bold;
+  height: 25px;
+  border-radius: 5px;
+  margin-top: -2px;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.colores {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

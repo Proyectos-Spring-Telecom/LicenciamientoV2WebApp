@@ -1,0 +1,28 @@
+<div class="wrapper">
+  <div class="full" id="map"></div>
+
+  <div
+    class="monitoreo-street-modal"
+    id="street-modal-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Street View"
+  >
+    <div class="monitoreo-street-modal__panel" id="street-modal-panel">
+      <header class="monitoreo-street-modal__head" id="street-modal-panelheader">
+        <h3>Street View</h3>
+        <button
+          type="button"
+          class="monitoreo-street-modal__close"
+          aria-label="Cerrar Street View"
+          (click)="hideStreetView()"
+        >
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
+          </svg>
+        </button>
+      </header>
+      <div id="pano" class="monitoreo-street-modal__view"></div>
+    </div>
+  </div>
+</div>

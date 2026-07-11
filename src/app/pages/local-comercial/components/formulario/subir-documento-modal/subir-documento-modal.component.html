@@ -1,0 +1,84 @@
+<div class="documento-modal">
+  <h2 class="documento-modal-title" mat-dialog-title>
+    <i class="fas fa-file-upload"></i>&nbsp;{{ data.titulo }}
+  </h2>
+
+  <mat-dialog-content class="documento-modal-content">
+    <p class="documento-modal-hint" *ngIf="!esSoloLectura">
+      Seleccione el archivo de documentación para adjuntarlo al formulario.
+    </p>
+    <p class="documento-modal-hint" *ngIf="esSoloLectura">
+      Vista previa del documento adjunto.
+    </p>
+
+    <div
+      class="documento-modal-preview"
+      [class.documento-modal-preview--empty]="mostrarEstadoVacio"
+      [class.documento-modal-preview--filled]="tieneVistaPrevia || documentoPdfExistente"
+      [class.documento-modal-preview--sin-archivo]="sinArchivoRegistrado && mostrarEstadoVacio">
+      <ng-container *ngIf="tieneVistaPrevia">
+        <div class="documento-modal-preview-media">
+          <img [src]="previewUrl" [alt]="data.titulo" (error)="onErrorVistaPrevia()">
+        </div>
+        <div class="documento-modal-preview-footer">
+          <div class="documento-modal-file" *ngIf="nombreArchivo">
+            <i class="fas fa-paperclip"></i>
+            <span class="documento-modal-file-name" [title]="nombreArchivo">{{ nombreArchivo }}</span>
+          </div>
+          <label class="documento-modal-upload documento-modal-upload--inline" *ngIf="!esSoloLectura">
+            <input type="file" accept="image/*,.pdf" (change)="onArchivoSeleccionado($event)">
+            <span><i class="fas fa-folder-open"></i>&nbsp;Cambiar archivo</span>
+          </label>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="documentoPdfExistente && !tieneVistaPrevia">
+        <div class="documento-modal-pdf">
+          <i class="fas fa-file-pdf"></i>
+          <span class="documento-modal-pdf-name" [title]="nombreArchivo">{{ nombreArchivo }}</span>
+          <a
+            *ngIf="urlDocumentoExistente"
+            class="documento-modal-pdf-link"
+            [href]="urlDocumentoExistente"
+            target="_blank"
+            rel="noopener noreferrer">
+            Ver documento
+          </a>
+        </div>
+        <div class="documento-modal-preview-footer" *ngIf="!esSoloLectura">
+          <label class="documento-modal-upload documento-modal-upload--inline">
+            <input type="file" accept="image/*,.pdf" (change)="onArchivoSeleccionado($event)">
+            <span><i class="fas fa-folder-open"></i>&nbsp;Cambiar archivo</span>
+          </label>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="mostrarEstadoVacio">
+        <i class="fas" [ngClass]="sinArchivoRegistrado ? 'fa-file' : 'fa-file-image'"></i>
+        <span class="documento-modal-empty-text">{{ mensajeSinArchivo }}</span>
+        <span class="documento-modal-empty-subtext" *ngIf="sinArchivoRegistrado">
+          Este documento no ha sido cargado en la licencia.
+        </span>
+        <label class="documento-modal-upload documento-modal-upload--inline" *ngIf="!esSoloLectura">
+          <input type="file" accept="image/*,.pdf" (change)="onArchivoSeleccionado($event)">
+          <span><i class="fas fa-folder-open"></i>&nbsp;{{ textoBotonSeleccion }}</span>
+        </label>
+      </ng-container>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="documento-modal-actions" align="end">
+    <button mat-raised-button class="dangerr" type="button" (click)="cancelar()">
+      <i class="fas fa-times"></i>&nbsp;&nbsp;{{ esSoloLectura ? 'Cerrar' : 'Cancelar' }}
+    </button>
+    <button
+      *ngIf="!esSoloLectura"
+      mat-raised-button
+      class="successs"
+      type="button"
+      [disabled]="!archivoSeleccionado"
+      (click)="subir()">
+      <i class="fas fa-upload"></i>&nbsp;&nbsp;Subir
+    </button>
+  </mat-dialog-actions>
+</div>

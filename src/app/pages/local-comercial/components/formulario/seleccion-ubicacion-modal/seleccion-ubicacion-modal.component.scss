@@ -1,0 +1,132 @@
+﻿.ubicacion-modal {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  width: 100%;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: 'Poppins', sans-serif;
+}
+
+.ubicacion-modal__head {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  background: #1c252e;
+  color: #f8fafc;
+}
+
+.ubicacion-modal__head-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ubicacion-modal__title {
+  margin: 0;
+  padding: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  color: #f8fafc;
+}
+
+.ubicacion-modal-hint {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: rgba(248, 250, 252, 0.82);
+}
+
+.ubicacion-modal-content {
+  padding: 16px 18px 12px !important;
+  margin: 0;
+  max-height: none !important;
+  overflow: hidden;
+  color: #f8fafc;
+  background: #0f172a;
+}
+
+.ubicacion-modal-map {
+  position: relative;
+  width: 100%;
+  height: min(55vh, 480px);
+  min-height: 240px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: #0b1220;
+}
+
+.ubicacion-modal-map google-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ubicacion-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 8px 16px 28px !important;
+  margin-top: 15px;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+  background: #1c252e;
+}
+
+.ubicacion-modal-actions .button-danger,
+.ubicacion-modal-actions .button-success {
+  min-height: 50px;
+  height: 50px;
+}
+
+.ubicacion-modal-actions__confirm {
+  width: auto;
+  min-width: 210px;
+  padding: 0 16px;
+}
+
+.ubicacion-modal-actions .button-success:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: none;
+}
+
+.ubicacion-modal-actions .fa {
+  color: inherit;
+}
+
+@media (max-width: 599px) {
+  .ubicacion-modal__head {
+    padding: 12px 14px;
+  }
+
+  .ubicacion-modal__title {
+    font-size: 1.05rem;
+  }
+
+  .ubicacion-modal-content {
+    padding: 12px 14px 10px !important;
+  }
+
+  .ubicacion-modal-map {
+    height: min(50vh, 360px);
+    min-height: 200px;
+  }
+
+  .ubicacion-modal-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    padding: 8px 12px 24px !important;
+  }
+
+  .ubicacion-modal-actions button {
+    width: 100%;
+    margin: 0 !important;
+    min-width: 0;
+  }
+}
+
+.ubicacion-modal-map__canvas { width: 100%; height: 100%; min-height: 360px; }

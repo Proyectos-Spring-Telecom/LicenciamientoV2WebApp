@@ -1,0 +1,301 @@
+<div class="container-fluid dashboard">
+  <!-- Bloque A — KPI -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-6 col-xl-3">
+      <app-quick-info-widget
+        [value]="totalRechazados + ' Establecimientos Comerciales'"
+        label="Rechazo o Sin Respuesta"
+        background="#fb2121"
+        color="white"
+        icon="no_sim">
+      </app-quick-info-widget>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <app-quick-info-widget
+        [value]="totalRevision + ' Establecimientos Comerciales'"
+        label="Revisión"
+        background="#438AE3"
+        color="white"
+        icon="history">
+      </app-quick-info-widget>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <app-quick-info-widget
+        [value]="totalFaltante + ' Establecimientos Comerciales'"
+        label="Información Faltante"
+        background="#f9c300"
+        color="white"
+        icon="new_releases">
+      </app-quick-info-widget>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <app-quick-info-widget
+        [value]="totalValidados + ' Establecimientos Comerciales'"
+        label="Datos Correctos"
+        background="#3da73d"
+        color="white"
+        icon="thumb_up">
+      </app-quick-info-widget>
+    </div>
+  </div>
+
+  <!-- Bloque B — Gráficas mes + pastel -->
+  <div class="row g-3 mb-3">
+    <div class="col-lg-6">
+      <div class="card dashboard-card h-100">
+        <div class="card-header dashboard-card__header">
+          <span class="dashboard-card__title">
+            <i class="fas fa-chart-line"></i>&nbsp; Estadística Operativa
+          </span>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="card-body">
+          <dx-chart
+            id="chartMes"
+            class="dashboard-chart"
+            [dataSource]="datosGrafica"
+            (onInitialized)="onInitializedMonths($event)">
+            <dxo-title text="Producción Mensual">
+              <dxo-font color="#e6f1ff" [size]="18" [weight]="600"></dxo-font>
+            </dxo-title>
+            <dxo-zoom-and-pan argumentAxis="both" valueAxis="both"></dxo-zoom-and-pan>
+            <dxo-loading-indicator [show]="true"></dxo-loading-indicator>
+            <dxi-series valueField="statusrevision" name="Revisión" color="#438AE3"></dxi-series>
+            <dxi-series valueField="statusrechazado" name="Rechazo o Sin Respuesta" color="#FB2121"></dxi-series>
+            <dxi-series valueField="statuscorrecto" name="Datos Correctos" color="#3DA73D"></dxi-series>
+            <dxi-series valueField="statusfaltante" name="Información Faltante" color="#F9C300"></dxi-series>
+            <dxo-common-series-settings
+              argumentField="mes"
+              type="bar"
+              hoverMode="allArgumentPoints"
+              selectionMode="allArgumentPoints">
+              <dxo-label [visible]="true" [format]="{ type: 'fixedPoint', precision: 0 }">
+                <dxo-font color="#e6f1ff"></dxo-font>
+              </dxo-label>
+            </dxo-common-series-settings>
+            <dxo-legend verticalAlignment="bottom" horizontalAlignment="center">
+              <dxo-font color="#c8d7ea"></dxo-font>
+            </dxo-legend>
+            <dxo-export [enabled]="true"></dxo-export>
+          </dx-chart>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card dashboard-card h-100">
+        <div class="card-header dashboard-card__header">
+          <span class="dashboard-card__title">
+            <i class="fas fa-chart-pie"></i>&nbsp; Estado al Día
+          </span>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="card-body">
+          <dx-pie-chart
+            type="doughnut"
+            class="dashboard-chart"
+            palette="Soft Pastel"
+            [dataSource]="datosPastel"
+            (onInitialized)="onInitializedCake($event)"
+            [customizePoint]="customizePoint">
+            <dxo-title text="Establecimientos Comerciales en Tránsito">
+              <dxo-font color="#e6f1ff" [size]="18" [weight]="600"></dxo-font>
+            </dxo-title>
+            <dxo-loading-indicator [show]="true"></dxo-loading-indicator>
+            <dxo-export [enabled]="true"></dxo-export>
+            <dxo-legend horizontalAlignment="center" verticalAlignment="bottom">
+              <dxo-font color="#c8d7ea"></dxo-font>
+            </dxo-legend>
+            <dxi-series argumentField="etiqueta" valueField="percent">
+              <dxo-small-values-grouping mode="topN" [topCount]="4"></dxo-small-values-grouping>
+              <dxo-label [visible]="true" format="fixedPoint" [customizeText]="etiquetaPie">
+                <dxo-font color="#ffffff"></dxo-font>
+                <dxo-connector [visible]="true" [width]="1"></dxo-connector>
+              </dxo-label>
+            </dxi-series>
+          </dx-pie-chart>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bloque C — Filtros + chart período -->
+  <div class="row g-3 mb-3">
+    <div class="col-12">
+      <div class="card dashboard-card">
+        <div class="card-header dashboard-card__header">
+          <span class="dashboard-card__title">
+            <i class="fas fa-calendar-alt"></i>&nbsp; Nivel de Captura por Período
+          </span>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="card-body">
+          <section class="rep-filters" aria-label="Filtros de captura por período">
+            <div class="rep-filters__grid">
+              <div [class.rep-filters__g3]="!showFiltroGrupo" [class.rep-filters__g4]="showFiltroGrupo">
+                <label class="rep-filters__field" for="dash-fecha-inicial">
+                  <span class="rep-filters__label">Fecha inicial</span>
+                  <input
+                    id="dash-fecha-inicial"
+                    class="rep-filters__input rep-filters__input--date"
+                    type="date"
+                    name="fechaInicial"
+                    [(ngModel)]="fechainicio"
+                    required
+                  />
+                </label>
+              </div>
+              <div [class.rep-filters__g3]="!showFiltroGrupo" [class.rep-filters__g4]="showFiltroGrupo">
+                <label class="rep-filters__field" for="dash-fecha-final">
+                  <span class="rep-filters__label">Fecha final</span>
+                  <input
+                    id="dash-fecha-final"
+                    class="rep-filters__input rep-filters__input--date"
+                    type="date"
+                    name="fechaFinal"
+                    [(ngModel)]="fechaFin"
+                  />
+                </label>
+              </div>
+              <div class="rep-filters__g2" *ngIf="!showFiltroGrupo">
+                <label class="rep-filters__field" for="dash-grupo">
+                  <span class="rep-filters__label">Grupo</span>
+                  <select
+                    id="dash-grupo"
+                    class="rep-filters__select"
+                    [(ngModel)]="grupo"
+                    (ngModelChange)="obtenerUsuarios($event)">
+                    <option [ngValue]="null">Seleccione</option>
+                    <option *ngFor="let g of grupos" [ngValue]="g.id">{{ g.nombre }}</option>
+                  </select>
+                </label>
+              </div>
+              <div class="rep-filters__g2" *ngIf="!showFiltroUsuario">
+                <label class="rep-filters__field" for="dash-capturista">
+                  <span class="rep-filters__label">Capturista</span>
+                  <select
+                    id="dash-capturista"
+                    class="rep-filters__select"
+                    [(ngModel)]="idCapturista">
+                    <option [ngValue]="null">Seleccione</option>
+                    <option *ngFor="let usuario of resultadoGrupo" [ngValue]="usuario.id">
+                      {{ usuario.nombre }}
+                    </option>
+                  </select>
+                </label>
+              </div>
+              <div class="rep-filters__g2 rep-filters__btn-wrap">
+                <button id="boton" type="button" class="rep-filters__btn" (click)="obtenerFiltros()">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                  <span>Buscar</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <dx-chart
+            id="chartFiltros"
+            class="dashboard-chart"
+            [dataSource]="item_totals"
+            palette="soft"
+            (onInitialized)="onInitializedFilters($event)">
+            <dxi-series valueField="Revisión" name="Revisión" color="#438AE3"></dxi-series>
+            <dxi-series valueField="Rechazo o Sin respuesta" name="Rechazado" color="#FB2121"></dxi-series>
+            <dxi-series valueField="Datos Correctos" name="Datos correctos" color="#3DA73D"></dxi-series>
+            <dxi-series valueField="Información Faltante" name="Información faltante" color="#F9C300"></dxi-series>
+            <dxo-common-series-settings argumentField="fecha" type="bar" [barPadding]="0.2">
+              <dxo-label>
+                <dxo-font color="#e6f1ff"></dxo-font>
+              </dxo-label>
+            </dxo-common-series-settings>
+            <dxo-legend verticalAlignment="bottom" horizontalAlignment="center">
+              <dxo-font color="#c8d7ea"></dxo-font>
+            </dxo-legend>
+            <dxo-export [enabled]="true"></dxo-export>
+          </dx-chart>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bloque D — Grid capturistas -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card dashboard-card">
+        <div class="card-header dashboard-card__header d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <span class="dashboard-card__title encabezado-h3">
+            <i class="fas fa-id-badge"></i>&nbsp;Comparación de Registros por Capturistas
+          </span>
+          <button
+            type="button"
+            mat-flat-button
+            class="bg-success"
+            [disabled]="isDisabled"
+            (click)="exportarCapturistas()">
+            <i class="fas fa-file-excel"></i>&nbsp;&nbsp;Exportar
+          </button>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="card-body data-grid">
+          <dx-data-grid
+            id="gridContainer"
+            [columnHidingEnabled]="true"
+            [dataSource]="listaCapturista"
+            [showBorders]="true"
+            [rowAlternationEnabled]="true">
+            <dxo-paging [pageSize]="7"></dxo-paging>
+            <dxo-pager
+              [showPageSizeSelector]="true"
+              [allowedPageSizes]="[7, 10, 50, 100]"
+              [showInfo]="true">
+            </dxo-pager>
+            <dxo-group-panel [emptyPanelText]="mensajeAgrupar" [visible]="true"></dxo-group-panel>
+            <dxo-filter-row [visible]="showFilterRow"></dxo-filter-row>
+            <dxo-header-filter [visible]="showHeaderFilter"></dxo-header-filter>
+
+            <dxi-column dataField="nombre" caption="Nombre" alignment="center">
+              <dxo-header-filter [allowSearch]="true"></dxo-header-filter>
+            </dxi-column>
+            <dxi-column dataField="apellidoPaterno" caption="Apellido Paterno" alignment="center">
+              <dxo-header-filter [allowSearch]="true"></dxo-header-filter>
+            </dxi-column>
+            <dxi-column dataField="apellidoMaterno" caption="Apellido Materno" alignment="center">
+              <dxo-header-filter [allowSearch]="true"></dxo-header-filter>
+            </dxi-column>
+            <dxi-column dataField="nombreGrupo" caption="Grupo" alignment="center">
+              <dxo-header-filter [allowSearch]="true"></dxo-header-filter>
+            </dxi-column>
+            <dxi-column dataField="nombreSupervisor" caption="Supervisor" alignment="center">
+              <dxo-header-filter [allowSearch]="true"></dxo-header-filter>
+            </dxi-column>
+            <dxi-column
+              dataField="totalLicencias"
+              caption="Número Total de Capturas"
+              alignment="center"
+              [width]="200"
+              [hidingPriority]="10"
+              cellTemplate="capturasCell">
+              <dxo-header-filter [allowSearch]="true"></dxo-header-filter>
+            </dxi-column>
+
+            <div *dxTemplate="let p of 'capturasCell'" class="colores">
+              <p class="rosa">{{ p.data.totalLicencias }} Registros</p>
+            </div>
+          </dx-data-grid>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+  (onShown)="onShown()"
+  [message]="loadingMessage">
+</dx-load-panel>

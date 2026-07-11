@@ -1,0 +1,117 @@
+<div class="ul-root auth-anim-root" [@authViewAnimation]>
+  <div class="ul-bg auth-anim-bg" aria-hidden="true">
+    <div class="ul-bg__wash"></div>
+    <div class="ul-bg__ring ul-bg__ring--a"></div>
+    <div class="ul-bg__ring ul-bg__ring--b"></div>
+    <div class="ul-bg__ring ul-bg__ring--c"></div>
+    <div class="ul-bg__ring ul-bg__ring--d"></div>
+    <div class="ul-bg__ring ul-bg__ring--e"></div>
+    <div class="ul-bg__stars"></div>
+  </div>
+
+  <main class="ul-main" aria-label="Inicio de sesión">
+    <section class="ul-scene auth-anim-hero" aria-label="Escena">
+      <div class="ul-scene__stack">
+        <div class="ul-scene__logoWrap" aria-hidden="true">
+          <img
+            src="assets/images/logos/SPRING-VERTICAL.webp"
+            alt=""
+            class="ul-scene__logo"
+            loading="lazy"
+          />
+        </div>
+        <div class="ul-scene__headline">
+          <h1 class="ul-titlecase">registro y control de licencias de funcionamiento</h1>
+          <p>
+            Administra el padrón de establecimientos comerciales, industriales y de servicios desde un solo lugar.
+          </p>
+        </div>
+      </div>
+
+      <div class="ul-floating" aria-hidden="true">
+        <div class="ul-tile">
+          <div class="ul-tile__k ul-titlecase">establecimientos</div>
+          <div class="ul-tile__v ul-titlecase">padrón actualizado</div>
+        </div>
+        <div class="ul-tile">
+          <div class="ul-tile__k ul-titlecase">licencias</div>
+          <div class="ul-tile__v ul-titlecase">registro y seguimiento</div>
+        </div>
+        <div class="ul-tile">
+          <div class="ul-tile__k ul-titlecase">trámites</div>
+          <div class="ul-tile__v ul-titlecase">expediente digital</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="ul-login auth-anim-panel" aria-label="Formulario de acceso">
+      <div class="ul-card">
+        <div class="ul-card__head">
+          <div class="ul-kicker ul-titlecase">Bienvenido</div>
+          <div class="ul-title ul-titlecase">iniciar sesión</div>
+          <div class="ul-subtitle ul-titlecase">ingresa tus credenciales para acceder al sistema de licencias.</div>
+        </div>
+
+        <form class="ul-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <div class="ul-field">
+            <mat-label class="ul-label ul-titlecase">correo</mat-label>
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input
+                matInput
+                formControlName="userName"
+                autocomplete="username"
+                inputmode="email"
+                placeholder="correo@dominio.com"
+              />
+            </mat-form-field>
+          </div>
+
+          <div class="ul-field">
+            <mat-label class="ul-label ul-titlecase">contraseña</mat-label>
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input
+                matInput
+                [type]="hidePass ? 'password' : 'text'"
+                formControlName="password"
+                autocomplete="current-password"
+                placeholder="••••••••"
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="hidePass = !hidePass"
+                [attr.aria-label]="hidePass ? 'Mostrar contraseña' : 'Ocultar contraseña'"
+                [attr.aria-pressed]="!hidePass"
+              >
+                <mat-icon>{{ hidePass ? 'visibility' : 'visibility_off' }}</mat-icon>
+              </button>
+            </mat-form-field>
+          </div>
+
+          <div class="ul-actions">
+
+            <a [routerLink]="['/solicitud-cambio-password']" class="ul-link ul-titlecase">
+              ¿olvidaste tu contraseña?
+            </a>
+          </div>
+
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="isDisabled"
+            class="ul-submit w-100"
+            [class.ul-submit--loading]="loading"
+          >
+            <span class="ul-submit__content">
+              <span class="ul-submit__spinner" aria-hidden="true"></span>
+              <span class="ul-titlecase">{{ textLogin }}</span>
+            </span>
+            <span class="ul-submit__shine" aria-hidden="true"></span>
+          </button>
+        </form>
+      </div>
+    </section>
+  </main>
+</div>

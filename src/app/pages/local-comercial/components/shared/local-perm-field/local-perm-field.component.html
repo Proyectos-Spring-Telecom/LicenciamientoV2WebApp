@@ -1,0 +1,10 @@
+<ng-container *ngIf="show">
+  <label *ngIf="label" [attr.for]="fieldId" class="form-label perm-label">{{ label }}</label>
+  <div class="input-group input-group-lg perm-ig">
+    <span class="input-group-text fw-bold">
+      <mat-icon aria-hidden="true">{{ icon }}</mat-icon>
+    </span>
+    <ng-content></ng-content>
+  </div>
+  <div class="text-danger small mt-1" *ngIf="error">{{ error }}</div>
+</ng-container>

@@ -1,0 +1,239 @@
+@use "../variables" as *;
+
+.blank-layout-container {
+  /* Altura respecto al shell (app-blank + mat-sidenav), evita 100vh + barra de scroll fantasma */
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  display: flex;
+  background-size: cover;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.blank-layout-container .row {
+  max-height: 100%;
+  min-height: 0;
+}
+
+@media (min-width: 992px) {
+  .blank-layout-container {
+    overflow: hidden;
+  }
+}
+
+/* Tablet landscape / laptop estrecho: sin scroll en el body; solo la columna blanca hace scroll */
+@media (max-width: 1279.98px) and (min-width: 992px) {
+  .blank-layout-container {
+    align-items: stretch;
+  }
+
+  .blank-layout-container .row {
+    flex: 1 1 auto;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+  }
+
+  .blank-layout-container .row > .bg-white {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .blank-layout-container .row > .bg-white > div {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1.25rem 1rem !important;
+    height: auto !important;
+  }
+
+  .blank-layout-container .row > .bg-gredient {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .blank-layout-container .max-width-form {
+    max-width: 480px;
+    width: 100%;
+  }
+}
+
+/* Por debajo de 992px: scroll lo maneja el shell (.mat-drawer-content) */
+@media (max-width: 991.98px) {
+  .blank-layout-container {
+    height: auto;
+    max-height: none;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: visible;
+    align-items: flex-start;
+  }
+
+  .blank-layout-container .row {
+    min-height: min-content;
+    max-height: none;
+    height: auto;
+  }
+
+  .blank-layout-container .row > .bg-white > div {
+    padding: 1rem 0.75rem !important;
+    overflow-y: visible;
+  }
+
+  .blank-layout-container .row > .bg-gredient {
+    min-height: 0;
+  }
+
+  .blank-layout-container .max-width-form {
+    max-width: 100%;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+/* Animación auth: perspectiva para rotateY del panel */
+.auth-anim-root {
+  perspective: 1400px;
+  transform-style: preserve-3d;
+}
+
+.auth-anim-hero,
+.auth-anim-panel {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+.auth-title {
+  font-size: 36px;
+  line-height: 44px;
+}
+
+.bg-gredient {
+  overflow: hidden;
+  &::before {
+    content: "";
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: #E8CBC0;  /* fallback for old browsers */
+background: -webkit-linear-gradient(to right, #636FA4, #E8CBC0);  /* Chrome 10-25, Safari 5.1-6 */
+background: linear-gradient(to right, #636FA4, #E8CBC0); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+    animation: 15s ease 0s infinite normal none running gradient;
+    z-index: -1;
+  }
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 50% 0%;
+  }
+}
+
+.img-height {
+  max-height: calc(100vh - 100px);
+  height: 100%;
+  min-height: 0;
+}
+
+.login-img {
+  max-width: 420px;
+  max-height: 60vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+/* En pantallas pequeñas: imagen más pequeña para evitar scroll; arriba form abajo */
+@media (max-width: 991.98px) {
+  .img-height-mobile {
+    height: 22vh;
+    min-height: 120px;
+    padding: 0.5rem 0;
+  }
+  .login-img {
+    max-width: min(220px, 65vw);
+    max-height: 18vh;
+  }
+}
+
+/* 990px – 1280px: tamaños intermedios para la imagen */
+@media (min-width: 990px) and (max-width: 1280px) {
+  .img-height {
+    max-height: calc(100vh - 120px);
+  }
+  .login-img {
+    max-width: 300px;
+    max-height: 50vh;
+  }
+}
+
+.custom-row {
+  &.row {
+    margin-right: -8px;
+    margin-left: -8px;
+    .col-2,
+    .col-12 {
+      padding-right: 8px;
+      padding-left: 8px;
+    }
+  }
+}
+
+.or-border {
+  position: relative;
+  text-align: center;
+  &:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 100px;
+    top: 50%;
+    height: 1px;
+    background: $borderColor;
+  }
+  &:after {
+    content: "";
+    position: absolute;
+    right: 0;
+    width: 100px;
+    top: 50%;
+    height: 1px;
+    background: $borderColor;
+  }
+}
+
+.boxed-auth {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.max-width-form {
+  max-width: 540px;
+  width: 100%;
+}
+
+.mat-mdc-form-field.mat-form-field-invalid {
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border-color: $error !important;
+  }
+}
+
+.error-msg {
+  position: absolute;
+  top: -19px;
+  right: 3px;
+}

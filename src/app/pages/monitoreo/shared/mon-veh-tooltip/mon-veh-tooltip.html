@@ -1,0 +1,87 @@
+<!--
+  Card flotante de detalle de entidad — Monitoreo (tema burdeos/rosa).
+  Contexto: locales comerciales / licenciamiento.
+  Solo markup estático; posicionamiento y datos dinámicos se implementan aparte.
+  Animaciones opcionales: mon-veh-tooltip--enter | mon-veh-tooltip--exit
+-->
+<article
+  class="mon-veh-tooltip mon-veh-tooltip--enter"
+  role="tooltip"
+  aria-label="Detalle del local comercial"
+>
+  <div class="mon-veh-tooltip__glow" aria-hidden="true"></div>
+
+  <header class="mon-veh-tooltip__head mon-veh-tooltip__head--center">
+    <span class="mon-veh-tooltip__head-label" style="background-color:#438AE3">Revisión</span>
+    <h3 class="mon-veh-tooltip__head-title">Abarrotes La Paloma</h3>
+  </header>
+
+  <div class="mon-veh-tooltip__divider" aria-hidden="true"></div>
+
+  <div class="mon-veh-tooltip__body">
+    <div class="mon-veh-tooltip__row-trio">
+    <div class="mon-veh-tooltip__row mon-veh-tooltip__row--compact">
+      <span class="mon-veh-tooltip__row-icon" aria-hidden="true">
+        <svg class="mon-veh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 7h16M4 12h10M4 17h6"/>
+        </svg>
+      </span>
+      <p class="mon-veh-tooltip__row-copy">
+        <span class="mon-veh-tooltip__row-label">Grupo:</span>
+        <span class="mon-veh-tooltip__row-value">Centro</span>
+      </p>
+    </div>
+
+    <div class="mon-veh-tooltip__row mon-veh-tooltip__row--compact">
+      <span class="mon-veh-tooltip__row-icon" aria-hidden="true">
+        <svg class="mon-veh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="5" width="18" height="14" rx="2"/>
+          <path d="M7 9h4M7 13h6"/>
+        </svg>
+      </span>
+      <p class="mon-veh-tooltip__row-copy">
+        <span class="mon-veh-tooltip__row-label">RFC:</span>
+        <span class="mon-veh-tooltip__row-value">XAXX010101000</span>
+      </p>
+    </div>
+
+    <div class="mon-veh-tooltip__row mon-veh-tooltip__row--compact">
+      <span class="mon-veh-tooltip__row-icon" aria-hidden="true">
+        <svg class="mon-veh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 7h16M4 12h16M4 17h10"/>
+        </svg>
+      </span>
+      <p class="mon-veh-tooltip__row-copy">
+        <span class="mon-veh-tooltip__row-label">Folio:</span>
+        <span class="mon-veh-tooltip__row-value">20727</span>
+      </p>
+    </div>
+    </div>
+
+    <div class="mon-veh-tooltip__row mon-veh-tooltip__row--wide">
+      <span class="mon-veh-tooltip__row-icon" aria-hidden="true">
+        <svg class="mon-veh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+        </svg>
+      </span>
+      <p class="mon-veh-tooltip__row-copy">
+        <span class="mon-veh-tooltip__row-label">Giro:</span>
+        <span class="mon-veh-tooltip__row-value">Abarrotes y miscelánea en la colonia centro</span>
+      </p>
+    </div>
+
+    <div class="mon-veh-tooltip__row mon-veh-tooltip__row--wide">
+      <span class="mon-veh-tooltip__row-icon" aria-hidden="true">
+        <svg class="mon-veh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21a8 8 0 1 0-16 0"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </span>
+      <p class="mon-veh-tooltip__row-copy">
+        <span class="mon-veh-tooltip__row-label">Capturista:</span>
+        <span class="mon-veh-tooltip__row-value">SA GTM SA</span>
+      </p>
+    </div>
+  </div>
+</article>

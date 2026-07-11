@@ -1,0 +1,39 @@
+@use "../variables" as *;
+
+/* Contrato tipográfico: Poppins 400 / 0.875rem en todos los botones del proyecto */
+@mixin app-button-typography {
+  font-family: $button-font-family !important;
+  font-size: $button-font-size !important;
+  font-weight: $button-font-weight !important;
+}
+
+html {
+  button,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  .btn,
+  a.btn,
+  .mat-mdc-button-base,
+  .mat-mdc-button-base .mdc-button__label,
+  .mat-button-toggle-button,
+  .dx-button,
+  .dx-button .dx-button-text,
+  .swal2-styled,
+  .mon-hist__btn,
+  .btn-neo,
+  .btnAcciones,
+  .alert-btn,
+  .notify-cap__btn,
+  .mon-modal__btn,
+  .mon-veh-detalle__share-btn,
+  .consola-gal__nav-btn,
+  .cdd__btn,
+  .swal-estatus-local__opt,
+  [class*="rep-dis__btn"],
+  [class*="rep-upos__btn"],
+  [class*="rep-vel__btn"],
+  [class*="rep-pos__btn"] {
+    @include app-button-typography;
+  }
+}

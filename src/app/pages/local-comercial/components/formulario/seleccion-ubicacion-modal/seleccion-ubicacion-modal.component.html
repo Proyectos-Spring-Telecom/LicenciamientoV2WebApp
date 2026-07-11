@@ -1,0 +1,27 @@
+﻿<div class="ubicacion-modal">
+  <header class="ubicacion-modal__head">
+    <div class="ubicacion-modal__head-copy">
+      <h2 class="ubicacion-modal__title" mat-dialog-title>
+        <i class="fas fa-map-marker-alt"></i>&nbsp;Ubicación del lugar
+      </h2>
+      <p class="ubicacion-modal-hint">
+        Haga clic en el mapa para colocar el pin. Si no queda bien, arrástrelo hasta la posición correcta.
+      </p>
+    </div>
+  </header>
+
+  <mat-dialog-content class="ubicacion-modal-content">
+    <div class="ubicacion-modal-map">
+      <div #mapContainer class="ubicacion-modal-map__canvas"></div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="ubicacion-modal-actions" align="end">
+    <button type="button" class="button-danger" (click)="cancelar()">
+      <i class="fa fa-times">&nbsp;&nbsp;</i>Cancelar
+    </button>
+    <button type="button" class="button-success ubicacion-modal-actions__confirm" [disabled]="!markerPosition" (click)="confirmar()">
+      <i class="fa fa-check"></i>&nbsp;&nbsp;Confirmar ubicación
+    </button>
+  </mat-dialog-actions>
+</div>

@@ -1,0 +1,34 @@
+export class User {
+  id?: string | number;
+  token?: string;
+  refreshToken?: string;
+  nombre?: string;
+  apellidoPaterno?: string;
+  apellidoMaterno?: string;
+  nombreCompleto?: string;
+  telefono?: unknown;
+  fechaCreacion?: unknown;
+  ultimoLogin?: unknown;
+  permisos?: unknown[];
+  email?: string;
+  idCliente?: unknown;
+  idRol?: number;
+  idSucursal?: number;
+  idCadena?: number;
+  validPassword?: boolean;
+  imagenPerfil?: string;
+  user?: Record<string, unknown>;
+  rol?: { id?: number; nombre?: string };
+  userName?: string;
+  rolNombre?: string;
+  fotoPerfil?: string;
+  logo?: string;
+  nombreCliente?: string;
+  apellidoPaternoCliente?: string;
+  apellidoMaternoCliente?: string;
+  nombreSucursal?: string;
+  cadena?: Record<string, unknown>;
+  sucursal?: Record<string, unknown>;
+  cliente?: Record<string, unknown>;
+  [key: string]: unknown;
+}

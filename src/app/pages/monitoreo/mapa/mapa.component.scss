@@ -1,0 +1,31 @@
+@import '../shared/monitoreo-street-modal/monitoreo-street-modal';
+
+:host {
+  display: block;
+  position: relative;
+  width: 100%;
+  /* Llena el área bajo el header; el footer fijo queda encima del borde inferior (sin hueco) */
+  height: calc(100dvh - 68px);
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.full,
+#map {
+  width: 100%;
+  height: 100% !important;
+  min-height: 420px;
+}
+
+.gm-style .gm-style-iw {
+  font-weight: 300;
+  font-size: 13px;
+  overflow: hidden;
+  color: #52bb56;
+}

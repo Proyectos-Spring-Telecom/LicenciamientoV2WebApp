@@ -1,0 +1,7 @@
+@import '../../../styles/file-uploader.scss';
+
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
