@@ -1,13 +1,10 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { routeAnimation } from 'src/app/pipe/module-open.animation';
-import { ClientesService } from 'src/app/services/moduleService/clientes.service';
-import { ModulosService } from 'src/app/services/moduleService/modulos.service';
 import { RolesService } from 'src/app/services/moduleService/roles.service';
 import { UsuariosService } from 'src/app/services/moduleService/usuario.service';
-import { catchError, map, Observable, of, switchMap } from 'rxjs';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -29,11 +26,35 @@ import Swal from 'sweetalert2';
 export class AgregarUsuarioComponent implements OnInit {
   hideConfirm = true;
   confirmName = 'cpwd_' + Math.random().toString(36).slice(2, 12);
-
   hidePass = true;
   showPwdHints = false;
   animateHints = false;
   pwdValue = '';
+  confirmValue = '';
+  confirmHintVisible = false;
+  confirmMatch = false;
+  private confirmTimer: any;
+
+  public submitButton = 'Guardar';
+  public loading = false;
+  public usuarioForm!: FormGroup;
+  public idUsuario: number | null = null;
+  public title = 'Agregar Usuario';
+  public listaRoles: any[] = [];
+  /** Catálogo de grupos (muestra Nombre, envía Id). */
+  public listaGrupos: { id: number; nombre: string }[] = [
+    { id: 1, nombre: 'A' },
+    { id: 2, nombre: 'B' },
+    { id: 3, nombre: 'C' },
+    { id: 4, nombre: 'D' },
+    { id: 5, nombre: 'E' },
+    { id: 6, nombre: 'F' },
+    { id: 7, nombre: 'G' },
+  ];
+
+  get esEdicion(): boolean {
+    return this.idUsuario != null && Number.isFinite(this.idUsuario);
+  }
 
   private get hasMayus(): boolean {
     return /[A-Z]/.test(this.pwdValue);
@@ -62,39 +83,114 @@ export class AgregarUsuarioComponent implements OnInit {
     return 'ok';
   }
 
-  get currentRuleMsg(): string {
-    switch (this.currentRuleKey) {
-      case 'case':
-        return 'Al menos una mayúscula y minúsculas.';
-      case 'special':
-        return 'Un caracter no alfanumérico (ejemplo: #?!&).';
-      case 'number':
-        return 'Un número.';
-      case 'length':
-        return 'La contraseña debe tener más de 6 caracteres y menos de 16.';
-      default:
-        return '';
-    }
+  constructor(
+    private fb: FormBuilder,
+    private usuaService: UsuariosService,
+    private route: Router,
+    private activatedRouted: ActivatedRoute,
+    private rolService: RolesService,
+  ) {}
+
+  ngOnInit(): void {
+    this.obtenerRoles();
+    this.initForm();
+
+    this.activatedRouted.params.subscribe((params) => {
+      this.idUsuario = params['idUsuario'] != null ? Number(params['idUsuario']) : null;
+      if (this.idUsuario) {
+        this.title = 'Actualizar Usuario';
+        this.submitButton = 'Actualizar';
+        this.aplicarModoEdicion();
+        this.obtenerUsuarioID();
+      }
+    });
+  }
+
+  private passwordsMatchValidator(formGroup: FormGroup) {
+    const password = formGroup.get('password')?.value;
+    const confirmPassword = formGroup.get('confirmPassword')?.value;
+    if (!password && !confirmPassword) return null;
+    return password === confirmPassword ? null : { passwordMismatch: true };
+  }
+
+  initForm() {
+    this.usuarioForm = this.fb.group(
+      {
+        nombre: ['', [Validators.required]],
+        apellidoPaterno: ['', [Validators.required]],
+        apellidoMaterno: ['', [Validators.required]],
+        correo: ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required]],
+        confirmPassword: ['', [Validators.required]],
+        idRol: [null, [Validators.required]],
+        idGrupo: [null, [Validators.required]],
+        telefono: ['', [Validators.required]],
+      },
+      { validators: this.passwordsMatchValidator.bind(this) },
+    );
+  }
+
+  private aplicarModoEdicion(): void {
+    ['correo', 'password', 'confirmPassword'].forEach((key) => {
+      const ctrl = this.usuarioForm.get(key);
+      ctrl?.clearValidators();
+      ctrl?.updateValueAndValidity({ emitEvent: false });
+    });
+  }
+
+  obtenerRoles() {
+    this.rolService.obtenerRoles().subscribe((response) => {
+      const raw = (response as any)?.data ?? response;
+      this.listaRoles = (Array.isArray(raw) ? raw : []).map((r: any) => ({
+        ...r,
+        id: Number(r.id ?? r.Id),
+        nombre: r.nombre ?? r.Nombre ?? '',
+      }));
+    });
+  }
+
+  obtenerUsuarioID() {
+    if (this.idUsuario == null) return;
+
+    this.usuaService.obtenerUsuario(this.idUsuario).subscribe((response: any) => {
+      const data = response?.data ?? response ?? {};
+      const usuarios = Array.isArray(data?.usuario)
+        ? data.usuario
+        : Array.isArray(data?.usuarios)
+          ? data.usuarios
+          : data?.usuario
+            ? [data.usuario]
+            : data?.id != null
+              ? [data]
+              : [];
+
+      const u = usuarios[0] ?? data ?? {};
+
+      this.usuarioForm.patchValue({
+        nombre: u?.nombre ?? '',
+        apellidoPaterno: u?.apellidoPaterno ?? '',
+        apellidoMaterno: u?.apellidoMaterno ?? '',
+        idRol: u?.idRol != null ? Number(u.idRol) : null,
+        idGrupo: u?.idGrupo != null ? Number(u.idGrupo) : null,
+      });
+    });
   }
 
   onPwdFocus() {
     this.showPwdHints = true;
     setTimeout(() => (this.animateHints = true), 0);
   }
+
   onPwdBlur() {
     this.showPwdHints = false;
     this.animateHints = false;
   }
 
-  confirmValue = '';
-  confirmHintVisible = false;
-  confirmMatch = false;
-  private confirmTimer: any;
-
   onPwdInput(e: Event) {
     this.pwdValue = (e.target as HTMLInputElement).value || '';
-    this.syncConfirmState();
+    if (this.confirmHintVisible) this.validateConfirm();
   }
+
   onConfirmInput(e: Event) {
     this.confirmValue = (e.target as HTMLInputElement).value || '';
     clearTimeout(this.confirmTimer);
@@ -102,290 +198,6 @@ export class AgregarUsuarioComponent implements OnInit {
       this.validateConfirm();
       this.confirmHintVisible = this.confirmValue.length > 0;
     }, 400);
-  }
-  onConfirmBlur() {
-    clearTimeout(this.confirmTimer);
-    this.validateConfirm();
-    this.confirmHintVisible = this.confirmValue.length > 0;
-  }
-  private validateConfirm() {
-    this.confirmMatch = this.confirmValue === this.pwdValue;
-  }
-  private syncConfirmState() {
-    if (this.confirmHintVisible) this.validateConfirm();
-  }
-
-  public permisosSeleccionadosIds: number[] = [];
-  private actualizacionPasswordActual: string | null = null;
-
-  public submitButton: string = 'Guardar';
-  public loading: boolean = false;
-  public usuarioForm: FormGroup;
-  public idUsuario: number;
-  public inputContrasena: boolean = true;
-  public title = 'Agregar Usuario';
-  public listaModulos: any[] = [];
-  public listaRoles: any;
-  public listaClientes: any;
-
-  public showInputsId = true;
-  type = 'password';
-  typeConfirm: string = 'password';
-
-  constructor(
-    private fb: FormBuilder,
-    private usuaService: UsuariosService,
-    private route: Router,
-    private activatedRouted: ActivatedRoute,
-    private moduService: ModulosService,
-    private rolService: RolesService,
-    private clienService: ClientesService
-  ) {}
-
-  ngOnInit(): void {
-  this.obtenerClientes();
-  this.obtenerRoles();
-  this.obtenerModulos();
-  this.initForm();
-
-  this.activatedRouted.params.subscribe((params) => {
-    this.idUsuario = params['idUsuario'];
-    if (this.idUsuario) {
-      this.title = 'Actualizar Usuario';
-      this.obtenerUsuarioID();
-      this.showInputsId = false;
-      this.inputContrasena = false; // <- clave para que NO sea requerida al actualizar
-    }
-  });
-}
-
-
-  passwordsMatchValidator(formGroup: FormGroup) {
-    const password = formGroup.get('passwordHash')?.value;
-    const confirmPassword = formGroup.get('confirmPassword')?.value;
-    return password === confirmPassword ? null : { passwordMismatch: true };
-  }
-
-  toggleConfirmPassword() {
-    this.typeConfirm = this.typeConfirm === 'password' ? 'text' : 'password';
-  }
-
-  initForm() {
-    this.usuarioForm = this.fb.group(
-      {
-        userName: ['', [Validators.required, Validators.email]],
-        passwordHash: ['', [Validators.required]],
-        confirmPassword: [''],
-        telefono: ['', [Validators.required]],
-        nombre: ['', [Validators.required]],
-        apellidoPaterno: ['', [Validators.required]],
-        apellidoMaterno: [''],
-        fotoPerfil: [null],
-        idRol: [null, [Validators.required]],
-        emailConfirmado: [0, [Validators.required]],
-        estatus: [1, [Validators.required]],
-        idCliente: [null],
-        permisosIds: this.fb.control<number[]>([]),
-      },
-      { validators: this.passwordsMatchValidator }
-    );
-  }
-
-  obtenerModulos() {
-    this.moduService.obtenerModulos().subscribe((response: any) => {
-      let raw: any = [];
-
-      if (Array.isArray(response?.data)) {
-        raw = response.data;
-      } else if (Array.isArray(response)) {
-        raw = response;
-      } else if (Array.isArray(response) && Array.isArray(response[0])) {
-        raw = response[0];
-      }
-
-      this.listaModulos = raw.map((m: any) => ({
-        id: Number(m?.Id ?? m?.id),
-        nombre: m?.NombreModulo ?? m?.nombre ?? m?.Nombre ?? '',
-        descripcion: m?.Descripcion ?? m?.descripcion ?? '',
-        estatus: m?.Estatus ?? m?.estatus,
-        permisos: (m?.Permisos ?? m?.permisos ?? []).map((p: any) => ({
-          id: p?.Id ?? p?.id,
-          nombre: p?.Nombre ?? p?.nombre ?? '',
-          descripcion: p?.Descripcion ?? p?.descripcion ?? '',
-          estatus: p?.Estatus ?? p?.estatus,
-          asignado: p?.asignado ?? false,
-        })),
-      }));
-
-      this.applyAssignedPermsToModules();
-      this.syncPermisosSeleccionados();
-    });
-  }
-
-  private syncPermisosSeleccionados(): void {
-    const ids: number[] = [];
-    this.listaModulos.forEach((m) => {
-      (m.permisos || []).forEach((p: any) => {
-        if (p.asignado && !ids.includes(p.id)) {
-          ids.push(p.id);
-        }
-      });
-    });
-    this.permisosSeleccionadosIds = ids;
-    this.usuarioForm.patchValue({ permisosIds: this.permisosSeleccionadosIds });
-  }
-
-  onPermChange(modulo: any, permiso: any, event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const checked = input.checked;
-
-    permiso.asignado = checked;
-    const id = Number(permiso.id);
-
-    if (checked) {
-      if (!this.permisosSeleccionadosIds.includes(id)) {
-        this.permisosSeleccionadosIds = [...this.permisosSeleccionadosIds, id];
-      }
-    } else {
-      this.permisosSeleccionadosIds = this.permisosSeleccionadosIds.filter(
-        (x) => x !== id
-      );
-    }
-
-    this.usuarioForm.patchValue({ permisosIds: this.permisosSeleccionadosIds });
-  }
-
-  onModuleToggle(modulo: any, event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const checked = input.checked;
-    const permisos = modulo.permisos || [];
-
-    permisos.forEach((permiso: any) => {
-      permiso.asignado = checked;
-      const id = Number(permiso.id);
-
-      if (checked) {
-        if (!this.permisosSeleccionadosIds.includes(id)) {
-          this.permisosSeleccionadosIds = [
-            ...this.permisosSeleccionadosIds,
-            id,
-          ];
-        }
-      } else {
-        this.permisosSeleccionadosIds = this.permisosSeleccionadosIds.filter(
-          (x) => x !== id
-        );
-      }
-    });
-
-    this.usuarioForm.patchValue({ permisosIds: this.permisosSeleccionadosIds });
-  }
-
-  isModuleFullyAssigned(modulo: any): boolean {
-    if (
-      !modulo ||
-      !Array.isArray(modulo.permisos) ||
-      modulo.permisos.length === 0
-    ) {
-      return false;
-    }
-    return modulo.permisos.every((p: any) => !!p.asignado);
-  }
-
-  obtenerRoles() {
-    this.rolService.obtenerRoles().subscribe((response) => {
-      this.listaRoles = (response as any)?.data ?? response;
-    });
-  }
-
-  obtenerClientes() {
-    this.clienService.obtenerClientes().subscribe((response) => {
-      this.listaClientes = (response.data || []).map((c: any) => ({
-        ...c,
-        id: Number(c.id),
-      }));
-    });
-  }
-
-  private getPermisoId(p: any): number | null {
-    const val = p?.idPermiso ?? p?.IdPermiso ?? p?.id ?? p?.Id ?? null;
-    const n = Number(val);
-    return Number.isFinite(n) ? n : null;
-  }
-
-  trackModulo = (_: number, m: any) => m.id ?? m.Id;
-  trackPermiso = (_: number, p: any) => p.id ?? p.Id;
-
-  obtenerUsuarioID() {
-    this.usuaService
-      .obtenerUsuario(this.idUsuario)
-      .subscribe((response: any) => {
-        const data = response?.data ?? {};
-
-        const usuarios = Array.isArray(data?.usuario)
-          ? data.usuario
-          : Array.isArray(data?.usuarios)
-          ? data.usuarios
-          : data?.usuario
-          ? [data.usuario]
-          : [];
-
-        const u = usuarios[0] ?? {};
-
-        const perms = Array.isArray(data?.permiso)
-  ? data.permiso
-  : Array.isArray(data?.permisos)
-  ? data.permisos
-  : [];
-
-const permisosAsignadosIds: number[] = Array.from(
-  new Set<number>(
-    (perms || [])
-      .filter((p: any) => Number(p?.estatus) === 1)
-      .map((p: any) => this.getPermisoId(p))
-      .filter((n: any): n is number => typeof n === 'number' && Number.isFinite(n))
-  )
-);
-
-
-        this.permisosSeleccionadosIds = permisosAsignadosIds;
-        this.usuarioForm.patchValue({ permisosIds: permisosAsignadosIds });
-        this.applyAssignedPermsToModules();
-
-        this.actualizacionPasswordActual = u?.actualizacionPassword ?? null;
-
-        this.usuarioForm.patchValue({
-          userName: u?.userName ?? '',
-          telefono: u?.telefono ?? '',
-          nombre: u?.nombre ?? '',
-          apellidoPaterno: u?.apellidoPaterno ?? '',
-          apellidoMaterno: u?.apellidoMaterno ?? '',
-          fotoPerfil:
-            u?.fotoPerfil ?? this.usuarioForm.get('fotoPerfil')?.value,
-          emailConfirmado: Number(u?.emailConfirmado ?? 0),
-          estatus: Number(u?.estatus ?? 1),
-          idRol: u?.idRol != null ? Number(u.idRol) : null,
-          idCliente: u?.idCliente != null ? Number(u.idCliente) : null,
-        });
-      });
-  }
-
-  private applyAssignedPermsToModules(): void {
-    if (!Array.isArray(this.listaModulos)) return;
-    const asignados = new Set((this.permisosSeleccionadosIds || []).map(Number));
-    this.listaModulos = this.listaModulos.map((m) => ({
-      ...m,
-      permisos: (m.permisos || []).map((p: any) => {
-        const idNum = Number(p?.id ?? p?.Id);
-        const activo = asignados.has(idNum);
-        return {
-          ...p,
-          id: idNum,
-          estatus: activo ? 1 : 0,
-          asignado: activo,
-        };
-      }),
-    }));
   }
 
   allowOnlyNumbers(event: KeyboardEvent): void {
@@ -395,316 +207,124 @@ const permisosAsignadosIds: number[] = Array.from(
     }
   }
 
-  myFunctionPasswordCurrent() {
-    this.type = this.type === 'password' ? 'text' : 'password';
+  onConfirmBlur() {
+    clearTimeout(this.confirmTimer);
+    this.validateConfirm();
+    this.confirmHintVisible = this.confirmValue.length > 0;
+  }
+
+  private validateConfirm() {
+    this.confirmMatch = this.confirmValue === this.pwdValue;
   }
 
   submit() {
-    if (this.idUsuario) {
+    if (this.esEdicion) {
       this.actualizar();
     } else {
       this.agregar();
     }
   }
 
-  @ViewChild('logoFileInput') logoFileInput!: ElementRef<HTMLInputElement>;
-  logoPreviewUrl: string | ArrayBuffer | null = null;
-  logoDragging = false;
-  private logoFile: File | null = null;
-  logoFileName = '';
-
-  private readonly MAX_MB = 3;
-
-  private isImage(file: File) {
-    return /^image\/(png|jpe?g|webp)$/i.test(file.type);
-  }
-  private isAllowed(file: File) {
-    const okImg = this.isImage(file);
-    return okImg && file.size <= this.MAX_MB * 1024 * 1024;
-  }
-  private loadPreview(
-    file: File,
-    setter: (url: string | ArrayBuffer | null) => void
-  ) {
-    if (!this.isImage(file)) {
-      setter(null);
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => setter(reader.result);
-    reader.readAsDataURL(file);
-  }
-
-  openLogoFilePicker() {
-    this.logoFileInput.nativeElement.click();
-  }
-
-  onLogoDragOver(e: DragEvent) {
-    e.preventDefault();
-    this.logoDragging = true;
-  }
-
-  onLogoDragLeave(_e: DragEvent) {
-    this.logoDragging = false;
-  }
-
-  onLogoDrop(e: DragEvent) {
-    e.preventDefault();
-    this.logoDragging = false;
-    const f = e.dataTransfer?.files?.[0];
-    if (f) this.handleLogoFile(f);
-  }
-
-  onLogoFileSelected(e: Event) {
-    const f = (e.target as HTMLInputElement).files?.[0];
-    if (f) this.handleLogoFile(f);
-  }
-
-  clearLogoImage(e: Event) {
-    e.stopPropagation();
-    this.logoPreviewUrl = null;
-    this.logoFileInput.nativeElement.value = '';
-    this.logoFile = null;
-    this.logoFileName = '';
-    this.usuarioForm.patchValue({ fotoPerfil: null });
-  }
-
-  /** Texto del badge: formatos por defecto o nombre del archivo seleccionado / remoto. */
-  etiquetaLogoUploader(): string {
-    if (this.logoFileName) return this.logoFileName;
-    const v = this.usuarioForm.get('fotoPerfil')?.value;
-    if (typeof v === 'string' && v.trim()) {
-      return this.nombreArchivoDesdeUrlRemota(v) || v;
-    }
-    return 'PNG · JPG · WEBP · Máx. 3 MB';
-  }
-
-  urlFotoPerfilRemota(): string | null {
-    if (this.logoFileName) return null;
-    const v = this.usuarioForm.get('fotoPerfil')?.value;
-    return typeof v === 'string' && v.trim() ? v.trim() : null;
-  }
-
-  tieneArchivoLogoEnBadge(): boolean {
-    if (this.logoFileName) return true;
-    const v = this.usuarioForm.get('fotoPerfil')?.value;
-    return typeof v === 'string' && !!v.trim();
-  }
-
-  private nombreArchivoDesdeUrlRemota(urlStr: string): string {
-    try {
-      const u = new URL(urlStr);
-      const parts = u.pathname.split('/').filter(Boolean);
-      const last = parts[parts.length - 1];
-      return last ? decodeURIComponent(last) : '';
-    } catch {
-      const segmentos = String(urlStr).split('/').filter(Boolean);
-      const last = segmentos[segmentos.length - 1];
-      return last ? decodeURIComponent(last) : '';
-    }
-  }
-
-  private handleLogoFile(file: File) {
-    if (!this.isAllowed(file)) {
-      this.usuarioForm.get('fotoPerfil')?.setErrors({ invalid: true });
-      return;
-    }
-
-    this.logoFileName = file.name;
-    this.logoFile = file;
-    this.loadPreview(file, (url) => (this.logoPreviewUrl = url));
-    this.usuarioForm.get('fotoPerfil')?.setErrors(null);
-  }
-
-  private parseIdCliente(idCliente: unknown): number | undefined {
-    const id =
-      idCliente !== null &&
-      idCliente !== undefined &&
-      String(idCliente).trim() !== ''
-        ? Number(idCliente)
-        : NaN;
-    return Number.isFinite(id) && id > 0 ? id : undefined;
-  }
-
-  private resolveActualizacionPasswordParaPatch(v: {
-    passwordHash?: string;
-  }): string | null {
-    if (this.inputContrasena && v.passwordHash) {
-      return v.passwordHash;
-    }
-    return this.actualizacionPasswordActual;
-  }
-
-  private buildPayloadParaAgregar(fotoPerfil: string | null): Record<string, unknown> {
+  /** POST /usuarios — estatus fijo en 1; no se envía emailConfirmed. */
+  private buildPayloadParaAgregar() {
     const v = this.usuarioForm.value;
-    const payload: Record<string, unknown> = {
-      userName: v.userName,
-      passwordHash: v.passwordHash,
-      emailConfirmado: Number(v.emailConfirmado ?? 0),
-      nombre: v.nombre,
-      apellidoPaterno: v.apellidoPaterno,
-      apellidoMaterno: v.apellidoMaterno || '',
-      telefono: v.telefono || '',
-      actualizacionPassword: null,
-      fotoPerfil: fotoPerfil ?? '',
-      estatus: Number(v.estatus ?? 1),
+    return {
+      nombre: String(v.nombre ?? '').trim(),
+      apellidoPaterno: String(v.apellidoPaterno ?? '').trim(),
+      apellidoMaterno: String(v.apellidoMaterno ?? '').trim(),
+      correo: String(v.correo ?? '').trim(),
+      password: v.password,
+      confirmPassword: v.confirmPassword,
       idRol: Number(v.idRol),
+      idGrupo: Number(v.idGrupo),
+      estatus: 1,
     };
-    const idCliente = this.parseIdCliente(v.idCliente);
-    if (idCliente !== undefined) {
-      payload['idCliente'] = idCliente;
-    }
-    return payload;
   }
 
-  private buildPayloadParaActualizar(
-    fotoPerfil: string | null
-  ): Record<string, unknown> {
-    const v = this.usuarioForm.value;
-    const payload: Record<string, unknown> = {
-      emailConfirmado: Number(v.emailConfirmado ?? 0),
-      nombre: v.nombre,
-      apellidoPaterno: v.apellidoPaterno,
-      apellidoMaterno: v.apellidoMaterno || '',
-      telefono: v.telefono || '',
-      actualizacionPassword: this.resolveActualizacionPasswordParaPatch(v),
-      fotoPerfil: fotoPerfil ?? '',
-      estatus: Number(v.estatus ?? 1),
+  /** PATCH /usuarios/{id} */
+  private buildPayloadParaActualizar() {
+    const v = this.usuarioForm.getRawValue();
+    return {
+      nombre: String(v.nombre ?? '').trim(),
+      apellidoPaterno: String(v.apellidoPaterno ?? '').trim(),
+      apellidoMaterno: String(v.apellidoMaterno ?? '').trim(),
       idRol: Number(v.idRol),
+      idGrupo: Number(v.idGrupo),
     };
-    const idCliente = this.parseIdCliente(v.idCliente);
-    if (idCliente !== undefined) {
-      payload['idCliente'] = idCliente;
-    }
-    return payload;
   }
 
-  private extractFileUrl(res: unknown): string {
-    const r = res as Record<string, unknown>;
-    const data = r?.['data'] as Record<string, unknown> | undefined;
-    return String(
-      r?.['url'] ??
-        r?.['Location'] ??
-        data?.['url'] ??
-        data?.['Location'] ??
-        r?.['key'] ??
-        r?.['Key'] ??
-        r?.['path'] ??
-        r?.['filePath'] ??
-        ''
-    );
+  /** Extrae el mensaje del API (responseType text o JSON). */
+  private mensajeErrorServicio(err: any, fallback: string): string {
+    const body = err?.error;
+    if (typeof body === 'string' && body.trim()) return body.trim();
+    if (body?.mensaje && String(body.mensaje).trim()) return String(body.mensaje).trim();
+    if (body?.message && String(body.message).trim()) return String(body.message).trim();
+    if (body?.error && typeof body.error === 'string' && body.error.trim()) return body.error.trim();
+    if (err?.message && typeof err.message === 'string' && err.message.trim()) return err.message.trim();
+    return fallback;
   }
 
-  private buildLogoUploadFD(file: File): FormData {
-    const fd = new FormData();
-    fd.append('file', file, file.name);
-    fd.append('folder', 'Usuarios');
-    fd.append('idModule', '1');
-    return fd;
-  }
-
-  private resolveFotoPerfilUrl(): Observable<string | null> {
-    if (this.logoFile) {
-      return this.usuaService.uploadFile(this.buildLogoUploadFD(this.logoFile)).pipe(
-        map((r) => this.extractFileUrl(r) || null),
-        catchError(() => {
-          const v = this.usuarioForm.get('fotoPerfil')?.value;
-          const existing =
-            typeof v === 'string' && v.trim() ? v.trim() : null;
-          return of(existing);
-        })
-      );
-    }
-    const v = this.usuarioForm.get('fotoPerfil')?.value;
-    if (typeof v === 'string' && v.trim()) {
-      return of(v.trim());
-    }
-    return of(null);
-  }
-
-  agregar() {
-    if (this.loading) return;
-
-    this.submitButton = 'Cargando...';
-    this.loading = true;
-
-    this.usuarioForm.markAllAsTouched();
-    this.usuarioForm.patchValue({
-      permisosIds: this.permisosSeleccionadosIds,
-    });
-
-    const etiquetas: Record<string, string> = {
-      userName: 'Correo electrónico',
-      passwordHash: 'Contraseña',
-      confirmPassword: 'Confirmar contraseña',
-      telefono: 'Teléfono',
-      nombre: 'Nombre',
-      apellidoPaterno: 'Apellido Paterno',
-      apellidoMaterno: 'Apellido Materno',
-      fotoPerfil: 'Foto de perfil',
-      idRol: 'Rol',
-      estatus: 'Estatus',
-      idCliente: 'Cliente',
-      permisosIds: 'Permisos',
-    };
-
-    if (this.usuarioForm.invalid || this.permisosSeleccionadosIds.length === 0) {
-      const camposFaltantes: string[] = [];
-
-      Object.keys(this.usuarioForm.controls).forEach((key) => {
-        const control = this.usuarioForm.get(key);
-        if (control?.errors?.['required']) {
-          camposFaltantes.push(etiquetas[key] || key);
-        }
-      });
-
-      if (this.permisosSeleccionadosIds.length === 0) {
-        camposFaltantes.push('Permisos');
-      }
-
-      if (this.usuarioForm.hasError('passwordMismatch')) {
-        camposFaltantes.push('Las contraseñas no coinciden');
-      }
-
-      const lista = camposFaltantes
-        .map(
-          (campo, index) => `
+  private mostrarCamposFaltantes(campos: string[]): void {
+    const lista = campos
+      .map(
+        (campo, index) => `
         <div style="padding:8px 12px;border-left:4px solid #d9534f;
                     background:#caa8a8;text-align:center;margin-bottom:8px;border-radius:4px;">
           <strong style="color:#b02a37;">${index + 1}. ${campo}</strong>
-        </div>`
-        )
-        .join('');
+        </div>`,
+      )
+      .join('');
 
-      this.submitButton = 'Guardar';
-      this.loading = false;
-
-      Swal.fire({
-        color: '#ffffff',
-          background: '#141a21',
-        title: '¡Faltan campos obligatorios!',
-        html: `
+    Swal.fire({
+      color: '#ffffff',
+      background: '#141a21',
+      title: '¡Faltan campos obligatorios!',
+      html: `
         <p style="text-align:center;font-size:15px;margin-bottom:16px;color:white">
           Los siguientes <strong>campos</strong> requieren atención:
         </p>
         <div style="max-height:350px;overflow-y:auto;">${lista}</div>
       `,
-        icon: 'error',
-        confirmButtonText: 'Entendido',
-        customClass: { popup: 'swal2-padding swal2-border' },
-      });
+      icon: 'error',
+      confirmButtonText: 'Entendido',
+    });
+  }
+
+  agregar() {
+    if (this.loading) return;
+    this.submitButton = 'Cargando...';
+    this.loading = true;
+    this.usuarioForm.markAllAsTouched();
+
+    const etiquetas: Record<string, string> = {
+      nombre: 'Nombre',
+      apellidoPaterno: 'Apellido Paterno',
+      apellidoMaterno: 'Apellido Materno',
+      correo: 'Correo',
+      password: 'Contraseña',
+      confirmPassword: 'Confirmar contraseña',
+      idRol: 'Rol',
+      idGrupo: 'Grupo',
+    };
+
+    const faltantes: string[] = [];
+    Object.keys(this.usuarioForm.controls).forEach((key) => {
+      if (this.usuarioForm.get(key)?.errors?.['required']) {
+        faltantes.push(etiquetas[key] || key);
+      }
+    });
+    if (this.usuarioForm.hasError('passwordMismatch')) {
+      faltantes.push('Las contraseñas no coinciden');
+    }
+
+    if (faltantes.length || this.usuarioForm.invalid) {
+      this.submitButton = 'Guardar';
+      this.loading = false;
+      this.mostrarCamposFaltantes(faltantes.length ? faltantes : ['Revisa el formulario']);
       return;
     }
 
-    this.resolveFotoPerfilUrl()
-      .pipe(
-        switchMap((fotoPerfil) =>
-          this.usuaService.agregarUsuario(
-            this.buildPayloadParaAgregar(fotoPerfil)
-          )
-        )
-      )
-      .subscribe({
+    this.usuaService.agregarUsuario(this.buildPayloadParaAgregar()).subscribe({
       next: () => {
         this.submitButton = 'Guardar';
         this.loading = false;
@@ -712,21 +332,21 @@ const permisosAsignadosIds: number[] = Array.from(
           color: '#ffffff',
           background: '#141a21',
           title: '¡Operación Exitosa!',
-          text: `Se agregó un nuevo usuario de manera exitosa.`,
+          text: 'Se agregó un nuevo usuario de manera exitosa.',
           icon: 'success',
           confirmButtonColor: '#3085d6',
           confirmButtonText: 'Confirmar',
         });
         this.regresar();
       },
-      error: () => {
+      error: (err) => {
         this.submitButton = 'Guardar';
         this.loading = false;
         Swal.fire({
           color: '#ffffff',
           background: '#141a21',
           title: '¡Ops!',
-          text: `Ocurrió un error al agregar el usuario.`,
+          text: this.mensajeErrorServicio(err, 'Ocurrió un error al agregar el usuario.'),
           icon: 'error',
           confirmButtonColor: '#3085d6',
           confirmButtonText: 'Confirmar',
@@ -736,127 +356,64 @@ const permisosAsignadosIds: number[] = Array.from(
   }
 
   actualizar() {
-    if (this.loading) return;
-
+    if (this.loading || this.idUsuario == null) return;
     this.submitButton = 'Cargando...';
     this.loading = true;
-
-    if (!this.inputContrasena) {
-      const passCtrl = this.usuarioForm.get('passwordHash');
-      const confirmCtrl = this.usuarioForm.get('confirmPassword');
-      passCtrl?.clearValidators();
-      passCtrl?.updateValueAndValidity({ emitEvent: false });
-      confirmCtrl?.clearValidators();
-      confirmCtrl?.updateValueAndValidity({ emitEvent: false });
-    }
-
     this.usuarioForm.markAllAsTouched();
-    this.usuarioForm.patchValue({
-      permisosIds: this.permisosSeleccionadosIds,
-    });
 
     const etiquetas: Record<string, string> = {
-      userName: 'Correo electrónico',
-      passwordHash: 'Contraseña',
-      confirmPassword: 'Confirmar contraseña',
-      telefono: 'Teléfono',
       nombre: 'Nombre',
       apellidoPaterno: 'Apellido Paterno',
       apellidoMaterno: 'Apellido Materno',
       idRol: 'Rol',
-      estatus: 'Estatus',
-      idCliente: 'Cliente',
-      permisosIds: 'Permisos',
+      idGrupo: 'Grupo',
     };
+    const required = ['nombre', 'apellidoPaterno', 'apellidoMaterno', 'idRol', 'idGrupo'];
+    const faltantes = required
+      .filter((key) => {
+        const ctrl = this.usuarioForm.get(key);
+        return ctrl?.invalid || ctrl?.value == null || ctrl?.value === '';
+      })
+      .map((key) => etiquetas[key]);
 
-    const camposFaltantes: string[] = [];
-    Object.keys(this.usuarioForm.controls).forEach((key) => {
-      if (
-        !this.inputContrasena &&
-        (key === 'passwordHash' || key === 'confirmPassword')
-      ) {
-        return;
-      }
-      const control = this.usuarioForm.get(key);
-      if (control?.errors?.['required']) {
-        camposFaltantes.push(etiquetas[key] || key);
-      }
-    });
-
-    if (this.permisosSeleccionadosIds.length === 0) {
-      camposFaltantes.push('Permisos');
-    }
-
-    if (this.inputContrasena && this.usuarioForm.hasError('passwordMismatch')) {
-      camposFaltantes.push('Las contraseñas no coinciden');
-    }
-
-    if (this.usuarioForm.invalid || camposFaltantes.length > 0) {
+    if (faltantes.length) {
       this.submitButton = 'Actualizar';
       this.loading = false;
-      Swal.fire({
-        color: '#ffffff',
-          background: '#141a21',
-        title: '¡Faltan campos obligatorios!',
-        html: `
-        <p style="text-align: center; font-size: 15px; margin-bottom: 16px; color: white">
-          Los siguientes <strong>campos</strong> requieren atención:
-        </p>
-        <div style="max-height: 350px; overflow-y: auto;">
-          ${camposFaltantes
-            .map(
-              (msg, idx) => `
-            <div style="padding:8px 12px;border-left:4px solid #d9534f;background:#caa8a8;text-align:center;margin-bottom:8px;border-radius:4px;">
-              <strong style="color:#b02a37;">${idx + 1}. ${msg}</strong>
-            </div>`
-            )
-            .join('')}
-        </div>`,
-        icon: 'error',
-        confirmButtonText: 'Entendido',
-        customClass: { popup: 'swal2-padding swal2-border' },
-      });
+      this.mostrarCamposFaltantes(faltantes);
       return;
     }
 
-    this.resolveFotoPerfilUrl()
-      .pipe(
-        switchMap((fotoPerfil) =>
-          this.usuaService.actualizarUsuario(
-            this.idUsuario,
-            this.buildPayloadParaActualizar(fotoPerfil)
-          )
-        )
-      )
+    this.usuaService
+      .actualizarUsuario(this.idUsuario, this.buildPayloadParaActualizar())
       .subscribe({
-      next: () => {
-        this.submitButton = 'Actualizar';
-        this.loading = false;
-        Swal.fire({
-          color: '#ffffff',
-          background: '#141a21',
-          title: '¡Operación Exitosa!',
-          text: `Los datos del usuario se actualizaron correctamente.`,
-          icon: 'success',
-          confirmButtonColor: '#3085d6',
-          confirmButtonText: 'Confirmar',
-        });
-        this.regresar();
-      },
-      error: () => {
-        this.submitButton = 'Actualizar';
-        this.loading = false;
-        Swal.fire({
-          color: '#ffffff',
-          background: '#141a21',
-          title: '¡Ops!',
-          text: `Ocurrió un error al actualizar el usuario.`,
-          icon: 'error',
-          confirmButtonColor: '#3085d6',
-          confirmButtonText: 'Confirmar',
-        });
-      },
-    });
+        next: () => {
+          this.submitButton = 'Actualizar';
+          this.loading = false;
+          Swal.fire({
+            color: '#ffffff',
+            background: '#141a21',
+            title: '¡Operación Exitosa!',
+            text: 'Los datos del usuario se actualizaron correctamente.',
+            icon: 'success',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Confirmar',
+          });
+          this.regresar();
+        },
+        error: (err) => {
+          this.submitButton = 'Actualizar';
+          this.loading = false;
+          Swal.fire({
+            color: '#ffffff',
+            background: '#141a21',
+            title: '¡Ops!',
+            text: this.mensajeErrorServicio(err, 'Ocurrió un error al actualizar el usuario.'),
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Confirmar',
+          });
+        },
+      });
   }
 
   regresar() {

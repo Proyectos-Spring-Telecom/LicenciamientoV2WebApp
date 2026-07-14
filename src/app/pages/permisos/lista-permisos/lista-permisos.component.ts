@@ -57,7 +57,7 @@ export class ListaPermisosComponent implements OnInit {
     this.loading = true;
 
     this.listaPermisos = new CustomStore({
-      key: 'id',
+      key: 'idPermiso',
       load: async (loadOptions: any) => {
         const take = Number(loadOptions?.take) || this.pageSize || 10;
         const skip = Number(loadOptions?.skip) || 0;
@@ -176,7 +176,12 @@ export class ListaPermisosComponent implements OnInit {
         (q === 'activo' && estNum === 1) ||
         (q === 'inactivo' && estNum === 0);
 
-      const extras = [normalizar(row?.id), normalizar(row?.Id)];
+      const extras = [
+        normalizar(row?.idPermiso),
+        normalizar(row?.nombrePermiso),
+        normalizar(row?.descripcionPermiso),
+        normalizar(row?.nombreModulo),
+      ];
       const hitExtras = extras.some((s) => s.includes(q));
 
       return hitEnColumnas || estHits || hitExtras;
@@ -249,7 +254,7 @@ export class ListaPermisosComponent implements OnInit {
   activar(rowData: any) {
     Swal.fire({
       title: '¡Activar!',
-      html: `¿Está seguro que requiere activar el permiso: <strong>${rowData.nombre}</strong>?`,
+      html: `¿Está seguro que requiere activar el permiso: <strong>${rowData.nombrePermiso}</strong>?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
@@ -260,7 +265,7 @@ export class ListaPermisosComponent implements OnInit {
       color: '#ffffff',
     }).then((result) => {
       if (result.value) {
-        this.permService.updateEstatus(rowData.id, 1).subscribe(
+        this.permService.updateEstatus(rowData.idPermiso, 1).subscribe(
           (response) => {
             Swal.fire({
               title: '¡Confirmación Realizada!',
@@ -295,7 +300,7 @@ export class ListaPermisosComponent implements OnInit {
   desactivar(rowData: any) {
     Swal.fire({
       title: '¡Desactivar!',
-      html: `¿Está seguro que requiere desactivar el permiso: <strong>${rowData.nombre}</strong>?`,
+      html: `¿Está seguro que requiere desactivar el permiso: <strong>${rowData.nombrePermiso}</strong>?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
@@ -306,7 +311,7 @@ export class ListaPermisosComponent implements OnInit {
       color: '#ffffff',
     }).then((result) => {
       if (result.value) {
-        this.permService.updateEstatus(rowData.id, 0).subscribe(
+        this.permService.updateEstatus(rowData.idPermiso, 0).subscribe(
           (response) => {
             Swal.fire({
               title: '¡Confirmación Realizada!',

@@ -47,8 +47,7 @@ public submitButton: string = 'Guardar';
     this.moduService.obtenerModulo(this.idModulo).subscribe(
       (response: any) => {
         this.moduloForm.patchValue({
-          nombre: response.data.nombre,
-          descripcion: response.data.descripcion,
+          Nombre: response.data.nombre,
           idModulo: response.data.idModulo,
         });
       }
@@ -57,8 +56,7 @@ public submitButton: string = 'Guardar';
 
   initForm() {
     this.moduloForm = this.fb.group({
-      nombre: ['', Validators.required],
-      descripcion: ['', Validators.required],
+      Nombre: ['', Validators.required],
     });
   }
 
@@ -79,8 +77,7 @@ public submitButton: string = 'Guardar';
       this.submitButton = 'Guardar';
       this.loading = false;
       const etiquetas: any = {
-        nombre: 'Nombre',
-        descripcion: 'Descripción',
+        Nombre: 'Nombre',
         idModulo: 'Módulo',
       };
 
@@ -158,8 +155,7 @@ public submitButton: string = 'Guardar';
       this.submitButton = 'Guardar';
       this.loading = false;
       const etiquetas: any = {
-        nombre: 'Nombre',
-        descripcion: 'Descripción',
+        Nombre: 'Nombre',
         idModulo: 'Módulo',
       };
 
@@ -196,8 +192,15 @@ public submitButton: string = 'Guardar';
           popup: 'swal2-padding swal2-border'
         }
       });
+      return;
     }
-    this.moduService.actualizarModulo(this.idModulo, this.moduloForm.value).subscribe(
+
+    const payload = {
+      Id: Number(this.idModulo),
+      Nombre: String(this.moduloForm.value.Nombre ?? '').trim(),
+    };
+
+    this.moduService.actualizarModulo(payload).subscribe(
       (response: any) => {
         this.submitButton = 'Actualizar';
         this.loading = false;

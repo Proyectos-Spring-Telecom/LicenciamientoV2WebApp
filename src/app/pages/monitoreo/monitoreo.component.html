@@ -1,1 +1,97 @@
-<router-outlet></router-outlet>
+<section class="monitor-surface" aria-label="Monitoreo de locales comerciales">
+  <div
+    class="monitor-viewport"
+    [class.monitor-viewport--list-open]="listOpen"
+  >
+    <aside class="monitor-panel-left" aria-label="Lista de locales">
+      <header class="monitor-panel-left__head">
+        <div class="monitor-panel-left__title-wrap">
+          <span class="monitor-panel-left__badge" aria-hidden="true">
+            <i-tabler name="building-store"></i-tabler>
+          </span>
+          <div class="monitor-panel-left__titles">
+            <span class="monitor-panel-left__kicker">Licenciamiento</span>
+            <h2 class="monitor-panel-left__title">Locales</h2>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="monitor-panel-left__collapse"
+          aria-label="Ocultar lista de locales"
+          (click)="togglePanel()"
+        >
+          <i-tabler name="chevron-left"></i-tabler>
+        </button>
+      </header>
+
+      <div class="monitor-panel-left__search">
+        <i-tabler name="search" aria-hidden="true"></i-tabler>
+        <input
+          type="search"
+          placeholder="Buscar local, giro, grupo..."
+          [ngModel]="searchTerm"
+          (ngModelChange)="onSearchChange($event)"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <div class="monitor-panel-left__meta">
+        <span>{{ localesFiltrados.length }} en lista</span>
+        <span>{{ listaLocales.length }} en mapa</span>
+      </div>
+
+      <div class="monitor-panel-left__list" role="list">
+        @for (local of localesFiltrados; track local.id) {
+          <article
+            role="listitem"
+            class="monitor-local-card"
+            [attr.id]="'monitor-local-row-' + local.id"
+            [class.monitor-local-card--selected]="selectedLocalId === local.id"
+            [attr.data-estatus]="estatusTone(local.nombreEstatus)"
+            (click)="seleccionarLocal(local)"
+          >
+            <div class="monitor-local-card__stripe" aria-hidden="true"></div>
+            <div class="monitor-local-card__body">
+              <div class="monitor-local-card__top">
+                <h3 class="monitor-local-card__name">{{ local.nombreComercial || 'Sin nombre' }}</h3>
+                <span class="monitor-local-card__status">{{ etiquetaEstatus(local) }}</span>
+              </div>
+              <p class="monitor-local-card__line">
+                <strong>Grupo:</strong> {{ local.grupo || '—' }}
+                <span class="monitor-local-card__dot">·</span>
+                <strong>Giro:</strong> {{ local.giro || '—' }}
+              </p>
+              <p class="monitor-local-card__line" *ngIf="local.rfc">
+                <strong>RFC:</strong> {{ local.rfc }}
+              </p>
+              <div class="monitor-local-card__actions">
+                <button
+                  type="button"
+                  class="monitor-local-card__btn"
+                  (click)="irADetalle(local, $event)"
+                >
+                  Información
+                </button>
+              </div>
+            </div>
+          </article>
+        } @empty {
+          <p class="monitor-panel-left__empty">
+            No hay locales que coincidan con la búsqueda o el filtro.
+          </p>
+        }
+      </div>
+    </aside>
+
+    <div class="monitor-panel-right" aria-label="Mapa de locales">
+      <app-mapa
+        (localesReady)="onLocalesReady($event)"
+        (localFocused)="onMapLocalFocused($event)"
+        (estatusFilterChange)="onEstatusFilterChange($event)"
+        (showLocalesRequest)="onShowLocalesRequest()"
+        (hideLocalesRequest)="onHideLocalesRequest()"
+      ></app-mapa>
+    </div>
+  </div>
+</section>

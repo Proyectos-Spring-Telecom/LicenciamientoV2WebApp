@@ -83,7 +83,7 @@ export class AppSideLoginComponent implements OnInit {
 
     this.authService
       .login({
-        userName: this.credentials.userName,
+        username: this.credentials.userName,
         password: this.credentials.password,
       })
       .pipe(

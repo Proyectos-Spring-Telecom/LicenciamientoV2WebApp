@@ -104,6 +104,6 @@ export class ToolbarNotificationsComponent implements OnInit, OnDestroy {
 
   private updateMapaVisibility(): void {
     const url = this.router.url.split('?')[0].split('#')[0];
-    this.showOnMapa = url === '/monitoreo/mapa' || url.startsWith('/monitoreo/mapa/');
+    this.showOnMapa = url === '/monitoreo' || url.startsWith('/monitoreo/');
   }
 }

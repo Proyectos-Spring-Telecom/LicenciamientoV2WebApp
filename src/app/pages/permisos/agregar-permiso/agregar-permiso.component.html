@@ -23,14 +23,28 @@
               <span class="input-group-text fw-bold">
                 <mat-icon aria-hidden="true">view_module</mat-icon>
               </span>
+              @if (esEdicion) {
+              <div class="form-floating flex-grow-1">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="permNivel"
+                  [value]="nombreModuloActual || ('Módulo ' + (permisoForm.getRawValue().idModulo ?? ''))"
+                  readonly
+                  disabled
+                >
+                <label for="permNivel">Módulo asignado</label>
+              </div>
+              } @else {
               <div class="form-floating flex-grow-1 perm-select-floating">
-                <select class="form-control" formControlName="idModulo">
-                  <option [ngValue]="null" selected disabled hidden></option>
+                <select class="form-control" formControlName="idModulo" id="permNivel">
+                  <option [ngValue]="null" disabled hidden></option>
                   <option *ngFor="let modulo of listaModulos" [ngValue]="modulo.id">
                     {{ modulo.nombre }}
                   </option>
                 </select>
               </div>
+              }
             </div>
           </div>
           <div class="col-12 col-md-4">

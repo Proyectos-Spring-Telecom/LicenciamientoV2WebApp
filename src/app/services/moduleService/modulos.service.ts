@@ -30,13 +30,14 @@ export class ModulosService {
     return this.http.get<any>(environment.API_SECURITY + '/modulos/' + idModulo);
   }
 
-  actualizarModulo(idModulo: number, saveForm: any): Observable<any> {
-    return this.http.put(`${environment.API_SECURITY}/modulos/` + idModulo, saveForm);
+  /** PUT /modulos — body { Id, Nombre }. El Id va en el body, no en la URL. */
+  actualizarModulo(payload: { Id: number; Nombre: string }): Observable<any> {
+    return this.http.put(`${environment.API_SECURITY}/modulos`, payload);
   }
 
   private apiUrl = `${environment.API_SECURITY}/modulos`;
   updateEstatus(id: number, estatus: number): Observable<string> {
-    const url = `${this.apiUrl}/estatus/${id}`;
+    const url = `${this.apiUrl}/${id}/estatus`;
     const body = { estatus };
     return this.http.patch(url, body, { responseType: 'text' }).pipe(
       catchError(error => throwError(() => error))

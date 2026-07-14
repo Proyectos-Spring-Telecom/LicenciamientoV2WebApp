@@ -26,8 +26,10 @@ export class UsuariosService {
     return this.http.get<any>(`${environment.API_SECURITY}/usuarios/list/rol/operador`)
   }
 
-  agregarUsuario(data: object) {
-    return this.http.post(`${environment.API_SECURITY}/usuarios`, data);
+  agregarUsuario(data: object): Observable<string> {
+    return this.http.post(`${environment.API_SECURITY}/usuarios`, data, {
+      responseType: 'text',
+    });
   }
 
   eliminarUsuario(idUsuario: Number) {
@@ -38,8 +40,11 @@ export class UsuariosService {
 		return this.http.get<any>(environment.API_SECURITY + '/usuarios/' + idUsuario);
 	}
 
-  actualizarUsuario(idUsuario: number, body: object): Observable<any> {
-    return this.http.patch(`${environment.API_SECURITY}/usuarios/${idUsuario}`, body);
+  /** PATCH /usuarios/{id} — nombre, apellidos, rol y grupo. */
+  actualizarUsuario(idUsuario: number, body: object): Observable<string> {
+    return this.http.patch(`${environment.API_SECURITY}/usuarios/${idUsuario}`, body, {
+      responseType: 'text',
+    });
   }
   
   uploadFile(data: FormData): Observable<any> {
@@ -50,7 +55,9 @@ export class UsuariosService {
     return this.http.put(`${environment.API_SECURITY}/usuarios/actualizar/contrasena/` + idUsuario, data);
   }
 
-  private apiUrl = `${environment.API_SECURITY}/usuarios`;
+  private apiUrl = `${environment.API_SECURITY}/usuarios`.replace(/\/$/, '');
+
+  /** PATCH /usuarios/estatus/{id} */
   updateEstatus(id: number, estatus: number): Observable<string> {
     const url = `${this.apiUrl}/estatus/${id}`;
     const body = { estatus };

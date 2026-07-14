@@ -1,20 +1,20 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { MapaComponent } from './mapa/mapa.component';
+import { MonitoreoComponent } from './monitoreo.component';
 
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'mapa',
-    pathMatch: 'full',
+    component: MonitoreoComponent,
   },
   {
     path: 'mapa',
-    component: MapaComponent,
+    redirectTo: '',
+    pathMatch: 'full',
   },
   {
     path: '**',
-    component: MapaComponent,
+    component: MonitoreoComponent,
   },
 ];
 

@@ -1,0 +1,75 @@
+<div
+  class="mon-loc-filter"
+  [class.mon-loc-filter--pulse]="pulseActive"
+  [class.mon-loc-filter--collapsed]="collapsed"
+  [attr.data-estatus]="selectedEstatus"
+>
+  @if (collapsed) {
+    <button
+      type="button"
+      class="mon-loc-filter__reopen"
+      aria-label="Mostrar Locales"
+      [@monLocFilterReopenAnim]
+      (click)="expand()"
+    >
+      <span class="mon-loc-filter__reopen-icon" aria-hidden="true">
+        <i-tabler name="building-store"></i-tabler>
+      </span>
+      <span class="mon-loc-filter__reopen-copy">
+        <span class="mon-loc-filter__reopen-kicker">Lista</span>
+        <span class="mon-loc-filter__reopen-label">Mostrar Locales</span>
+      </span>
+      <i-tabler name="chevron-right" class="mon-loc-filter__reopen-chevron" aria-hidden="true"></i-tabler>
+    </button>
+  }
+
+  <div class="mon-loc-filter__glow" aria-hidden="true"></div>
+
+  @if (!collapsed) {
+    <div class="mon-loc-filter__shell" @monLocFilterShellAnim>
+      <div class="mon-loc-filter__mesh" aria-hidden="true"></div>
+      <div class="mon-loc-filter__shine" aria-hidden="true"></div>
+
+      <div class="mon-loc-filter__head">
+        <div class="mon-loc-filter__head-lead">
+          <span class="mon-loc-filter__badge" aria-hidden="true">
+            <i-tabler name="map-pin"></i-tabler>
+          </span>
+          <div class="mon-loc-filter__head-text">
+            <span class="mon-loc-filter__kicker">Mapa de locales</span>
+            <span class="mon-loc-filter__eyebrow">Filtrar por estatus</span>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="mon-loc-filter__collapse"
+          aria-label="Contraer filtro de estatus"
+          (click)="collapse()"
+        >
+          <i-tabler name="chevron-left" aria-hidden="true"></i-tabler>
+        </button>
+      </div>
+
+      <div class="mon-loc-filter__estatus" role="group" aria-label="Filtrar por estatus en mapa">
+        @for (option of estatusOptions; track option.id) {
+          <button
+            type="button"
+            class="mon-loc-filter__estatus-chip mon-loc-filter__estatus-chip--{{ option.id }}"
+            [class.mon-loc-filter__estatus-chip--active]="selectedEstatus === option.id"
+            [attr.aria-pressed]="selectedEstatus === option.id"
+            [attr.aria-label]="option.ariaLabel"
+            (click)="selectEstatus(option.id)"
+          >
+            <span class="mon-loc-filter__estatus-stripe" aria-hidden="true"></span>
+            <strong>{{ estatusChipCount(option.id) }}</strong>
+            <small>{{ option.shortLabel }}</small>
+          </button>
+        }
+      </div>
+
+      <p class="mon-loc-filter__hint">
+        Toca un estatus para mostrar u ocultar marcadores en el mapa
+      </p>
+    </div>
+  }
+</div>

@@ -4,42 +4,47 @@ import { catchError, Observable, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RolesService {
+  private readonly baseUrl = environment.API_SECURITY.replace(/\/$/, '');
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
+  /** GET /roles/{page}/{limit} */
   obtenerRolesData(page: number, pageSize: number): Observable<any> {
-    return this.http.get(`${environment.API_SECURITY}/roles/${page}/${pageSize}`);
+    return this.http.get(`${this.baseUrl}/roles/${page}/${pageSize}`);
   }
 
+  /** GET /roles/list */
   obtenerRoles(): Observable<any> {
-    return this.http.get(`${environment.API_SECURITY}/roles/list`);
+    return this.http.get(`${this.baseUrl}/roles/list`);
   }
 
-  agregarRole(data: FormData) {
-    return this.http.post(environment.API_SECURITY + '/roles', data);
+  /** POST /roles — body { nombre, permisos }. Respuesta texto plano. */
+  agregarRole(data: { nombre: string; permisos: number[] }): Observable<string> {
+    return this.http.post(`${this.baseUrl}/roles`, data, { responseType: 'text' });
   }
 
-  eliminarRole(idModulo: Number) {
-    return this.http.delete(environment.API_SECURITY + '/roles/' + idModulo);
+  /** DELETE /roles/{id} */
+  eliminarRole(idRol: number) {
+    return this.http.delete(`${this.baseUrl}/roles/${idRol}`);
   }
 
-  obtenerRole(idModulo: number): Observable<any> {
-    return this.http.get<any>(environment.API_SECURITY + '/roles/' + idModulo);
+  /** GET /roles/{id} */
+  obtenerRole(idRol: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/roles/${idRol}`);
   }
 
-  actualizarRoles(idModulo: number, saveForm: any): Observable<any> {
-    return this.http.put(`${environment.API_SECURITY}/roles/` + idModulo, saveForm);
+  /** PUT /roles — body { id, nombre, permisos }. Respuesta texto plano (ej. "Rol actualizado"). */
+  actualizarRoles(payload: { id: number; nombre: string; permisos: number[] }): Observable<string> {
+    return this.http.put(`${this.baseUrl}/roles`, payload, { responseType: 'text' });
   }
 
-  private apiUrl = `${environment.API_SECURITY}/roles`;
+  /** PATCH /roles/estatus/{id} */
   updateEstatus(id: number, estatus: number): Observable<string> {
-    const url = `${this.apiUrl}/estatus/${id}`;
-    const body = { estatus };
-    return this.http.patch(url, body, { responseType: 'text' }).pipe(
-      catchError(error => throwError(() => error))
-    );
+    return this.http
+      .patch(`${this.baseUrl}/roles/estatus/${id}`, { estatus }, { responseType: 'text' })
+      .pipe(catchError((error) => throwError(() => error)));
   }
 }

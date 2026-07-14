@@ -1,0 +1,124 @@
+<div [@routeAnimation] class="card card--panel perm-wrapper">
+  <header class="perm-head perm-head--left" role="region" aria-label="Sección: Roles">
+    <div class="perm-head__icon" aria-hidden="true">
+      <mat-icon>badge</mat-icon>
+    </div>
+    <div class="perm-head__text">
+      <span class="eyebrow">Sección</span>
+      <h2>Roles</h2>
+    </div>
+    <nav class="perm-head__crumbs" aria-label="Ruta">
+      <span class="crumb">Administración</span>
+      <span class="sep">/</span>
+      <span class="crumb active">Roles</span>
+    </nav>
+  </header>
+
+  <div class="surface">
+    <section class="perm-form-nc container-fluid py-4">
+      <form [formGroup]="rolForm" class="perm-form-body">
+        <div class="row g-4">
+          <div class="col-12 col-md-6">
+            <label for="rolNombre" class="form-label perm-label">Nombre</label>
+            <div class="input-group input-group-lg perm-ig">
+              <span class="input-group-text fw-bold">
+                <mat-icon aria-hidden="true">title</mat-icon>
+              </span>
+              <div class="form-floating flex-grow-1">
+                <input type="text" formControlName="nombre" class="form-control" id="rolNombre"
+                  placeholder="Ej.: Administrador" required />
+                <label for="rolNombre">Ej.: Administrador</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="perm-perms-section mt-2">
+          <div class="d-flex align-items-center justify-content-between mb-0">
+            <div>
+              <h3 class="perm-perms-title mb-1">Permisos</h3>
+              <p class="perm-perms-subtitle mb-0">
+                Revisa los módulos y los permisos disponibles para este rol.
+              </p>
+            </div>
+            <span class="badge rounded-pill perm-perms-badge">
+              {{ listaModulos.length || 0 }} módulos
+            </span>
+          </div>
+
+          <div class="perm-modules-scroll">
+            <div class="row g-4">
+              <div class="col-12 col-md-4" *ngFor="let modulo of listaModulos">
+                <section class="perm-module-card h-100">
+                  <header class="perm-module-card__head">
+                    <div class="perm-module-card__icon">
+                      <mat-icon aria-hidden="true">folder_shared</mat-icon>
+                    </div>
+
+                    <div class="perm-module-card__text">
+                      <h4 class="perm-module-card__title mb-0">
+                        {{ modulo.nombre }}
+                      </h4>
+                      <p class="perm-module-card__desc mb-0">
+                        {{ modulo.descripcion || 'Sin descripción' }}
+                      </p>
+                    </div>
+
+                    <div class="perm-module-card__bulk">
+                      <span class="perm-module-card__bulk-label">Todos</span>
+                      <label class="perm-module-card__bulk-toggle">
+                        <input type="checkbox" [checked]="isModuleFullyAssigned(modulo)"
+                          (change)="onModuleToggle(modulo, $event)" />
+                        <span class="perm-switch perm-switch--sm"></span>
+                      </label>
+                    </div>
+                  </header>
+
+                  <div class="perm-module-card__body">
+                    <div class="perm-pill" *ngFor="let permiso of modulo.permisos"
+                      [class.perm-pill--active]="permiso.asignado" role="button" tabindex="0"
+                      (click)="togglePermiso(permiso)" (keydown.enter)="togglePermiso(permiso)"
+                      (keydown.space)="$event.preventDefault(); togglePermiso(permiso)">
+                      <div class="perm-pill__icon">
+                        <mat-icon aria-hidden="true">verified_user</mat-icon>
+                      </div>
+
+                      <div class="perm-pill__content">
+                        <span class="perm-pill__name">
+                          {{ permiso.descripcion || permiso.nombre }}
+                        </span>
+                        <span class="perm-pill__desc" *ngIf="permiso.descripcion && permiso.nombre">
+                          ID {{ permiso.id }}
+                        </span>
+                      </div>
+
+                      <label class="perm-pill__toggle" (click)="$event.stopPropagation()">
+                        <input type="checkbox" [checked]="permiso.asignado"
+                          (change)="onPermChange(modulo, permiso, $event)" />
+                        <span class="perm-switch"></span>
+                      </label>
+                    </div>
+
+                    <div class="perm-module-card__empty text-muted"
+                      *ngIf="!modulo.permisos || modulo.permisos.length === 0">
+                      Sin permisos configurados para este módulo.
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-3 justify-content-start mt-4">
+          <button class="button-success" role="button" (click)="submit()">
+            <i class="fa fa-check"></i>&nbsp;&nbsp;{{ submitButton }}
+          </button>
+          <button type="button" class="button-danger" (click)="regresar()">
+            <i class="fa fa-times">&nbsp;&nbsp;</i>Cancelar
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>

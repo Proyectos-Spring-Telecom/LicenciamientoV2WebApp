@@ -13,6 +13,7 @@ export const navItems: NavItem[] = [
     permission: [
       Permiso.CONSULTAR_MODULO,
       Permiso.CONSULTAR_PERMISOS,
+      Permiso.CONSULTAR_ROLES,
     ],
     children: [
       {
@@ -24,6 +25,11 @@ export const navItems: NavItem[] = [
         displayName: 'Permisos',
         route: '/permisos',
         permission: Permiso.CONSULTAR_PERMISOS,
+      },
+      {
+        displayName: 'Roles',
+        route: '/roles',
+        permission: Permiso.CONSULTAR_ROLES,
       },
     ],
   },
@@ -61,7 +67,7 @@ export const navItems: NavItem[] = [
   {
     displayName: 'Monitoreo',
     iconName: 'map',
-    route: '/monitoreo/mapa',
+    route: '/monitoreo',
   },
   {
     displayName: 'Locales Comerciales',
