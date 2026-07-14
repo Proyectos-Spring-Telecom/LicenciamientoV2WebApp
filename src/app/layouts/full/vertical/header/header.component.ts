@@ -203,6 +203,8 @@ export class HeaderComponent implements OnInit {
   public showApellidoMaterno: any;
   public showRol: any;
   public showEmail: any;
+  public showGrupo: any;
+  public showNombreRol: any;
 
   @Output() optionsChange = new EventEmitter<AppSettings>();
 
@@ -224,6 +226,8 @@ export class HeaderComponent implements OnInit {
     this.showApellidoMaterno = user?.apellidoMaterno || '';
     this.showRol = user?.rolNombre;
     this.showEmail = user?.userName;
+    this.showGrupo = user?.nombreGrupo || (user as any)?.['nombreGrupo'] || '';
+    this.showNombreRol = user?.nombreRol || (user as any)?.['nombreRol'] || '';
     translate.setDefaultLang('en');
   }
 

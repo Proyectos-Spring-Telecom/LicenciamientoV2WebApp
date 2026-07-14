@@ -440,11 +440,13 @@
     <div class="p-x-16 p-y-20 b-b-1 profile-menu-custom__head">
       <div class="d-flex align-items-center">
         <div class="m-l-16">
-          <h6 class="f-s-14 f-w-600 m-0 d-flex align-items-center profile-menu-custom__name">
-            {{showNombre+ ' ' + showApellidoPaterno + ' ' + showApellidoMaterno}} - 
-            <span class="f-s-14 d-block text-success m-l-4 profile-menu-custom__role"> {{showRol}} </span>
+          <h6 class="f-w-600 m-0 d-flex align-items-center profile-menu-custom__name">
+            {{showNombre + ' ' + showApellidoPaterno + ' ' + showApellidoMaterno}} - 
+            <span class="d-block m-l-4 profile-menu-custom__grupo" *ngIf="showGrupo">Grupo: {{ showGrupo }}</span>
           </h6>
-          <span class="profile-menu-custom__email"> {{showEmail}} </span>
+          <span class="d-block profile-menu-custom__role-line" *ngIf="showNombreRol">
+            Rol: {{ showNombreRol }}
+          </span>
         </div>
       </div>
     </div>
