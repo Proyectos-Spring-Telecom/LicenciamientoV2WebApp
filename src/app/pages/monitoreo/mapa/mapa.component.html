@@ -1,6 +1,17 @@
 <div class="wrapper">
   <div class="full" id="map"></div>
 
+  <div class="monitoreo-local-filter-host">
+    <app-monitoreo-local-filter
+      [selectedEstatus]="selectedEstatusFilter"
+      [estatusCounts]="estatusFilterCounts"
+      [totalCount]="totalLocalesCount"
+      (estatusChange)="onEstatusFilterChange($event)"
+      (showLocalesRequest)="onShowLocalesRequest()"
+      (hideLocalesRequest)="onHideLocalesRequest()"
+    ></app-monitoreo-local-filter>
+  </div>
+
   <div
     class="monitoreo-street-modal"
     id="street-modal-overlay"

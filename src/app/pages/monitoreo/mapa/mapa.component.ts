@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import Swal from 'sweetalert2';
@@ -10,9 +10,17 @@ import {
 } from '../../local-comercial/utils/local-comercial-swal.util';
 import { GoogleMapsLoaderService } from 'src/app/services/google-maps-loader.service';
 import { environment } from 'src/environments/environment';
+import {
+  createEmptyLocalEstatusFilterCounts,
+  localMatchesEstatusFilter,
+  MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT,
+  MonitoreoLocalEstatusFilter,
+  MonitoreoLocalEstatusFilterCounts,
+  resolveLocalEstatusFilter,
+} from '../local-filter/monitoreo-local-estatus-filter.data';
+import { MonitoreoLocalFilterComponent } from '../local-filter/monitoreo-local-filter.component';
 
 const DEFAULT_IMAGE = 'assets/default.png';
-const BODY_MAPA_CLASS = 'monitoreo-mapa-active';
 
 const MARKER_ASPECT_RATIO = 739 / 1067;
 const MARKER_DISPLAY_HEIGHT = 40;
@@ -98,7 +106,54 @@ const LOCALES_DEMO_MAPA: LocalComercial[] = [
     estatus: 4,
     fechaHora: null,
   },
+  {
+    id: 9005,
+    lat: 18.9282,
+    lng: -99.2278,
+    nombreComercial: 'Panadería La Espiga',
+    nombreEstatus: 'Revisión',
+    grupo: 'A',
+    giro: 'Panadería',
+    rfc: 'PAN900505EEE',
+    nombreCapturista: 'Demo Capturista',
+    urlLicencia: '',
+    estatus: 2,
+    fechaHora: null,
+  },
+  {
+    id: 9006,
+    lat: 18.9156,
+    lng: -99.2194,
+    nombreComercial: 'Óptica Visión+',
+    nombreEstatus: 'Datos Correctos',
+    grupo: 'B',
+    giro: 'Óptica',
+    rfc: 'OPT900606FFF',
+    nombreCapturista: 'Demo Capturista',
+    urlLicencia: '',
+    estatus: 1,
+    fechaHora: null,
+  },
+  {
+    id: 9007,
+    lat: 18.9331,
+    lng: -99.2132,
+    nombreComercial: 'Miscelánea Sol',
+    nombreEstatus: 'Información Faltante',
+    grupo: 'C',
+    giro: 'Miscelánea',
+    rfc: 'MIS900707GGG',
+    nombreCapturista: 'Demo Capturista',
+    urlLicencia: '',
+    estatus: 3,
+    fechaHora: null,
+  },
 ];
+
+interface MapaMarkerEntry {
+  local: LocalComercial;
+  marker: google.maps.Marker;
+}
 
 const ICON_GROUP =
   '<svg class="mon-veh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h6"/></svg>';
@@ -118,15 +173,29 @@ const ICON_USER =
   standalone: false,
 })
 export class MapaComponent implements OnInit, OnDestroy {
+  @ViewChild(MonitoreoLocalFilterComponent) private localFilter?: MonitoreoLocalFilterComponent;
+
+  @Output() localesReady = new EventEmitter<LocalComercial[]>();
+  @Output() localFocused = new EventEmitter<number>();
+  @Output() estatusFilterChange = new EventEmitter<MonitoreoLocalEstatusFilter>();
+  @Output() showLocalesRequest = new EventEmitter<void>();
+  @Output() hideLocalesRequest = new EventEmitter<void>();
+
   public panorama: google.maps.StreetViewPanorama;
   public sv: google.maps.StreetViewService;
   public isAvailable = true;
-  public listaLocales: LocalComercial[];
+  public listaLocales: LocalComercial[] = [];
   public loadingVisible = false;
   public mensajeModulo = 'Monitoreo';
 
+  selectedEstatusFilter: MonitoreoLocalEstatusFilter = MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT;
+
   private map: google.maps.Map;
   private activeMarkerIndex: number | null = null;
+  private markerEntries: MapaMarkerEntry[] = [];
+  private infoWindows: google.maps.InfoWindow[] = [];
+  private markerClusterer: MarkerClusterer | null = null;
+  private currentInfoWindow: google.maps.InfoWindow | null = null;
 
   constructor(
     public router: Router,
@@ -134,14 +203,114 @@ export class MapaComponent implements OnInit, OnDestroy {
     private googleMapsLoader: GoogleMapsLoaderService,
   ) {}
 
+  get totalLocalesCount(): number {
+    return (this.listaLocales || []).length;
+  }
+
+  get estatusFilterCounts(): MonitoreoLocalEstatusFilterCounts {
+    const counts = createEmptyLocalEstatusFilterCounts();
+
+    for (const local of this.listaLocales || []) {
+      const estatus = resolveLocalEstatusFilter(local.nombreEstatus);
+      if (estatus) {
+        counts[estatus] += 1;
+      }
+    }
+
+    return counts;
+  }
+
+  onEstatusFilterChange(estatus: MonitoreoLocalEstatusFilter): void {
+    this.selectedEstatusFilter = estatus;
+    this.estatusFilterChange.emit(estatus);
+    this.applyMarkerVisibility();
+  }
+
+  onShowLocalesRequest(): void {
+    this.showLocalesRequest.emit();
+  }
+
+  onHideLocalesRequest(): void {
+    this.hideLocalesRequest.emit();
+  }
+
+  /** Mantener el pill «Mostrar Locales» alineado con el panel izquierdo. */
+  syncLocalesPanelVisible(visible: boolean): void {
+    this.localFilter?.setPanelVisible(visible);
+  }
+
+  /** Centra el mapa en el local y abre su info window (sync con panel izquierdo). */
+  focusLocal(localId: number): void {
+    const index = this.markerEntries.findIndex((entry) => entry.local.id === localId);
+    if (index < 0 || !this.map) {
+      return;
+    }
+
+    const entry = this.markerEntries[index];
+    const visible = this.getVisibleLocales().some((local) => local.id === localId);
+    if (!visible) {
+      this.selectedEstatusFilter = MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT;
+      this.estatusFilterChange.emit(this.selectedEstatusFilter);
+      this.applyMarkerVisibility();
+    }
+
+    this.map.panTo(entry.marker.getPosition() as google.maps.LatLng);
+    const zoom = this.map.getZoom() ?? 13;
+    if (zoom < 15) {
+      this.map.setZoom(15);
+    }
+
+    const infowindow = this.infoWindows[index];
+    if (infowindow) {
+      if (this.currentInfoWindow && this.currentInfoWindow !== infowindow) {
+        this.currentInfoWindow.close();
+      }
+      infowindow.open(this.map, entry.marker);
+      this.currentInfoWindow = infowindow;
+    }
+
+    this.activeMarkerIndex = index;
+    this.localFocused.emit(localId);
+  }
+
+  notifyMapResize(): void {
+    if (!this.map) {
+      return;
+    }
+    google.maps.event.trigger(this.map, 'resize');
+  }
+
+  private getVisibleLocales(): LocalComercial[] {
+    return (this.listaLocales || []).filter((local) =>
+      localMatchesEstatusFilter(local.nombreEstatus, this.selectedEstatusFilter),
+    );
+  }
+
+  private applyMarkerVisibility(): void {
+    if (!this.markerClusterer) {
+      return;
+    }
+
+    const visibleIds = new Set(this.getVisibleLocales().map((local) => local.id));
+    const visibleMarkers = this.markerEntries
+      .filter((entry) => visibleIds.has(entry.local.id))
+      .map((entry) => entry.marker);
+
+    this.markerEntries.forEach((entry) => {
+      if (!visibleIds.has(entry.local.id)) {
+        entry.marker.setMap(null);
+      }
+    });
+
+    this.markerClusterer.clearMarkers();
+    this.markerClusterer.addMarkers(visibleMarkers);
+  }
+
   ngOnInit(): void {
-    document.body.classList.add(BODY_MAPA_CLASS);
     this.obtenerListaLocalesComerciales();
   }
 
-  ngOnDestroy(): void {
-    document.body.classList.remove(BODY_MAPA_CLASS);
-  }
+  ngOnDestroy(): void {}
 
   private resolveFotoRuta(ruta: string | null | undefined): string {
     if (ruta == null || ruta === undefined) {
@@ -401,6 +570,7 @@ export class MapaComponent implements OnInit, OnDestroy {
     // });
 
     this.listaLocales = [...LOCALES_DEMO_MAPA];
+    this.localesReady.emit(this.listaLocales);
     this.inicializarMapa();
   }
 
@@ -429,16 +599,19 @@ export class MapaComponent implements OnInit, OnDestroy {
           mapTypeControl: true,
           mapTypeControlOptions: {
             style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-            position: google.maps.ControlPosition.TOP_LEFT,
+            position: google.maps.ControlPosition.TOP_RIGHT,
             mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE],
           },
         });
         this.map = map;
-        let currentInfoWindow: google.maps.InfoWindow | null = null;
+        this.currentInfoWindow = null;
+        this.infoWindows = [];
+        this.markerEntries = [];
+        this.markerClusterer = null;
+
         let pinnedIndex: number | null = null;
         let closeTimer: ReturnType<typeof setTimeout> | null = null;
         let hoveringInfoWindow = false;
-        const infoWindows: google.maps.InfoWindow[] = [];
 
         const clearCloseTimer = (): void => {
           if (closeTimer) {
@@ -457,23 +630,24 @@ export class MapaComponent implements OnInit, OnDestroy {
               animation: google.maps.Animation.DROP,
             });
             const infowindow = new google.maps.InfoWindow({ content: contentString });
-            infoWindows[i] = infowindow;
+            this.infoWindows[i] = infowindow;
+            this.markerEntries.push({ local, marker });
 
             const openInfoWindow = (): void => {
               clearCloseTimer();
-              if (currentInfoWindow != null && currentInfoWindow !== infowindow) {
-                currentInfoWindow.close();
+              if (this.currentInfoWindow != null && this.currentInfoWindow !== infowindow) {
+                this.currentInfoWindow.close();
               }
               infowindow.open(map, marker);
-              currentInfoWindow = infowindow;
+              this.currentInfoWindow = infowindow;
               this.setStreetModalVisible(false);
             };
 
             const closeInfoWindow = (): void => {
               clearCloseTimer();
-              if (currentInfoWindow) {
-                currentInfoWindow.close();
-                currentInfoWindow = null;
+              if (this.currentInfoWindow) {
+                this.currentInfoWindow.close();
+                this.currentInfoWindow = null;
               }
             };
 
@@ -487,14 +661,14 @@ export class MapaComponent implements OnInit, OnDestroy {
                   if (fromIndex === pinnedIndex) {
                     return;
                   }
-                  const pinnedInfoWindow = infoWindows[pinnedIndex];
-                  const pinnedMarker = markers[pinnedIndex];
+                  const pinnedInfoWindow = this.infoWindows[pinnedIndex];
+                  const pinnedMarker = this.markerEntries[pinnedIndex]?.marker;
                   if (pinnedInfoWindow && pinnedMarker) {
-                    if (currentInfoWindow && currentInfoWindow !== pinnedInfoWindow) {
-                      currentInfoWindow.close();
+                    if (this.currentInfoWindow && this.currentInfoWindow !== pinnedInfoWindow) {
+                      this.currentInfoWindow.close();
                     }
                     pinnedInfoWindow.open(map, pinnedMarker);
-                    currentInfoWindow = pinnedInfoWindow;
+                    this.currentInfoWindow = pinnedInfoWindow;
                   }
                   return;
                 }
@@ -560,6 +734,7 @@ export class MapaComponent implements OnInit, OnDestroy {
               this.activeMarkerIndex = i;
               this.isAvailable = true;
               openInfoWindow();
+              this.localFocused.emit(local.id);
             });
 
             return marker;
@@ -569,9 +744,9 @@ export class MapaComponent implements OnInit, OnDestroy {
           pinnedIndex = null;
           hoveringInfoWindow = false;
           clearCloseTimer();
-          if (currentInfoWindow) {
-            currentInfoWindow.close();
-            currentInfoWindow = null;
+          if (this.currentInfoWindow) {
+            this.currentInfoWindow.close();
+            this.currentInfoWindow = null;
           }
           this.setStreetModalVisible(false);
         });
@@ -582,7 +757,8 @@ export class MapaComponent implements OnInit, OnDestroy {
           this.initDragElement(panel, header);
         }
         this.initStreetViewPanorama();
-        new MarkerClusterer({ markers, map });
+        this.markerClusterer = new MarkerClusterer({ markers, map });
+        this.applyMarkerVisibility();
         ocultarCargandoLocalComercial();
       })
       .catch((err) => {
@@ -618,8 +794,8 @@ export class MapaComponent implements OnInit, OnDestroy {
       pos2 = pos4 - e.clientY;
       pos3 = e.clientX;
       pos4 = e.clientY;
-      panel.style.top = panel.offsetTop - pos2 + 'px';
-      panel.style.left = panel.offsetLeft - pos1 + 'px';
+      panel.style.top = `${panel.offsetTop - pos2}px`;
+      panel.style.left = `${panel.offsetLeft - pos1}px`;
     };
 
     const dragMouseDown = (e: MouseEvent) => {

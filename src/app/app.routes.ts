@@ -43,6 +43,11 @@ export const routes: Routes = [
           import('./pages/permisos/permisos.module').then((m) => m.PermisosModule),
       },
       {
+        path: 'roles',
+        loadChildren: () =>
+          import('./pages/roles/roles.module').then((m) => m.RolesModule),
+      },
+      {
         path: 'modulos',
         loadChildren: () =>
           import('./pages/modulos/modulos.module').then((m) => m.ModulosModule),

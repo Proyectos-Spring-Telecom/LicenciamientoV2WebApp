@@ -1,6 +1,7 @@
 <div autosize autoFocus [ngClass]="{
   'sidebarNav-mini': options.sidenavCollapsed && options.navPos !== 'top' && !isOver,
   'sidebarNav-horizontal': options.horizontal,
+  'monitoreo-sidebar-reveal': monitoreoSidebarReveal,
   cardBorder: options.cardBorder,
 }" class="page-container" [dir]="options.dir!">
   @if(!options.horizontal) {
@@ -11,6 +12,15 @@
     (optionsChange)="receiveOptions($event)"></app-horizontal-header>
   }
 
+  @if(isMonitoreoRouteActive && options.sidenavCollapsed && !isOver && !options.horizontal) {
+  <div
+    class="monitoreo-sidebar-rail"
+    aria-hidden="true"
+    (mouseenter)="showMonitoreoSidebar()"
+    (mouseleave)="scheduleHideMonitoreoSidebarFromRail()"
+  ></div>
+  }
+
   <mat-sidenav-container class="mainWrapper">
     @if(!options.horizontal) {
     <mat-sidenav align="start" #leftsidenav [mode]="isOver ? 'over' : 'side'" [opened]="
@@ -18,6 +28,8 @@
         options.sidenavOpened &&
         !isOver
       " (openedChange)="onSidenavOpenedChange($event)" (closedStart)="onSidenavClosedStart()"
+      (mouseenter)="showMonitoreoSidebar()" (mouseleave)="hideMonitoreoSidebar()"
+      [class.sidebarNav--revealed]="monitoreoSidebarReveal"
       class="sidebarNav">
       <app-sidebar> </app-sidebar>
       <ng-scrollbar

@@ -4,7 +4,6 @@ import {
   HttpClient,
   HttpErrorResponse,
   HttpHeaders,
-  HttpParams,
 } from '@angular/common/http';
 import { Router } from '@angular/router';
 import {
@@ -60,26 +59,25 @@ export class AuthenticationService extends BaseServicesService {
     this.rawHttp = new HttpClient(httpBackend);
   }
 
-  /** POST {API_SECURITY}/login?Nombres={solución activa} */
-  login(body: { userName: string; password: string }): Observable<User> {
-    const solucion =
-      String(environment.loginSolucionNombre ?? 'NXT').trim() || 'NXT';
-    const params = new HttpParams().set('Nombres', solucion);
-
+  /** POST {API_SECURITY}/login — body { username, password }. */
+  login(body: { username: string; password: string }): Observable<User> {
     return this.http
-      .post<AuthTokenResponse>(`${this.baseUrl}/login`, body, { params })
+      .post<AuthTokenResponse>(`${this.baseUrl}/login`, {
+        username: body.username,
+        password: body.password,
+      })
       .pipe(
-      tap((loginResp) => {
-        this.cleanSession();
-        this.setTokenPairFromAuthResponse(loginResp);
-      }),
-      switchMap((loginResp) =>
-        this.me().pipe(
-          map((meResp) => this.mergeLoginWithMe(loginResp, meResp)),
-          tap((merged) => this.setData(merged)),
+        tap((loginResp) => {
+          this.cleanSession();
+          this.setTokenPairFromAuthResponse(loginResp);
+        }),
+        switchMap((loginResp) =>
+          this.me().pipe(
+            map((meResp) => this.mergeLoginWithMe(loginResp, meResp)),
+            tap((merged) => this.setData(merged)),
+          ),
         ),
-      ),
-      catchError((err) => this.handleError(err)),
+        catchError((err) => this.handleError(err)),
       );
   }
 
@@ -312,8 +310,8 @@ export class AuthenticationService extends BaseServicesService {
 
   /** Compatibilidad con código existente. */
   authenticate(body: Credentials): Observable<User> {
-    const userName = body.userName ?? body.username ?? '';
-    return this.login({ userName, password: body.password });
+    const username = body.username ?? body.userName ?? '';
+    return this.login({ username, password: body.password });
   }
 
   updatePassword(payload: {

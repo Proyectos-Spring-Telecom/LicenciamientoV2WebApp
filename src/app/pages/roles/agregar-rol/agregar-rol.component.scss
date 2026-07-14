@@ -1,26 +1,8 @@
-.perm-head__icon {
-  position: relative;
-  z-index: 1;
-}
-
-.password-eye { position: absolute; right: .75rem; top: 50%; transform: translateY(-50%); text-decoration: none; color: inherit; }
-.form-control.pr-5 { padding-right: 2.25rem; }
-.password-requirements i { width: 1.25rem; text-align: center; }
-.password-requirements .ms-2 { margin-left: .5rem; }
-.password-requirements .text-danger { color: #dc3545; }
-.password-requirements .text-success { color: #198754; }
-
-.pwd-hint { font-size: 0.85rem; line-height: 1.2; margin-bottom: 0; display: flex; align-items: center; }
-.pwd-hint i { width: 1rem; text-align: center; font-size: 0.9rem; }
-.pwd-hint .ms-2 { margin-left: .5rem; }
-
-
-
 .perm-wrapper {
   .perm-perms-section {
     margin-top: 2rem;
-    padding-top: 0.5rem;        // antes 1.5
-    border-top: none;           // quitamos ese borde que daba sensación de card aparte
+    padding: 0.75rem 0.5rem 0.25rem;
+    border-top: none;
   }
 
   .perm-perms-title {
@@ -46,12 +28,12 @@
   }
 
   .perm-modules-scroll {
-    max-height: 360px;
+    max-height: 395px;
     min-height: 180px;
     overflow-y: auto;
-    overflow-x: hidden;        // quitamos scroll horizontal
-    margin-top: 1rem;
-    padding-right: 0;          // evitamos desbordes con el .row
+    overflow-x: hidden;
+    margin-top: 0.15rem;
+    padding: 1.25rem 1.5rem 1.5rem;
   }
 
   .perm-modules-scroll::-webkit-scrollbar {
@@ -68,13 +50,11 @@
   }
 
   .perm-modules-scroll > .row {
-    margin-right: 0;           // anulamos márgenes negativos de bootstrap
-    margin-left: 0;
+    --bs-gutter-x: 1.25rem;
+    --bs-gutter-y: 1.25rem;
   }
 
   .perm-modules-scroll > .row > [class*='col-'] {
-    padding-right: 0.75rem;
-    padding-left: 0.75rem;
     background-color: transparent;
   }
 
@@ -89,6 +69,8 @@
     gap: 0.75rem;
     position: relative;
     overflow: hidden;
+    min-height: 280px;
+    max-height: 360px;
   }
 
   .perm-module-card__head {
@@ -96,6 +78,7 @@
     align-items: center;
     gap: 0.9rem;
     margin-bottom: 0.4rem;
+    flex-shrink: 0;
   }
 
   .perm-module-card__icon {
@@ -159,6 +142,24 @@
     flex-direction: column;
     gap: 0.35rem;
     margin-top: 0.4rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 0.25rem;
+  }
+
+  .perm-module-card__body::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .perm-module-card__body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .perm-module-card__body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
   }
 
   .perm-pill {
@@ -295,112 +296,4 @@
       margin-bottom: 0.5rem;
     }
   }
-}
-
-/* Card de imagen perfil: evita recorte en columnas estrechas (col-md-4) */
-:host .uploader-wrap {
-  min-width: 0;
-  max-width: 100%;
-}
-
-:host .uploader-wrap .uploader-hero,
-:host .uploader-wrap .uploader {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-:host .uploader-wrap .uploader {
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow:
-    0 10px 40px rgba(0, 0, 0, 0.35),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-}
-
-:host .uploader-wrap .uploader__glow {
-  inset: 0;
-  border-radius: inherit;
-}
-
-:host .uploader-wrap .uploader__body {
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-:host .uploader-wrap .uploader__title,
-:host .uploader-wrap .uploader__subtitle {
-  width: 100%;
-  max-width: 100%;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
-:host .uploader-wrap .uploader__cta {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  max-width: 100%;
-  gap: 0.5rem 0.55rem;
-}
-
-:host .uploader-wrap .uploader__cta > .mat-mdc-unelevated-button,
-:host .uploader-wrap .uploader__cta > .mat-mdc-button,
-:host .uploader-wrap .uploader__cta > button {
-  flex: 0 0 auto;
-  flex-shrink: 0;
-  max-width: 100%;
-}
-
-:host .uploader-wrap .uploader__badge {
-  flex: 1 1 auto;
-  min-width: 0;
-  width: fit-content;
-  max-width: 100%;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  text-align: center;
-}
-
-@media (max-width: 767.98px) {
-  :host .uploader-wrap .uploader__cta {
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  :host .uploader-wrap .uploader__cta > .mat-mdc-unelevated-button,
-  :host .uploader-wrap .uploader__cta > .mat-mdc-button,
-  :host .uploader-wrap .uploader__cta > button {
-    flex-shrink: 1;
-    white-space: normal;
-    text-align: center;
-    line-height: 1.25;
-    min-width: min(100%, 11.5rem);
-  }
-
-  :host .uploader-wrap .uploader__badge {
-    flex: 0 1 auto;
-    width: fit-content;
-    max-width: 100%;
-  }
-}
-
-:host .uploader-wrap .uploader__badge.uploader__badge--file {
-  text-transform: none;
-  letter-spacing: 0.01em;
-  color: #f1f6ff;
-  border-style: solid;
-  border-color: rgba(147, 197, 253, 0.55);
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.22), rgba(30, 64, 175, 0.2));
-  box-shadow:
-    0 0 0 1px rgba(147, 197, 253, 0.22),
-    0 8px 20px rgba(0, 0, 0, 0.32);
-  padding-inline: clamp(0.55rem, 0.48rem + 0.28vw, 0.82rem);
-  text-decoration: none;
 }

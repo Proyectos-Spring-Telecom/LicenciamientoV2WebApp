@@ -7,40 +7,41 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class PermisosService {
+  private readonly baseUrl = environment.API_SECURITY.replace(/\/$/, '');
 
   constructor(private http: HttpClient) { }
 
   obtenerPermisos(page: number, pageSize: number): Observable<any> {
-		return this.http.get(`${environment.API_SECURITY}/permisos/${page}/${pageSize}`);
-	}
-
-  obtenerPermisosAgrupados(){
-    return this.http.get(`${environment.API_SECURITY}/permisos/permisosAgrupados`);
+    return this.http.get(`${this.baseUrl}/permisos/${page}/${pageSize}`);
   }
 
-  agregarPermiso(data: FormData) {
-    return this.http.post(environment.API_SECURITY + '/permisos', data);
+  /** GET /permisos/permisosAgrupados — módulos con sus permisos. */
+  obtenerPermisosAgrupados(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/permisos/permisosAgrupados`);
+  }
+
+  /** POST /permisos — sin params. Body: { nombre, descripcion, idModulo }. */
+  agregarPermiso(data: { nombre: string; descripcion: string; idModulo: number }) {
+    return this.http.post(`${this.baseUrl}/permisos`, data);
   }
 
   eliminarPermiso(idPermiso: Number) {
-        return this.http.delete(environment.API_SECURITY + '/permisos/' + idPermiso);
-    }
+    return this.http.delete(`${this.baseUrl}/permisos/${idPermiso}`);
+  }
 
   obtenerPermiso(idPermiso: number): Observable<any> {
-        return this.http.get<any>(environment.API_SECURITY + '/permisos/' + idPermiso);
-    }
-
-  actualizarPermiso(idPermiso: number, saveForm: any): Observable<any> {
-    return this.http.put(`${environment.API_SECURITY}/permisos/` + idPermiso, saveForm);
+    return this.http.get<any>(`${this.baseUrl}/permisos/${idPermiso}`);
   }
 
-  private apiUrl = `${environment.API_SECURITY}/permisos`;
+  /** PUT /permisos/{id} — param id obligatorio. Body: { descripcion }. */
+  actualizarPermiso(idPermiso: number, payload: { descripcion: string }): Observable<any> {
+    return this.http.put(`${this.baseUrl}/permisos/${idPermiso}`, payload);
+  }
+
+  /** PATCH /permisos/{id}/estatus */
   updateEstatus(id: number, estatus: number): Observable<string> {
-    const url = `${this.apiUrl}/estatus/${id}`;
-    const body = { estatus };
-    return this.http.patch(url, body, { responseType: 'text' }).pipe(
-      catchError(error => throwError(() => error))
-    );
+    return this.http
+      .patch(`${this.baseUrl}/permisos/${id}/estatus`, { estatus }, { responseType: 'text' })
+      .pipe(catchError(error => throwError(() => error)));
   }
-  
 }

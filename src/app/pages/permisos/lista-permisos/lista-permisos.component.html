@@ -29,7 +29,7 @@
       <dx-data-grid #gridContainer id="gridContainer" class="inm-data-grid" [columnHidingEnabled]="true"
         [hoverStateEnabled]="false" [showBorders]="true" [showColumnLines]="false" [showRowLines]="true"
         [rowAlternationEnabled]="true" [noDataText]="'Sin registros para mostrar'" [dataSource]="listaPermisos"
-        [keyExpr]="'id'" [width]="'100%'" [remoteOperations]="{ paging: true }" [paging]="{ pageSize: pageSize }"
+        [keyExpr]="'idPermiso'" [width]="'100%'" [remoteOperations]="{ paging: true }" [paging]="{ pageSize: pageSize }"
         [pager]="{ 
             showPageSizeSelector: true, 
             allowedPageSizes: [50], 
@@ -52,10 +52,10 @@
         <dxo-grouping #expand [autoExpandAll]="autoExpandAllGroups"></dxo-grouping>
         <dxo-header-filter [visible]="showHeaderFilter"></dxo-header-filter>
         <dxi-column caption="Acciones" cellTemplate="acciones" alignment="center" *appHasPermission="['14', '16']" [width]="150"></dxi-column>
-        <dxi-column dataField="id" caption="id" alignment="center" dataType="string" [allowSearch]="true"></dxi-column>
-        <dxi-column dataField="nombre" caption="Nombre" alignment="center" dataType="string" [allowSearch]="true"></dxi-column>
-        <dxi-column dataField="descripcion" caption="Descripción" alignment="center" dataType="string" [allowSearch]="true"></dxi-column>
-        <dxi-column dataField="idModulo2.nombre" caption="Módulo" alignment="center" dataType="string" [allowSearch]="true">
+        <!-- <dxi-column dataField="idPermiso" caption="id" alignment="center" dataType="string" [allowSearch]="true"></dxi-column> -->
+        <dxi-column dataField="nombrePermiso" caption="Nombre" alignment="center" dataType="string" [allowSearch]="true"></dxi-column>
+        <dxi-column dataField="descripcionPermiso" caption="Descripción" alignment="center" dataType="string" [allowSearch]="true"></dxi-column>
+        <dxi-column dataField="nombreModulo" caption="Módulo" alignment="center" dataType="string" [allowSearch]="true">
           <dxo-header-filter [allowSearch]="true"></dxo-header-filter>
         </dxi-column>
         <dxi-column dataField="estatus" caption="Estatus" alignment="center" cellTemplate="est" dataType="string">
@@ -69,7 +69,7 @@
         </dxi-column>
         <div *dxTemplate="let row of 'acciones'" class="d-flex gap-3 justify-content-center">
           <div *appHasPermission="'14'">
-            <button valueExpr="id" id="actualizarButton" class="btnAcciones" (click)="actualizarPermiso(row.data.id)">
+            <button valueExpr="idPermiso" id="actualizarButton" class="btnAcciones" (click)="actualizarPermiso(row.data.idPermiso)">
               <i class="fa fa-edit"></i>
             </button>
           </div>

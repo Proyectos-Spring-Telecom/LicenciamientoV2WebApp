@@ -32,6 +32,7 @@ import { AuthenticationService } from 'src/app/services/auth.service';
 import { NavItem } from './vertical/sidebar/nav-item/nav-item';
 import { AssistantChatComponent } from './shared/assistant-chat/assistant-chat.component';
 import { LayoutScrollService } from 'src/app/services/layout-scroll.service';
+import { MonitoreoSidebarBridgeService } from 'src/app/services/monitoreo-sidebar-bridge.service';
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
 const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
@@ -89,6 +90,11 @@ export class FullComponent implements OnInit, AfterViewInit {
   private isContentWidthFixed = true;
   private isCollapsedWidthFixed = false;
   private htmlElement!: HTMLHtmlElement;
+  private monitoreoSidebarSnapshot: boolean | null = null;
+  isMonitoreoRouteActive = false;
+  monitoreoSidebarReveal = false;
+  private monitoreoSidebarPinned = false;
+  private monitoreoRailLeaveTimer?: ReturnType<typeof setTimeout>;
 
   get isOver(): boolean {
     return this.isMobileScreen;
@@ -211,8 +217,15 @@ export class FullComponent implements OnInit, AfterViewInit {
     private navService: NavService,
     private authService: AuthenticationService,
     private layoutScroll: LayoutScrollService,
+    private monitoreoSidebarBridge: MonitoreoSidebarBridgeService,
   ) {
     this.htmlElement = document.querySelector('html')!;
+    this.options.sidenavOpened = true;
+    this.options.sidenavCollapsed = false;
+    this.settings.setOptions({
+      sidenavOpened: true,
+      sidenavCollapsed: false,
+    });
     this.layoutChangesSubscription = this.breakpointObserver
       .observe([MOBILE_VIEW, TABLET_VIEW, MONITOR_VIEW, BELOWMONITOR])
       .subscribe((state) => {
@@ -220,9 +233,6 @@ export class FullComponent implements OnInit, AfterViewInit {
         this.options.sidenavOpened = true;
         // Solo móvil real: overlay. Tablet (769–1023) empuja layout como desktop.
         this.isMobileScreen = state.breakpoints[MOBILE_VIEW];
-        if (this.options.sidenavCollapsed == false) {
-          this.options.sidenavCollapsed = state.breakpoints[TABLET_VIEW];
-        }
         this.isContentWidthFixed = state.breakpoints[MONITOR_VIEW];
         this.resView = state.breakpoints[BELOWMONITOR];
       });
@@ -236,11 +246,18 @@ export class FullComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.syncMonitoreoSidebar(this.router.url);
+
+    this.monitoreoSidebarBridge.sidebarToggleRequested$.subscribe(() => {
+      this.toggleMonitoreoSidebarReveal();
+    });
+
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event) => {
         const navigation = event as NavigationEnd;
         queueMicrotask(() => this.layoutScroll.scrollToTop('auto'));
+        this.syncMonitoreoSidebar(navigation.urlAfterRedirects);
       });
   }
 
@@ -255,11 +272,95 @@ export class FullComponent implements OnInit, AfterViewInit {
 
   toggleCollapsed() {
     this.isContentWidthFixed = false;
+
+    if (this.isMonitoreoRoute(this.router.url)) {
+      this.toggleMonitoreoSidebarReveal();
+      return;
+    }
+
     this.options.sidenavCollapsed = !this.options.sidenavCollapsed;
     if (this.options.sidenavCollapsed) {
       AppNavItemComponent.collapseAll();
     }
     this.resetCollapsedState();
+  }
+
+  /** Colapsa el sidebar al entrar a monitoreo y restaura el estado al salir. */
+  private syncMonitoreoSidebar(url: string): void {
+    const onMonitoreo = this.isMonitoreoRoute(url);
+    this.isMonitoreoRouteActive = onMonitoreo;
+
+    if (!onMonitoreo) {
+      this.monitoreoSidebarReveal = false;
+      this.monitoreoSidebarPinned = false;
+    }
+
+    if (onMonitoreo) {
+      if (this.monitoreoSidebarSnapshot === null) {
+        this.monitoreoSidebarSnapshot = this.options.sidenavCollapsed;
+      }
+
+      if (!this.options.sidenavCollapsed) {
+        this.options.sidenavCollapsed = true;
+        AppNavItemComponent.collapseAll();
+        this.settings.setOptions({ sidenavCollapsed: true });
+      }
+      return;
+    }
+
+    if (this.monitoreoSidebarSnapshot !== null) {
+      this.options.sidenavCollapsed = this.monitoreoSidebarSnapshot;
+      this.monitoreoSidebarSnapshot = null;
+      this.settings.setOptions({ sidenavCollapsed: this.options.sidenavCollapsed });
+    }
+  }
+
+  private isMonitoreoRoute(url: string): boolean {
+    return /\/monitoreo(?:\/|$|\?|#)/.test(url);
+  }
+
+  showMonitoreoSidebar(): void {
+    if (!this.isMonitoreoRouteActive || !this.options.sidenavCollapsed || this.isOver || this.options.horizontal) {
+      return;
+    }
+
+    if (this.monitoreoRailLeaveTimer != null) {
+      clearTimeout(this.monitoreoRailLeaveTimer);
+      this.monitoreoRailLeaveTimer = undefined;
+    }
+
+    this.monitoreoSidebarReveal = true;
+  }
+
+  scheduleHideMonitoreoSidebarFromRail(): void {
+    if (this.monitoreoSidebarPinned) {
+      return;
+    }
+
+    if (this.monitoreoRailLeaveTimer != null) {
+      clearTimeout(this.monitoreoRailLeaveTimer);
+    }
+
+    this.monitoreoRailLeaveTimer = setTimeout(() => {
+      this.monitoreoRailLeaveTimer = undefined;
+      this.hideMonitoreoSidebar();
+    }, 220);
+  }
+
+  private toggleMonitoreoSidebarReveal(): void {
+    if (!this.isMonitoreoRouteActive || !this.options.sidenavCollapsed || this.isOver || this.options.horizontal) {
+      return;
+    }
+
+    this.monitoreoSidebarPinned = !this.monitoreoSidebarPinned;
+    this.monitoreoSidebarReveal = this.monitoreoSidebarPinned;
+  }
+
+  hideMonitoreoSidebar(): void {
+    if (this.monitoreoSidebarPinned) {
+      return;
+    }
+    this.monitoreoSidebarReveal = false;
   }
 
   resetCollapsedState(timer = 400) {
