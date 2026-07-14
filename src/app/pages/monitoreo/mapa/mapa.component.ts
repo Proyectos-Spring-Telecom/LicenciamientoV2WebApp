@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import Swal from 'sweetalert2';
@@ -11,15 +11,11 @@ import {
 import { GoogleMapsLoaderService } from 'src/app/services/google-maps-loader.service';
 import { environment } from 'src/environments/environment';
 import {
-  createEmptyLocalEstatusFilterCounts,
   localMatchesEstatusFilter,
   MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT,
   MonitoreoLocalEstatusFilter,
-  MonitoreoLocalEstatusFilterCounts,
   resolveLocalEstatusFilter,
 } from '../local-filter/monitoreo-local-estatus-filter.data';
-import { MonitoreoLocalFilterComponent } from '../local-filter/monitoreo-local-filter.component';
-
 const DEFAULT_IMAGE = 'assets/default.png';
 
 const MARKER_ASPECT_RATIO = 739 / 1067;
@@ -173,13 +169,9 @@ const ICON_USER =
   standalone: false,
 })
 export class MapaComponent implements OnInit, OnDestroy {
-  @ViewChild(MonitoreoLocalFilterComponent) private localFilter?: MonitoreoLocalFilterComponent;
-
   @Output() localesReady = new EventEmitter<LocalComercial[]>();
   @Output() localFocused = new EventEmitter<number>();
-  @Output() estatusFilterChange = new EventEmitter<MonitoreoLocalEstatusFilter>();
-  @Output() showLocalesRequest = new EventEmitter<void>();
-  @Output() hideLocalesRequest = new EventEmitter<void>();
+  @Output() estatusFilterReset = new EventEmitter<MonitoreoLocalEstatusFilter>();
 
   public panorama: google.maps.StreetViewPanorama;
   public sv: google.maps.StreetViewService;
@@ -203,40 +195,10 @@ export class MapaComponent implements OnInit, OnDestroy {
     private googleMapsLoader: GoogleMapsLoaderService,
   ) {}
 
-  get totalLocalesCount(): number {
-    return (this.listaLocales || []).length;
-  }
-
-  get estatusFilterCounts(): MonitoreoLocalEstatusFilterCounts {
-    const counts = createEmptyLocalEstatusFilterCounts();
-
-    for (const local of this.listaLocales || []) {
-      const estatus = resolveLocalEstatusFilter(local.nombreEstatus);
-      if (estatus) {
-        counts[estatus] += 1;
-      }
-    }
-
-    return counts;
-  }
-
-  onEstatusFilterChange(estatus: MonitoreoLocalEstatusFilter): void {
+  /** Aplica un filtro de estatus sobre los marcadores del mapa. */
+  applyEstatusFilter(estatus: MonitoreoLocalEstatusFilter): void {
     this.selectedEstatusFilter = estatus;
-    this.estatusFilterChange.emit(estatus);
     this.applyMarkerVisibility();
-  }
-
-  onShowLocalesRequest(): void {
-    this.showLocalesRequest.emit();
-  }
-
-  onHideLocalesRequest(): void {
-    this.hideLocalesRequest.emit();
-  }
-
-  /** Mantener el pill «Mostrar Locales» alineado con el panel izquierdo. */
-  syncLocalesPanelVisible(visible: boolean): void {
-    this.localFilter?.setPanelVisible(visible);
   }
 
   /** Centra el mapa en el local y abre su info window (sync con panel izquierdo). */
@@ -250,7 +212,7 @@ export class MapaComponent implements OnInit, OnDestroy {
     const visible = this.getVisibleLocales().some((local) => local.id === localId);
     if (!visible) {
       this.selectedEstatusFilter = MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT;
-      this.estatusFilterChange.emit(this.selectedEstatusFilter);
+      this.estatusFilterReset.emit(this.selectedEstatusFilter);
       this.applyMarkerVisibility();
     }
 

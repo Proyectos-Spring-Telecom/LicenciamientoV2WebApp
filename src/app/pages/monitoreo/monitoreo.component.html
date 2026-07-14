@@ -10,7 +10,7 @@
             <i-tabler name="building-store"></i-tabler>
           </span>
           <div class="monitor-panel-left__titles">
-            <span class="monitor-panel-left__kicker">Licenciamiento</span>
+            <span class="monitor-panel-left__kicker">SIGMA</span>
             <h2 class="monitor-panel-left__title">Locales</h2>
           </div>
         </div>
@@ -42,37 +42,48 @@
       </div>
 
       <div class="monitor-panel-left__list" role="list">
-        @for (local of localesFiltrados; track local.id) {
+        @for (local of localesFiltrados; track local.id; let i = $index) {
           <article
             role="listitem"
             class="monitor-local-card"
             [attr.id]="'monitor-local-row-' + local.id"
             [class.monitor-local-card--selected]="selectedLocalId === local.id"
             [attr.data-estatus]="estatusTone(local.nombreEstatus)"
+            [@cardAnim]="{ value: ':enter', params: { delay: i * 50 } }"
             (click)="seleccionarLocal(local)"
           >
             <div class="monitor-local-card__stripe" aria-hidden="true"></div>
             <div class="monitor-local-card__body">
-              <div class="monitor-local-card__top">
-                <h3 class="monitor-local-card__name">{{ local.nombreComercial || 'Sin nombre' }}</h3>
-                <span class="monitor-local-card__status">{{ etiquetaEstatus(local) }}</span>
+              <div class="monitor-local-card__media" aria-hidden="true">
+                <img
+                  [src]="fotoLocal(local)"
+                  [alt]="'Fachada de ' + (local.nombreComercial || 'local')"
+                  loading="lazy"
+                  (error)="onFotoError($event)"
+                />
               </div>
-              <p class="monitor-local-card__line">
-                <strong>Grupo:</strong> {{ local.grupo || '—' }}
-                <span class="monitor-local-card__dot">·</span>
-                <strong>Giro:</strong> {{ local.giro || '—' }}
-              </p>
-              <p class="monitor-local-card__line" *ngIf="local.rfc">
-                <strong>RFC:</strong> {{ local.rfc }}
-              </p>
-              <div class="monitor-local-card__actions">
-                <button
-                  type="button"
-                  class="monitor-local-card__btn"
-                  (click)="irADetalle(local, $event)"
-                >
-                  Información
-                </button>
+              <div class="monitor-local-card__info">
+                <div class="monitor-local-card__top">
+                  <span class="monitor-local-card__status">{{ etiquetaEstatus(local) }}</span>
+                  <h3 class="monitor-local-card__name">{{ local.nombreComercial || 'Sin nombre' }}</h3>
+                </div>
+                <p class="monitor-local-card__line">
+                  <strong>Grupo:</strong> {{ local.grupo || '—' }}
+                  <span class="monitor-local-card__dot">·</span>
+                  <strong>Giro:</strong> {{ local.giro || '—' }}
+                </p>
+                <p class="monitor-local-card__line" *ngIf="local.rfc">
+                  <strong>RFC:</strong> {{ local.rfc }}
+                </p>
+                <div class="monitor-local-card__actions">
+                  <button
+                    type="button"
+                    class="monitor-local-card__btn"
+                    (click)="irADetalle(local, $event)"
+                  >
+                    Información
+                  </button>
+                </div>
               </div>
             </div>
           </article>
@@ -85,12 +96,35 @@
     </aside>
 
     <div class="monitor-panel-right" aria-label="Mapa de locales">
+      <div class="monitor-map-overlay-row">
+        @if (!listOpen) {
+          <button
+            type="button"
+            class="monitor-list-reopen"
+            aria-label="Mostrar lista de locales"
+            (click)="togglePanel()"
+          >
+            <span class="monitor-list-reopen__icon" aria-hidden="true">
+              <i-tabler name="building-store"></i-tabler>
+            </span>
+            <span class="monitor-list-reopen__copy">
+              <span class="monitor-list-reopen__kicker">Lista</span>
+              <span class="monitor-list-reopen__label">Mostrar Locales</span>
+            </span>
+            <i-tabler name="chevron-right" class="monitor-list-reopen__chevron" aria-hidden="true"></i-tabler>
+          </button>
+        }
+        <app-monitoreo-local-filter
+          [selectedEstatus]="selectedEstatus"
+          [estatusCounts]="estatusFilterCounts"
+          [totalCount]="totalLocalesCount"
+          (estatusChange)="onEstatusFilterChange($event)"
+        ></app-monitoreo-local-filter>
+      </div>
       <app-mapa
         (localesReady)="onLocalesReady($event)"
         (localFocused)="onMapLocalFocused($event)"
-        (estatusFilterChange)="onEstatusFilterChange($event)"
-        (showLocalesRequest)="onShowLocalesRequest()"
-        (hideLocalesRequest)="onHideLocalesRequest()"
+        (estatusFilterReset)="onEstatusFilterChange($event)"
       ></app-mapa>
     </div>
   </div>

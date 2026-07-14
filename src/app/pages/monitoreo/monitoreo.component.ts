@@ -1,23 +1,39 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { Router } from '@angular/router';
 import { LocalComercial } from '../local-comercial/models/local-comercial';
 import {
+  createEmptyLocalEstatusFilterCounts,
   localMatchesEstatusFilter,
   MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT,
   MonitoreoLocalEstatusFilter,
+  MonitoreoLocalEstatusFilterCounts,
   resolveLocalEstatusFilter,
 } from './local-filter/monitoreo-local-estatus-filter.data';
 import { MapaComponent } from './mapa/mapa.component';
 
 const BODY_MAPA_CLASS = 'monitoreo-mapa-active';
 const LIST_SLIDE_MS = 280;
-const FILTER_AFTER_LIST_MS = 40;
+const DEFAULT_LOCAL_IMAGE = 'assets/default.png';
 
 @Component({
   selector: 'app-monitoreo',
   templateUrl: './monitoreo.component.html',
   styleUrls: ['./monitoreo.component.scss'],
   standalone: false,
+  animations: [
+    trigger('cardAnim', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(16px) scale(0.96)' }),
+        animate('280ms {{ delay }}ms cubic-bezier(0.22, 1, 0.36, 1)',
+          style({ opacity: 1, transform: 'translateY(0) scale(1)' })),
+      ], { params: { delay: 0 } }),
+      transition(':leave', [
+        animate('180ms ease-in',
+          style({ opacity: 0, transform: 'translateY(-10px) scale(0.97)' })),
+      ]),
+    ]),
+  ],
 })
 export class MonitoreoComponent implements OnInit, OnDestroy {
   @ViewChild(MapaComponent) private mapaComponent?: MapaComponent;
@@ -30,7 +46,6 @@ export class MonitoreoComponent implements OnInit, OnDestroy {
 
   /** Lista visible (deslizada a su sitio). Empieza oculta fuera a la izquierda. */
   listOpen = false;
-  private panelAnimToken = 0;
 
   constructor(private readonly router: Router) {}
 
@@ -39,7 +54,6 @@ export class MonitoreoComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.panelAnimToken += 1;
     document.body.classList.remove(BODY_MAPA_CLASS);
   }
 
@@ -66,25 +80,33 @@ export class MonitoreoComponent implements OnInit, OnDestroy {
     });
   }
 
+  get totalLocalesCount(): number {
+    return (this.listaLocales || []).length;
+  }
+
+  get estatusFilterCounts(): MonitoreoLocalEstatusFilterCounts {
+    const counts = createEmptyLocalEstatusFilterCounts();
+    for (const local of this.listaLocales || []) {
+      const estatus = resolveLocalEstatusFilter(local.nombreEstatus);
+      if (estatus) {
+        counts[estatus] += 1;
+      }
+    }
+    return counts;
+  }
+
   onLocalesReady(locales: LocalComercial[]): void {
     this.listaLocales = locales || [];
   }
 
   onEstatusFilterChange(estatus: MonitoreoLocalEstatusFilter): void {
     this.selectedEstatus = estatus;
+    this.mapaComponent?.applyEstatusFilter(estatus);
   }
 
   onMapLocalFocused(localId: number): void {
     this.selectedLocalId = localId;
     this.scrollFilaSeleccionada();
-  }
-
-  onShowLocalesRequest(): void {
-    void this.showSequentially();
-  }
-
-  onHideLocalesRequest(): void {
-    void this.hideSequentially();
   }
 
   onSearchChange(value: string): void {
@@ -101,40 +123,10 @@ export class MonitoreoComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl('/local-comercial/detalle-local-comercial');
   }
 
+  /** Contrae/expande solo la lista; la card de filtros del mapa es independiente. */
   togglePanel(): void {
-    if (!this.listOpen) {
-      this.mapaComponent?.syncLocalesPanelVisible(true);
-      void this.showSequentially();
-      return;
-    }
-    void this.hideSequentially();
-  }
-
-  private async showSequentially(): Promise<void> {
-    const token = ++this.panelAnimToken;
-    this.listOpen = true;
+    this.listOpen = !this.listOpen;
     this.scheduleMapResize();
-  }
-
-  /** Ocultar: la lista se desliza a la izquierda; luego se colapsa la card. */
-  private async hideSequentially(): Promise<void> {
-    const token = ++this.panelAnimToken;
-
-    if (this.listOpen) {
-      this.listOpen = false;
-      this.scheduleMapResize();
-      await this.delay(LIST_SLIDE_MS);
-      if (token !== this.panelAnimToken) {
-        return;
-      }
-    }
-
-    await this.delay(FILTER_AFTER_LIST_MS);
-    if (token !== this.panelAnimToken) {
-      return;
-    }
-
-    this.mapaComponent?.syncLocalesPanelVisible(false);
   }
 
   private scheduleMapResize(): void {
@@ -143,8 +135,23 @@ export class MonitoreoComponent implements OnInit, OnDestroy {
     });
   }
 
-  private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  fotoLocal(local: LocalComercial): string {
+    const ruta = local.urlLicencia;
+    if (ruta == null) {
+      return DEFAULT_LOCAL_IMAGE;
+    }
+    const trimmed = String(ruta).trim();
+    if (trimmed === '' || trimmed.toLowerCase() === 'null') {
+      return DEFAULT_LOCAL_IMAGE;
+    }
+    return trimmed.replace(/\\/g, '/');
+  }
+
+  onFotoError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img && !img.src.endsWith(DEFAULT_LOCAL_IMAGE)) {
+      img.src = DEFAULT_LOCAL_IMAGE;
+    }
   }
 
   estatusTone(nombreEstatus: string | null | undefined): string {

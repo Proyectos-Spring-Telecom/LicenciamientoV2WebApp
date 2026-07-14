@@ -489,7 +489,6 @@
   font-size: 0.85em;
   font-weight: 600;
   letter-spacing: 0.03em;
-  text-transform: uppercase;
 }
 
 #detalle .detalle-nombre-comercial-valor {
@@ -835,7 +834,6 @@
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
   line-height: 1.25;
   color: rgba(255, 255, 255, 0.48);
   animation: none;
@@ -1128,7 +1126,6 @@
   font-size: 0.72rem;
   font-weight: 500;
   letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 .galeria-tipo__value {

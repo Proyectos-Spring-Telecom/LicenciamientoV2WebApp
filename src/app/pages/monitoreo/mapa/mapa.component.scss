@@ -15,18 +15,6 @@
   height: 100%;
 }
 
-.monitoreo-local-filter-host {
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  z-index: 28;
-  pointer-events: none;
-
-  > * {
-    pointer-events: auto;
-  }
-}
-
 .full,
 #map {
   width: 100%;
