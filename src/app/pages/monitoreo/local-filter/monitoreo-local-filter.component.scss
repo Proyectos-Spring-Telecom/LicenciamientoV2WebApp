@@ -34,11 +34,6 @@
   inset: -36% auto auto -14%;
   width: 78%;
   height: 140%;
-  background: radial-gradient(
-    circle at 18% 0%,
-    color-mix(in srgb, var(--cli-accent) 40%, transparent),
-    transparent 68%
-  );
   pointer-events: none;
   filter: blur(2px);
 }
@@ -56,10 +51,7 @@
   background:
     linear-gradient(165deg, rgba(255, 255, 255, 0.07) 0%, transparent 42%),
     var(--cli-bg);
-  box-shadow:
-    0 26px 54px rgba(0, 0, 0, 0.46),
-    0 0 0 1px rgba(255, 255, 255, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: none;
   backdrop-filter: blur(24px) saturate(170%);
   transform-origin: top left;
   will-change: transform, opacity;
@@ -115,7 +107,7 @@
   background:
     linear-gradient(145deg, color-mix(in srgb, var(--cli-accent) 55%, #0f172a), #0f172a);
   border: 1px solid color-mix(in srgb, var(--cli-accent) 45%, transparent);
-  box-shadow: 0 0 22px color-mix(in srgb, var(--cli-accent) 28%, transparent);
+  box-shadow: none;
 
   i-tabler {
     width: 20px;
@@ -134,7 +126,6 @@
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--cli-muted);
 }
 
@@ -144,7 +135,6 @@
   font-size: 1rem;
   font-weight: 800;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: #fff;
   line-height: 1.15;
 }
@@ -200,9 +190,7 @@
   background:
     linear-gradient(165deg, color-mix(in srgb, var(--cli-accent) 30%, transparent) 0%, transparent 58%),
     rgba(8, 12, 24, 0.96);
-  box-shadow:
-    0 14px 32px rgba(2, 6, 23, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: none;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
   will-change: transform, opacity;
@@ -240,7 +228,6 @@
   font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 0.1em;
-  text-transform: uppercase;
   color: var(--cli-muted);
 }
 

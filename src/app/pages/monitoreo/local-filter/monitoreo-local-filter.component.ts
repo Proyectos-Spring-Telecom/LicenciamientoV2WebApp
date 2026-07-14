@@ -38,8 +38,6 @@ export class MonitoreoLocalFilterComponent {
 
   @Output() selectedEstatusChange = new EventEmitter<MonitoreoLocalEstatusFilter>();
   @Output() estatusChange = new EventEmitter<MonitoreoLocalEstatusFilter>();
-  @Output() showLocalesRequest = new EventEmitter<void>();
-  @Output() hideLocalesRequest = new EventEmitter<void>();
 
   readonly estatusOptions = MONITOREO_LOCAL_ESTATUS_FILTER_OPTIONS;
 
@@ -53,28 +51,13 @@ export class MonitoreoLocalFilterComponent {
     return this.collapsed;
   }
 
-  /** Sincroniza el pill flotante con el panel izquierdo del padre. */
-  setPanelVisible(visible: boolean): void {
-    this.collapsed = !visible;
-  }
-
-  /**
-   * Solo pide ocultar: el padre cierra primero la lista y después colapsa esta card.
-   * No colapsar aquí al mismo tiempo o la animación se pelea.
-   */
+  /** Contrae/expande solo esta card; la lista de locales es independiente. */
   collapse(): void {
-    if (this.collapsed) {
-      return;
-    }
-    this.hideLocalesRequest.emit();
+    this.collapsed = true;
   }
 
   expand(): void {
-    if (!this.collapsed) {
-      return;
-    }
     this.collapsed = false;
-    this.showLocalesRequest.emit();
   }
 
   selectEstatus(estatus: MonitoreoLocalEstatusFilter): void {

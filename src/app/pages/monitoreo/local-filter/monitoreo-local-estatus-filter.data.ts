@@ -14,9 +14,9 @@ export interface MonitoreoLocalEstatusFilterOption {
 export const MONITOREO_LOCAL_ESTATUS_FILTER_OPTIONS: MonitoreoLocalEstatusFilterOption[] = [
   { id: 'todo', shortLabel: 'Todos', ariaLabel: 'Todos' },
   { id: 'pendiente', shortLabel: 'Pendiente', ariaLabel: 'Estatus Pendiente' },
-  { id: 'info-faltante', shortLabel: 'Info faltante', ariaLabel: 'Información Faltante' },
+  { id: 'info-faltante', shortLabel: 'Información Faltante', ariaLabel: 'Información Faltante' },
   { id: 'rechazo', shortLabel: 'Rechazo', ariaLabel: 'Rechazo' },
-  { id: 'datos-correctos', shortLabel: 'Datos correctos', ariaLabel: 'Datos Correctos' },
+  { id: 'datos-correctos', shortLabel: 'Datos Correctos', ariaLabel: 'Datos Correctos' },
 ];
 
 export const MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT: MonitoreoLocalEstatusFilter = 'todo';
