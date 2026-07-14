@@ -21,6 +21,8 @@ export class User {
   rol?: { id?: number; nombre?: string };
   userName?: string;
   rolNombre?: string;
+  nombreRol?: string;
+  nombreGrupo?: string;
   fotoPerfil?: string;
   logo?: string;
   nombreCliente?: string;
