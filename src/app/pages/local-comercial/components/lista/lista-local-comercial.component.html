@@ -71,6 +71,9 @@
         id="gridContainer"
         class="inm-data-grid"
         [dataSource]="listaLocales"
+        [keyExpr]="'id'"
+        [remoteOperations]="false"
+        [paging]="{ pageSize: pageSize }"
         [columnHidingEnabled]="true"
         [hoverStateEnabled]="false"
         [showBorders]="true"
@@ -78,15 +81,23 @@
         [showRowLines]="true"
         [rowAlternationEnabled]="true"
         [width]="'100%'"
-        [noDataText]="'Sin registros para mostrar'">
+        [noDataText]="'Sin registros para mostrar'"
+        [pager]="{
+          showPageSizeSelector: true,
+          allowedPageSizes: [100],
+          showInfo: true,
+          infoText: 'Página {0} de {1}',
+          visible: true
+        }"
+        (onPageIndexChanged)="onPageIndexChanged($event)"
+        (onOptionChanged)="onGridOptionChanged($event)">
         <dxo-search-panel [visible]="true" [width]="200" placeholder="Buscar..."></dxo-search-panel>
         <dxo-toolbar>
           <dxi-item name="groupPanel" location="before"></dxi-item>
           <dxi-item name="exportButton" location="after" [options]="{ text: 'Exportar Grid', icon: 'export' }" [showText]="'always'"></dxi-item>
           <dxi-item name="searchPanel" location="after"></dxi-item>
         </dxo-toolbar>
-        <dxo-paging [pageSize]="10"></dxo-paging>
-        <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[5, 10, 50, 100]" [showInfo]="true"></dxo-pager>
+        <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[100]" [showInfo]="true"></dxo-pager>
         <dxo-group-panel [emptyPanelText]="mensajeAgrupar" [visible]="true"></dxo-group-panel>
         <dxo-filter-row [visible]="showFilterRow"></dxo-filter-row>
         <dxo-header-filter [visible]="showHeaderFilter"></dxo-header-filter>
@@ -100,9 +111,10 @@
         <dxi-column dataField="rfc" caption="RFC" alignment="center" cellTemplate="textCell" [width]="130" [allowSearch]="true"></dxi-column>
         <dxi-column dataField="nombreComercial" caption="Nombre Comercial" alignment="center" cellTemplate="textCell" [allowSearch]="true"></dxi-column>
         <dxi-column dataField="giro" caption="Giro" alignment="center" cellTemplate="textCell" [width]="230" [allowSearch]="true"></dxi-column>
-        <dxi-column dataField="nombreCapturista" caption="Capturista" alignment="center" cellTemplate="textCell" [width]="190" [allowSearch]="true"></dxi-column>
+        <dxi-column dataField="nombreCapturista" caption="Capturista" alignment="center" cellTemplate="textCell" [width]="220" [allowSearch]="true"></dxi-column>
+        <dxi-column dataField="grupo" caption="Grupo" alignment="center" cellTemplate="textCell" [width]="100" [allowSearch]="true"></dxi-column>
         <dxi-column dataField="nombreEstatus" caption="Estatus" alignment="center" cellTemplate="color" [width]="190" [allowSearch]="true"></dxi-column>
-        <dxi-column dataField="fechaHora" caption="Fecha Expedición" alignment="center" cellTemplate="dateCell" [width]="190" dataType="date" [allowSearch]="true"></dxi-column>
+        <dxi-column dataField="fechaCreacion" caption="Fecha Expedición" alignment="center" cellTemplate="dateCell" [width]="190" dataType="datetime" [allowSearch]="true"></dxi-column>
 
         <div *dxTemplate="let cellData of 'dateCell'">
           <span [class.grid-sin-informacion]="!cellData.value">
@@ -122,7 +134,7 @@
             </button>
           </div>
           <div *appHasPermission="'11'">
-            <button type="button" id="actualizarButton" class="btnAcciones" matTooltip="Detalle" (click)="detalleLocal()">
+            <button type="button" id="actualizarButton" class="btnAcciones" matTooltip="Detalle" (click)="detalleLocal(row.data.id)">
               <i class="fa fa-list"></i>
             </button>
           </div>

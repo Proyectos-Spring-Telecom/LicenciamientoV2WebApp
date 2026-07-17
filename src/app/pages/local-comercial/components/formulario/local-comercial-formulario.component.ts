@@ -5,10 +5,12 @@ import { DetalleLocal, proteccionCivil } from '../../models/detalle-local-comerc
 import { LocalComercial } from '../../models/local-comercial';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, AbstractControl, } from '@angular/forms';
+import { FormGroup, FormBuilder } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { FormGenerico } from '../../models/form-generico';
 import { LocalComercialService } from '../../services/local-comercial.service';
+import { SepomexService } from '../../services/sepomex.service';
+import { SepomexColonia } from '../../models/sepomex-codigo-postal';
 import { ListaRol } from '../../models/Catalogos/roles';
 import { ListaGrupo } from '../../models/Catalogos/grupo'
 import { ListaTipoFoto } from '../../models/Catalogos/tipoFoto'
@@ -31,20 +33,24 @@ import {
   resolverIdCatalogoDesdeApi,
   resolverValorDocumentoFormData,
   tieneCoordenadasValidas,
-  tieneDocumentoAdjunto,
   toDateInputValue,
 } from '../../utils/documentos-local.config';
 import {
   mostrarAlertaCamposObligatorios,
   mostrarCargandoLocalComercial,
+  mostrarSwalCodigoPostalNoEncontrado,
   mostrarSwalError,
   mostrarSwalExito,
   ocultarCargandoLocalComercial,
 } from '../../utils/local-comercial-swal.util';
 import {
   buildLocalComercialFormData,
-  generarJsonEnvioLocalComercial
+  createRegistrosFormGroup,
+  generarJsonEnvioLocalComercial,
+  mapPredioObra,
+  mapTipoRegistro,
 } from '../../utils/local-comercial-form-payload.util';
+import { mapDocumentosFromRegistro, mapRegistroToFormPatch, unwrapRegistroResponse } from '../../utils/map-registro-api.util';
 import {
   blockNonAlphanumericKey,
   blockNonNumericKey,
@@ -52,6 +58,7 @@ import {
   sanitizeRfcValue,
 } from '../../utils/local-form-input.util';
 import { LayoutScrollService } from 'src/app/services/layout-scroll.service';
+import { PreRegistroStateService } from '../../services/pre-registro-state.service';
 
 
 @Component({
@@ -72,10 +79,38 @@ export class LocalComercialFormularioComponent implements OnInit {
   private shouldScrollAfterTabNav = false;
   public readonly localFormTabCount = 4;
   readonly tabHeaders = [
-    { title: 'Sapac', subtitle: 'Sistema de Agua Potable y Alcantarillado', css: 'local-tab-header--sapac' },
-    { title: 'Catastral', subtitle: 'Predial de Cuernavaca', css: 'local-tab-header--catastral' },
-    { title: 'Licenciamiento', subtitle: 'Licencias de Funcionamiento de Establecimientos Comerciales', css: 'local-tab-header--licenciamiento' },
-    { title: 'Protección Civil', subtitle: 'Coordinación estatal de protección civil morelos', css: 'local-tab-header--proteccion' },
+    {
+      title: 'Sapac',
+      shortLabel: 'Sapac',
+      subtitle: 'Sistema de Agua Potable y Alcantarillado',
+      css: 'local-tab-header--sapac',
+      icon: 'water_drop',
+      accent: 'sapac',
+    },
+    {
+      title: 'Catastral',
+      shortLabel: 'Catastral',
+      subtitle: 'Predial de Cuernavaca',
+      css: 'local-tab-header--catastral',
+      icon: 'map',
+      accent: 'catastral',
+    },
+    {
+      title: 'Licenciamiento',
+      shortLabel: 'Licencia',
+      subtitle: 'Licencias de Funcionamiento de Establecimientos Comerciales',
+      css: 'local-tab-header--licenciamiento',
+      icon: 'storefront',
+      accent: 'licenciamiento',
+    },
+    {
+      title: 'Protección Civil',
+      shortLabel: 'Protección',
+      subtitle: 'Coordinación estatal de protección civil Morelos',
+      css: 'local-tab-header--proteccion',
+      icon: 'health_and_safety',
+      accent: 'proteccion',
+    },
   ] as const;
   @ViewChild('tabPanels') tabPanelsRef: ElementRef<HTMLElement>;
   @ViewChild('formTop') formTopRef: ElementRef<HTMLElement>;
@@ -89,6 +124,7 @@ export class LocalComercialFormularioComponent implements OnInit {
   public localidadesRegistros: FormGenerico[];
   public coloniasRegistros: FormGenerico[];
   public callesRegistros: FormGenerico[];
+  public coloniasSepomex: SepomexColonia[] = [];
   /**Licenciamiento */
   public estadoRegistros: FormGenerico[];
   public municipioRegistros: FormGenerico[];
@@ -158,11 +194,18 @@ export class LocalComercialFormularioComponent implements OnInit {
   public documentosExistentes: Record<string, string> = {};
   readonly documentosSapac = DOCUMENTOS_SAPAC;
   readonly documentosCatastral = DOCUMENTOS_CATASTRAL;
-  readonly documentosLicenciamiento = DOCUMENTOS_LICENCIAMIENTO;
+  readonly documentosLicenciamiento = DOCUMENTOS_LICENCIAMIENTO.filter(
+    (doc) => doc.controlName === 'Licencias.licenciaFuncionamiento'
+  );
   readonly documentosProteccion = DOCUMENTOS_PROTECCION;
   readonly OTRO_ID = ' ';
   private cargandoDireccionEdicion = false;
   private sincronizandoDireccion = false;
+
+  /** Flujo pre-registro → alta: para regresar a Tipo de Local o Finalización (obra). */
+  public vieneDePreRegistro = false;
+  public predioEnObraPreRegistro = false;
+  private static readonly PRE_REGISTRO_STORAGE_KEY = 'lc.preRegistro';
 
   constructor(
     private router: Router,
@@ -170,7 +213,13 @@ export class LocalComercialFormularioComponent implements OnInit {
     private fb: FormBuilder,
     private dialog: MatDialog,
     private localComercialService: LocalComercialService,
-    private layoutScroll: LayoutScrollService) { }
+    private sepomexService: SepomexService,
+    private layoutScroll: LayoutScrollService,
+    private preRegistroState: PreRegistroStateService) {
+    this.cargarEstadoPreRegistro(
+      this.router.getCurrentNavigation()?.extras?.state ?? history.state ?? null
+    );
+  }
 
   get activeTabHeader() {
     return this.tabHeaders[this.activeTab] ?? this.tabHeaders[0];
@@ -227,12 +276,148 @@ export class LocalComercialFormularioComponent implements OnInit {
     setTimeout(goTop, 300);
   }
 
+  private cargarEstadoPreRegistro(state: any): void {
+    const stored = this.preRegistroState.peekScalar();
+    const data = state?.preRegistro ? state : stored;
+    if (!data?.preRegistro) {
+      this.vieneDePreRegistro = false;
+      this.predioEnObraPreRegistro = false;
+      return;
+    }
+
+    this.vieneDePreRegistro = true;
+    this.predioEnObraPreRegistro = !!data.predioEnObra;
+  }
+
+  private aplicarDatosPreRegistroAlFormulario(): void {
+    const data = this.preRegistroState.peekScalar();
+    if (!data?.preRegistro || !this.localForm) {
+      return;
+    }
+
+    const files = this.preRegistroState.peekFiles();
+    this.localForm.patchValue({
+      Latitud: data.lat ?? '',
+      Longitud: data.lng ?? '',
+      TipoRegistro: Number(mapTipoRegistro(data.tipoRegistro ?? 0) || '0'),
+      PredioObra: Number(mapPredioObra(data.predioEnObra ?? 0)),
+      EntidadFederativa: data.EntidadFederativa ?? '',
+      Municipio: data.Municipio ?? '',
+      Localidad: data.Localidad ?? '',
+      Colonia: data.Colonia ?? '',
+      Calle: data.Calle ?? '',
+      NoInterior: data.NoInterior ?? '',
+      NoExterior: data.NoExterior ?? '',
+      CP: data.CP ?? '',
+      LicenciaConstruccion: {
+        TipoSolicitudLicencia: data.LcTipoSolicitudLicencia ?? '',
+        DescripcionProyecto: data.LcDescripcionProyecto ?? '',
+        SuperficieTerrenoM2: data.LcSuperficieTerrenoM2 ?? '',
+        SuperficieTerrenoObraM2: data.LcSuperficieTerrenoObraM2 ?? '',
+        DescripcionSistemaConstructivo: data.LcDescripcionSistemaConstructivo ?? '',
+        NombrePropietario: data.LcNombrePropietario ?? '',
+        DomicilioNotificacion: data.LcDomicilioNotificacion ?? data.direccion ?? '',
+        RFC: data.LcRFC ?? '',
+        NombreDRO: data.LcNombreDRO ?? '',
+        NoRegLicenciaConstruccion: data.LcNoRegLicenciaConstruccion ?? '',
+        CedulaProfesional: data.LcCedulaProfesional ?? '',
+        Fecha: data.LcFecha ?? '',
+        NumeroExpediente: data.LcNumeroExpediente ?? '',
+        NumeroControl: data.LcNumeroControl ?? '',
+        SeguimientoObra: data.LcSeguimientoObra ?? '',
+        ConstanciaAlineamiento: data.LcConstanciaAlineamiento ?? '',
+        LicenciaUsoSuelo: data.LcLicenciaUsoSuelo ?? '',
+        PlanoAutorizado: data.LcPlanoAutorizado ?? '',
+        LicenciaFraccionamiento: data.LcLicenciaFraccionamiento ?? '',
+        Escrituras: data.LcEscrituras ?? '',
+        FactibilidadAguaPotable: data.LcFactibilidadAguaPotable ?? '',
+        RecibosPagoPredial: data.LcRecibosPagoPredial ?? '',
+        RecibosMunicipales: data.LcRecibosMunicipales ?? '',
+        PlanoArquitectonicos: data.LcPlanoArquitectonicos ?? '',
+        Otros: data.LcOtros ?? '',
+        constanciaAlineamientoyNumero: files.LcConstanciaAlineamientoyNumero ?? [],
+        LicenciaUsoyPlano: files.LcLicenciaUsoyPlano ?? [],
+        ConstanciaPropietario: files.LcConstanciaPropietario ?? [],
+        Factibilidad: files.LcFactibilidad ?? [],
+        RecibosImpuestoPredial: files.LcRecibosImpuestoPredial ?? [],
+        JuegoDePlanosArquitectonicos: files.LcJuegoDePlanosArquitectonicos ?? [],
+        otros: files.LcOtrosDocs ?? [],
+        FirmaPropietario: files.LcFirmaPropietario ?? '',
+        FirmaDRO: files.LcFirmaDRO ?? '',
+        FirmaCorresponsable: files.LcFirmaCorresponsable ?? '',
+        FirmaResponsableRecepcionDocumento: files.LcFirmaResponsableRecepcionDocumento ?? '',
+      },
+    });
+
+    const mapaArchivos: Array<[keyof typeof files, string]> = [
+      ['ReciboSapac', 'Sapac.reciboSapac'],
+      ['CaratulaMedidor', 'Sapac.caratulamedidor'],
+      ['CuadroMedidor', 'Sapac.cuadromedidor'],
+      ['ReciboPredial', 'Catastro.reciboPredial'],
+      ['LicenciaFuncionamiento', 'Licencias.licenciaFuncionamiento'],
+      ['FachadaEstablecimiento', 'Licencias.fachada'],
+      ['EstacionamientoIMG', 'Licencias.estacionamiento'],
+      ['Bodega', 'Licencias.bodega'],
+      ['VistoBueno', 'ProteccionCivil.vistoBueno'],
+    ];
+    mapaArchivos.forEach(([origen, path]) => {
+      const file = files[origen];
+      if (file instanceof File) {
+        this.localForm.get(path)?.setValue(file);
+        if (file.type.startsWith('image/')) {
+          this.documentosExistentes[path] = URL.createObjectURL(file);
+        }
+      }
+    });
+  }
+
+  get etiquetaBannerRegresar(): string {
+    if (!this.vieneDePreRegistro) return 'Regresar';
+    return this.predioEnObraPreRegistro ? 'Finalización del Trámite' : 'Tipo de Local';
+  }
+
+  onBannerRegresar(): void {
+    if (this.vieneDePreRegistro) {
+      this.volverAPreRegistro();
+      return;
+    }
+    this.redirigir();
+  }
+
+  volverAPreRegistro(): void {
+    const data = this.preRegistroState.peekScalar() ?? {
+      preRegistro: true as const,
+      predioEnObra: this.predioEnObraPreRegistro,
+      lat: null,
+      lng: null,
+      direccion: '',
+      tipoRegistro: 'comercial' as const,
+    };
+
+    this.router.navigateByUrl('/local-comercial/pre-alta-local-comercial', {
+      state: {
+        regreso: true,
+        abrirApartadoObra: !!data.predioEnObra,
+        preRegistro: true,
+        predioEnObra: !!data.predioEnObra,
+        lat: data.lat ?? null,
+        lng: data.lng ?? null,
+        direccion: data.direccion ?? '',
+        tipoRegistro: data.tipoRegistro ?? 'comercial',
+      },
+    });
+  }
+
   async ngOnInit() {
     this.initForm();
+    this.aplicarDatosPreRegistroAlFormulario();
     this.activatedRoute.params.subscribe((param) => {
       this.id = param['id'];
       if (this.id) {
         this.titulo = 'Actualizar Local Comercial';
+        this.vieneDePreRegistro = false;
+        this.predioEnObraPreRegistro = false;
+        this.preRegistroState.clear();
         this.obtenerLocalComercial(this.id);
         this.btnCuadroMedidor = true;
         this.btnFachada = true;
@@ -244,8 +429,6 @@ export class LocalComercialFormularioComponent implements OnInit {
     await this.obtenerMunicipios();
     await this.obtenerEstadosLicencia();
     await this.obtenerMunicipiosLicencia();
-    await this.obtenerLocalidades(906);
-    await this.obtenerLocalidadesLicencia(906);
 
     //obtener Catalogos;
     this.obtenerServicios();
@@ -256,364 +439,88 @@ export class LocalComercialFormularioComponent implements OnInit {
   }
 
   initForm() {
-    this.localForm = this.fb.group({
-      /* Validaciones de Sapac */
-      NumeroCuenta: [''],
-      NombreSapac: [''],
-      ApellidoPaternoSapac: [''],
-      ApellidoMaternoSapac: [''],
-      RfcSapac: [''],
-      IdEntidadFederativaSapac: [''],
-      IdMunicipioSapac: [''],
-      IdLocalidadSapac: [''],
-      IdColoniaSapac: [''],
-      IdColoniaLicencia: [''],
-      IdCalleSapac: [''],
-      NombreLocalidadSapac: [''],
-      NombreColoniaSapac: [''],
-      NombreCalleSapac: [''],
-      NoInteriorSapac: [''],
-      NoExteriorSapac: [''],
-      CPSapac: [''],
-      Sector: [''],
-      Ruta: [''],
-      Folio: [''],
-      IdTipoServicio: [''],
-      Tipo: [1],
-      Medidor: [''],
-      ReciboSapac: [''],
-      CaratulaMedidor: [''],
-      CuadroMedidor: [''],
-      /* Validaciones de Catastral */
-      Clave: [''],
-      M2: [''],
-      Superficie: [''],
-      UsoSuelo: [''],
-      ReciboPredial: [''],
-      /* Validaciones Licenciamiento */
-      Registro: [''],
-      RFC: [''],
-      NombreComercial: ['', Validators.required],
-      IdGiro: [''],
-      LicenciaSuelo: [''],
-      Nombre: [''],
-      ApellidoPaterno: [''],
-      ApellidoMaterno: [''],
-      TipoPersona: [''],
-      RazonSocial: [''],
-      RepresentanteLegalNombre: [''],
-      RepresentanteLegalPaterno: [''],
-      RepresentanteLegalMaterno: [''],
-      RepresentanteLegalTelefono: [''],
-      RepresentanteLegalEmail: [''],
-      ContactoNombre: [''],
-      ContactoPaterno: [''],
-      ContactoMaterno: [''],
-      ContactoTelefono: [''],
-      ContactoEmail: [''],
-      FechaExpedicion: [''],
-      FechaRefrendo: [''],
-      IdEntidadFederativaLicencia: [''],
-      IdMunicipioLicencia: [''],
-      IdLocalidadLicencia: [''],
-      IdCalleLicencia: [''],
-      NombreLocalidadLicencia: [''],
-      NombreColoniaLicencia: [''],
-      NombreCalleLicencia: [''],
-      NoInteriorLicencia: [''],
-      NoExteriorLicencia: [''],
-      CPLicencia: [''],
-      TieneEstacionamiento: [''],
-      Lat: [''],
-      Lng: [''],
-      LicenciaFuncionamiento: [''],
-      FachadaEstablecimiento: ['', this.validarFachadaEstablecimiento.bind(this)],
-      EstacionamientoIMG: [''],
-      Bodega: [''],
-      /* Validaciones P.Civil */
-      EsEmpresa: [false],
-      RazonSocialProteccionCivil: [''],
-      RegistroAcreditacion: [''],
-      RfcProteccionCivil: [''],
-      NombreProteccionCivil: [''],
-      ApellidoPaternoProteccionCivil: [''],
-      ApellidoMaternoProteccionCivil: [''],
-      TelefonoProteccionCivil: [''],
-      TienePrograma: [''],
-      VistoBueno: [''],
-    });
+    // Solo campos del body POST /registros (Untitled-1).
+    this.localForm = createRegistrosFormGroup(this.fb);
   }
 
-  obtenerLocalComercial(idLicencia: number) {
+  obtenerLocalComercial(idRegistro: number) {
     this.cargandoDireccionEdicion = true;
-    this.localComercialService.obtenerDetalleLocalComercial(idLicencia).subscribe(
-      async (result: DetalleLocal) => {
-        this.documentosExistentes = mapFotosToUrls(result.fotos);
-        this.actualizarValidacionFachada();
-        const idLocalidadSapac = resolverIdCatalogoDesdeApi(
-          result.direccionSapac.idLocalidadSapac,
-          result.direccionSapac.nombreLocalidadSapac,
-          this.OTRO_ID
-        );
-        const idColoniaSapac = resolverIdCatalogoDesdeApi(
-          result.direccionSapac.idColoniaSapac,
-          result.direccionSapac.nombreColoniaSapac,
-          this.OTRO_ID
-        );
-        const idCalleSapac = resolverIdCatalogoDesdeApi(
-          result.direccionSapac.idCalleSapac,
-          result.direccionSapac.nombreCalleSapac,
-          this.OTRO_ID
-        );
-        const idLocalidadLicencia = resolverIdCatalogoDesdeApi(
-          result.direccion.idLocalidadLicencia,
-          result.direccion.nombreLocalidadLicencia,
-          this.OTRO_ID
-        );
-        const idColoniaLicencia = resolverIdCatalogoDesdeApi(
-          result.direccion.idColoniaLicencia,
-          result.direccion.nombreColoniaLicencia,
-          this.OTRO_ID
-        );
-        const idCalleLicencia = resolverIdCatalogoDesdeApi(
-          result.direccion.idCalleLicencia,
-          result.direccion.nombreCalleLicencia,
-          this.OTRO_ID
-        );
-        this.idLocalidadGeneral = idLocalidadSapac;
-        this.idColoniaGeneral = idColoniaSapac;
-        this.calleLicenciaTemp = idCalleSapac;
-        this.idLocalidadLicencia = idLocalidadLicencia;
-        this.idColoniaLicenciaV = idColoniaLicencia;
-        this.idCalleLicenciaV = idCalleLicencia;
-        if (result.tipoPersona === 2) {
-          this.localForm.patchValue({
-            /**Sapac */
-            NumeroCuenta: result.numeroCuenta,
-            NombreSapac: result.nombreSapac,
-            ApellidoPaternoSapac: result.apellidoPaternoSapac,
-            ApellidoMaternoSapac: result.apellidoMaternoSapac,
-            RfcSapac: result.rfcsapac,
-            IdEntidadFederativaSapac: result.direccionSapac.idEntidadFederativaSapac,
-            IdMunicipioSapac: result.direccionSapac.idMunicipioSapac,
-            IdLocalidadSapac: idLocalidadSapac,
-            NombreLocalidadSapac: result.direccionSapac.nombreLocalidadSapac,
-            IdColoniaSapac: idColoniaSapac,
-            IdColoniaLicencia: idColoniaLicencia,
-            NombreColoniaSapac: result.direccionSapac.nombreColoniaSapac,
-            IdCalleSapac: idCalleSapac,
-            NombreCalleSapac: result.direccionSapac.nombreCalleSapac,
-            NoInteriorSapac: result.direccionSapac.noInteriorSapac,
-            NoExteriorSapac: result.direccionSapac.noExteriorSapac,
-            CPSapac: result.direccionSapac.cpSapac,
-            Sector: result.sector,
-            Ruta: result.ruta,
-            Folio: result.ruta,
-            IdTipoServicio: result.idTipoServicio,
-            Medidor: result.medidor,
-            /**Catastral */
-            Clave: result.clave,
-            M2: result.m2,
-            Superficie: result.superficie,
-            UsoSuelo: result.usoSuelo,
-            /**Licenciamiento*/
-            Registro: result.registro,
-            RFC: result.rfc,
-            NombreComercial: result.nombreComercial,
-            LicenciaSuelo: result.licenciaSuelo,
-            IdGiro: result.idGiro,
-            Nombre: result.nombre,
-            ApellidoPaterno: result.apellidoPaterno,
-            ApellidoMaterno: result.apellidoMaterno,
-            TipoPersona: result.tipoPersona,
-            IdEntidadFederativaLicencia: result.direccion.idEntidadFederativaLicencia,
-            IdMunicipioLicencia: result.direccion.idMunicipioLicencia,
-            IdLocalidadLicencia: idLocalidadLicencia,
-            NombreLocalidadLicencia: result.direccion.nombreLocalidadLicencia,
-            NombreColoniaLicencia: result.direccion.nombreColoniaLicencia,
-            IdCalleLicencia: idCalleLicencia,
-            NombreCalleLicencia: result.direccion.nombreCalleLicencia,
-            RazonSocial: result.razonSocial,
-            RepresentanteLegalNombre: result.representante.representanteLegalNombre,
-            RepresentanteLegalPaterno: result.representante.representanteLegalPaterno,
-            RepresentanteLegalMaterno: result.representante.representanteLegalMaterno,
-            RepresentanteLegalTelefono: result.representante.representanteLegalTelefono,
-            RepresentanteLegalEmail: result.representante.representanteLegalEmail,
-            ContactoNombre: result.contacto.contactoNombre,
-            ContactoPaterno: result.contacto.contactoPaterno,
-            ContactoMaterno: result.contacto.contactoMaterno,
-            ContactoTelefono: result.contacto.contactoTelefono,
-            ContactoEmail: result.contacto.contactoEmail,
-            FechaExpedicion: toDateInputValue(result.fechaExpedicion),
-            FechaRefrendo: toDateInputValue(result.fechaRefrendo),
-            NoInteriorLicencia: result.direccion.noInteriorLicencia,
-            NoExteriorLicencia: result.direccion.noExteriorLicencia,
-            CPLicencia: result.direccion.cpLicencia,
-            TieneEstacionamiento: result.estacionamiento,
-            Lat: result.lat,
-            Lng: result.lng,
-          /**P.Civil*/
-            EsEmpresa: result.proteccionCivil.esEmpresa,
-            RfcProteccionCivil: result.proteccionCivil.rfc,
-            RazonSocialProteccionCivil: result.proteccionCivil.razonSocial,
-            NombreProteccionCivil: result.proteccionCivil.nombre,
-            ApellidoPaternoProteccionCivil: result.proteccionCivil.apellidoPaterno,
-            ApellidoMaternoProteccionCivil: result.proteccionCivil.apellidoMaterno,
-            TelefonoProteccionCivil: result.proteccionCivil.telefono,
-            RegistroAcreditacion: result.proteccionCivil.registroAcreditacion,
-            TienePrograma: result.proteccionCivil.tienePrograma,
+    this.localComercialService.obtenerRegistroPorId(idRegistro).subscribe({
+      next: (response) => {
+        const result = unwrapRegistroResponse(response);
+        const patch = mapRegistroToFormPatch(result);
+        this.documentosExistentes = {
+          ...mapFotosToUrls(result?.fotos ?? []),
+          ...mapDocumentosFromRegistro(result),
+        };
+        this.localForm.patchValue(patch);
+
+        const tipoPersona = Number(this.localForm.get('Licencias.TipoPersona')?.value);
+        this.fisica = tipoPersona === 1 || tipoPersona === 0;
+
+        const tienePrograma = this.localForm.get('ProteccionCivil.TienePrograma')?.value;
+        this.tieneprograma =
+          tienePrograma === true || tienePrograma === 1 || tienePrograma === '1' ? 'Sí' : 'No';
+
+        const estacionamiento = this.localForm.get('Licencias.Estacionamiento')?.value;
+        this.tieneestacionamiento =
+          estacionamiento === true || estacionamiento === 1 || estacionamiento === '1' ? 'Sí' : 'No';
+
+        const cp = String(this.localForm.get('CP')?.value ?? '').replace(/\D/g, '');
+        if (cp.length === 5) {
+          const coloniaActual = String(this.localForm.get('Colonia')?.value ?? '');
+          this.sepomexService.obtenerPorCp(cp).subscribe({
+            next: (res) => {
+              this.coloniasSepomex = Array.isArray(res?.colonias) ? res.colonias : [];
+              this.localForm.patchValue(
+                {
+                  EntidadFederativa:
+                    this.localForm.get('EntidadFederativa')?.value || res?.estado?.nombre || '',
+                  Municipio: this.localForm.get('Municipio')?.value || res?.municipio?.nombre || '',
+                  Colonia: coloniaActual,
+                },
+                { emitEvent: false }
+              );
+            },
+            error: (err) => {
+              this.coloniasSepomex = [];
+              mostrarSwalCodigoPostalNoEncontrado(err, cp);
+            },
           });
-
-          this.obtenerMunicipios(false);
-          this.obtenerLocalidades(result.direccionSapac.idMunicipioSapac);
-          this.obtenerColonias(idLocalidadSapac, 'sapac');
-          this.obtenerCalles(idColoniaSapac, 'sapac');
-
-          this.obtenerMunicipiosLicencia(false);
-          this.obtenerLocalidadesLicencia(result.direccion.idMunicipioLicencia);
-          this.obtenerColonias(idLocalidadLicencia, 'licencia');
-          this.obtenerCallesLicencia(idColoniaLicencia);
         }
 
-        else
-          this.localForm.patchValue({
-            /**Sapac */
-            NumeroCuenta: result.numeroCuenta,
-            NombreSapac: result.nombreSapac,
-            ApellidoPaternoSapac: result.apellidoPaternoSapac,
-            ApellidoMaternoSapac: result.apellidoMaternoSapac,
-            RfcSapac: result.rfcsapac,
-            IdEntidadFederativaSapac: result.direccionSapac.idEntidadFederativaSapac,
-            IdMunicipioSapac: result.direccionSapac.idMunicipioSapac,
-            IdLocalidadSapac: idLocalidadSapac,
-            NombreLocalidadSapac: result.direccionSapac.nombreLocalidadSapac,
-            IdColoniaSapac: idColoniaSapac,
-            IdColoniaLicencia: idColoniaLicencia,
-            NombreColoniaSapac: result.direccionSapac.nombreColoniaSapac,
-            IdCalleSapac: idCalleSapac,
-            NombreCalleSapac: result.direccionSapac.nombreCalleSapac,
-            NoInteriorSapac: result.direccionSapac.noInteriorSapac,
-            NoExteriorSapac: result.direccionSapac.noExteriorSapac,
-            CPSapac: result.direccionSapac.cpSapac,
-            Sector: result.sector,
-            Ruta: result.ruta,
-            Folio: result.ruta,
-            IdTipoServicio: result.idTipoServicio,
-            Medidor: result.medidor,
-            /**Catastral */
-            Clave: result.clave,
-            M2: result.m2,
-            Superficie: result.superficie,
-            UsoSuelo: result.usoSuelo,
-            /**Licenciamiento*/
-            Registro: result.registro,
-            RFC: result.rfc,
-            NombreComercial: result.nombreComercial,
-            LicenciaSuelo: result.licenciaSuelo,
-            IdGiro: result.idGiro,
-            Nombre: result.nombre,
-            ApellidoPaterno: result.apellidoPaterno,
-            ApellidoMaterno: result.apellidoMaterno,
-            TipoPersona: result.tipoPersona,
-            IdEntidadFederativaLicencia: result.direccion.idEntidadFederativaLicencia,
-            IdMunicipioLicencia: result.direccion.idMunicipioLicencia,
-            IdLocalidadLicencia: idLocalidadLicencia,
-            NombreLocalidadLicencia: result.direccion.nombreLocalidadLicencia,
-            NombreColoniaLicencia: result.direccion.nombreColoniaLicencia,
-            IdCalleLicencia: idCalleLicencia,
-            NombreCalleLicencia: result.direccion.nombreCalleLicencia,
-            ContactoNombre: result.contacto.contactoNombre,
-            ContactoPaterno: result.contacto.contactoPaterno,
-            ContactoMaterno: result.contacto.contactoMaterno,
-            ContactoTelefono: result.contacto.contactoTelefono,
-            ContactoEmail: result.contacto.contactoEmail,
-            FechaExpedicion: toDateInputValue(result.fechaExpedicion),
-            FechaRefrendo: toDateInputValue(result.fechaRefrendo),
-            NoInteriorLicencia: result.direccion.noInteriorLicencia,
-            NoExteriorLicencia: result.direccion.noExteriorLicencia,
-            CPLicencia: result.direccion.cpLicencia,
-            TieneEstacionamiento: result.estacionamiento,
-            Lat: result.lat,
-            Lng: result.lng,
-            /**P.Civil*/
-            EsEmpresa: result.proteccionCivil.esEmpresa,
-            RfcProteccionCivil: result.proteccionCivil.rfc,
-            RazonSocialProteccionCivil: result.proteccionCivil.razonSocial,
-            NombreProteccionCivil: result.proteccionCivil.nombre,
-            ApellidoPaternoProteccionCivil: result.proteccionCivil.apellidoPaterno,
-            ApellidoMaternoProteccionCivil: result.proteccionCivil.apellidoMaterno,
-            TelefonoProteccionCivil: result.proteccionCivil.telefono,
-            RegistroAcreditacion: result.proteccionCivil.registroAcreditacion,
-            TienePrograma: result.proteccionCivil.tienePrograma,
-          });
-
-        this.obtenerMunicipios(false);
-        this.obtenerLocalidades(result.direccionSapac.idMunicipioSapac);
-        this.obtenerColonias(idLocalidadSapac, 'sapac');
-        this.obtenerCalles(idColoniaSapac, 'sapac');
-
-        this.obtenerMunicipiosLicencia(false);
-        this.obtenerLocalidadesLicencia(result.direccion.idMunicipioLicencia);
-        this.obtenerColonias(idLocalidadLicencia, 'licencia');
-        this.obtenerCallesLicencia(idColoniaLicencia);
         setTimeout(() => {
           this.cargandoDireccionEdicion = false;
-        }, 600);
-    }, err => {
+        }, 300);
+      },
+      error: () => {
         this.cargandoDireccionEdicion = false;
-        console.log('Error al consultar:', err)
+      },
     });
   }
 
   changeValue(checked) {
-    if (checked) {
-      this.localForm.patchValue({
-        EsEmpresa: true
-      })
-    }
-    else {
-      this.localForm.patchValue({
-        EsEmpresa: false
-      })
-    }
+    this.localForm.get('ProteccionCivil.EsEmpresa')?.setValue(checked ? 1 : 0);
   }
 
   checkedBox() {
-    let checked = false;
-    // let permisos: string[] = this.usuarioForm.get('permisos').value;
-    let local = this.localForm.get('EsEmpresa').value;
-
-    if (local == true) {
-      checked = true;
-    }
-    return checked;
+    const local = this.localForm.get('ProteccionCivil.EsEmpresa')?.value;
+    return local == true || local === 1 || local === '1';
   }
 
   obtenerEstadosLicencia() {
     this.localComercialService.obtenerEstados().subscribe(
       (res: FormGenerico[]) => {
         this.estadoRegistros = res;
-        if (!this.cargandoDireccionEdicion) {
-          const dataTime = this.estadoRegistros.find(c => c.id === 17);
-          if (dataTime) {
-            this.localForm.get('IdEntidadFederativaLicencia').setValue(dataTime.id);
-          }
-        }
       },
       (err) => { }
     );
   }
 
-  obtenerMunicipiosLicencia(aplicarDefault = true) {
+  obtenerMunicipiosLicencia(_aplicarDefault = true) {
     this.localComercialService.obtenerMunicipiosEstado().subscribe(
       (res: FormGenerico[]) => {
         this.municipioRegistros = res;
-        if (aplicarDefault && !this.cargandoDireccionEdicion) {
-          const dataTime = this.municipioRegistros.find(c => c.id === 906);
-          if (dataTime) {
-            this.localForm.get('IdMunicipioLicencia').setValue(dataTime.id);
-          }
-        }
         if (!this.cargandoDireccionEdicion) {
           this.municipiosRegistros = [...this.municipioRegistros];
         }
@@ -622,38 +529,21 @@ export class LocalComercialFormularioComponent implements OnInit {
     );
   }
 
-  obtenerTipoPersona(id) {
-    this.localComercialService.obtenerDetalleLocalComercial(this.id).subscribe(
-      (Response) => {
-        if (Response.tipoPersona === 1 || Response.tipoPersona === 0) {
-          this.fisica = true;
-        }
-      }
-    )
+  obtenerTipoPersona(_id?) {
+    const tipoPersona = Number(this.localForm?.get('Licencias.TipoPersona')?.value);
+    this.fisica = tipoPersona === 1 || tipoPersona === 0 || Number.isNaN(tipoPersona);
   }
 
   obtenerTieneProgram() {
-    this.localComercialService.obtenerDetalleLocalComercial(this.id).subscribe(
-      (Response) => {
-        if (Response.proteccionCivil.tienePrograma === null) {
-          this.tieneprograma = "No";
-        }
-        else
-          this.tieneprograma = "Sí";
-      }
-    )
+    const tienePrograma = this.localForm?.get('ProteccionCivil.TienePrograma')?.value;
+    this.tieneprograma =
+      tienePrograma === true || tienePrograma === 1 || tienePrograma === '1' ? 'Sí' : 'No';
   }
 
   obtenerEstacionamiento() {
-    this.localComercialService.obtenerDetalleLocalComercial(this.id).subscribe(
-      (Response) => {
-        if (Response.estacionamiento === null) {
-          this.tieneestacionamiento = "No";
-        }
-        else
-          this.tieneestacionamiento = "Sí";
-      }
-    )
+    const estacionamiento = this.localForm?.get('Licencias.Estacionamiento')?.value;
+    this.tieneestacionamiento =
+      estacionamiento === true || estacionamiento === 1 || estacionamiento === '1' ? 'Sí' : 'No';
   }
 
   obtenerTipoPersonaSelect(value) {
@@ -672,11 +562,22 @@ export class LocalComercialFormularioComponent implements OnInit {
 
   /**Registrar Local Comercial */
   agregarLocal() {
+    this.sincronizarCamposRaizAntesDeEnviar();
     this.loadIndicatorVisible = true;
     this.botonSuccess = 'Enviando...'
+    const opciones = this.opcionesPayloadRegistros();
     const formData = buildLocalComercialFormData(
       this.localForm,
-      (controlName) => this.valorDocumento(controlName)
+      (controlName) => this.valorDocumento(controlName),
+      opciones,
+      (controlName) => this.valorDocumentoMultiple(controlName)
+    );
+    generarJsonEnvioLocalComercial(
+      this.localForm,
+      (controlName) => this.valorDocumento(controlName),
+      'agregar',
+      opciones,
+      (controlName) => this.valorDocumentoMultiple(controlName)
     );
     mostrarCargandoLocalComercial('Guardando local comercial');
       this.localComercialService.agregarLocalComercial(formData).subscribe(
@@ -706,11 +607,13 @@ export class LocalComercialFormularioComponent implements OnInit {
 
   /**Actualizar local */
   actualizarLocal() {
+    this.sincronizarCamposRaizAntesDeEnviar();
     this.loading = true;
     const formData = buildLocalComercialFormData(
       this.localForm,
       (controlName) => this.valorDocumento(controlName),
-      { id: this.id }
+      this.opcionesPayloadRegistros(),
+      (controlName) => this.valorDocumentoMultiple(controlName)
     );
     mostrarCargandoLocalComercial('Actualizando local comercial');
       this.localComercialService.actualizarLocal(formData).subscribe(
@@ -739,6 +642,7 @@ export class LocalComercialFormularioComponent implements OnInit {
   }
 
   redirigir() {
+    this.preRegistroState.clear();
     this.router.navigateByUrl('/local-comercial/lista-local-comercial');
   }
 
@@ -748,9 +652,6 @@ export class LocalComercialFormularioComponent implements OnInit {
     control.setErrors(null);
     if (archivo.type.startsWith('image/')) {
       this.documentosExistentes[controlName] = URL.createObjectURL(archivo);
-    }
-    if (controlName === 'FachadaEstablecimiento') {
-      this.actualizarValidacionFachada();
     }
   }
 
@@ -787,33 +688,94 @@ export class LocalComercialFormularioComponent implements OnInit {
     return resolverValorDocumentoFormData(this.localForm.get(controlName)?.value);
   }
 
-  private validarFachadaEstablecimiento(control: AbstractControl) {
-    return tieneDocumentoAdjunto(control.value, this.documentosExistentes['FachadaEstablecimiento'])
-      ? null
-      : { required: true };
+  private valorDocumentoMultiple(controlName: string): Array<File | string> {
+    const valor = this.localForm.get(controlName)?.value;
+    if (Array.isArray(valor)) {
+      return valor.filter((item) => item instanceof File || (typeof item === 'string' && item.trim()));
+    }
+    if (valor instanceof File) {
+      return [valor];
+    }
+    if (typeof valor === 'string' && valor.trim()) {
+      return [valor];
+    }
+    return [];
   }
 
-  private actualizarValidacionFachada(): void {
-    this.localForm.get('FachadaEstablecimiento')?.updateValueAndValidity({ emitEvent: false });
+  /** Completa Latitud/Longitud/TipoRegistro/PredioObra antes de enviar. */
+  private sincronizarCamposRaizAntesDeEnviar(): void {
+    const v = (campo: string) => this.localForm.get(campo)?.value;
+    const patch: Record<string, unknown> = {};
+
+    if (!v('Licencias.FechaHora')) {
+      patch['Licencias'] = {
+        ...(this.localForm.get('Licencias')?.value || {}),
+        FechaHora: new Date(),
+      };
+    }
+    if (v('PredioObra') === '' || v('PredioObra') == null) {
+      patch['PredioObra'] = Number(mapPredioObra(this.predioEnObraPreRegistro));
+    }
+    if (v('TipoRegistro') === '' || v('TipoRegistro') == null) {
+      const stored = this.preRegistroState.peekScalar();
+      patch['TipoRegistro'] = Number(mapTipoRegistro(stored?.tipoRegistro ?? 0) || '0');
+    }
+
+    // Giro: nombre string desde catálogo si el select aún usa id temporalmente
+    const giroCtrl = this.localForm.get('Licencias.Giro');
+    const giroVal = giroCtrl?.value;
+    if (giroVal != null && giroVal !== '' && !Number.isNaN(Number(giroVal))) {
+      const nombre = this.giros?.find((g) => String(g.id) === String(giroVal))?.nombre;
+      if (nombre) {
+        patch['Licencias'] = {
+          ...(patch['Licencias'] as object || this.localForm.get('Licencias')?.value || {}),
+          Giro: nombre,
+        };
+      }
+    }
+
+    if (Object.keys(patch).length) {
+      this.localForm.patchValue(patch);
+    }
+  }
+
+  private opcionesPayloadRegistros(): Record<string, never> {
+    return {};
+  }
+
+  private tieneValorObligatorio(valor: unknown): boolean {
+    return valor !== null && valor !== undefined && String(valor).trim() !== '';
   }
 
   private prepararValidacionObligatoria(): void {
-    const nombre = this.localForm.get('NombreComercial');
-    const fachada = this.localForm.get('FachadaEstablecimiento');
-    nombre?.markAsTouched();
-    fachada?.markAsTouched();
-    this.actualizarValidacionFachada();
-    nombre?.updateValueAndValidity();
+    ['Latitud', 'Longitud', 'TipoRegistro', 'PredioObra'].forEach((campo) => {
+      this.localForm.get(campo)?.markAsTouched();
+    });
   }
 
   private obtenerCamposObligatoriosFaltantes(): string[] {
     const faltantes: string[] = [];
+    const lat = this.localForm.get('Latitud')?.value;
+    const lng = this.localForm.get('Longitud')?.value;
+    const tipoRegistro = this.localForm.get('TipoRegistro')?.value;
+    const predioObra = this.localForm.get('PredioObra')?.value;
 
-    if (this.localForm.get('NombreComercial')?.invalid) {
-      faltantes.push('Nombre Comercial');
+    if (!tieneCoordenadasValidas(lat, lng)) {
+      if (!this.tieneValorObligatorio(lat)) {
+        faltantes.push('Latitud');
+      }
+      if (!this.tieneValorObligatorio(lng)) {
+        faltantes.push('Longitud');
+      }
+      if (this.tieneValorObligatorio(lat) && this.tieneValorObligatorio(lng)) {
+        faltantes.push('Ubicación (Latitud / Longitud)');
+      }
     }
-    if (this.localForm.get('FachadaEstablecimiento')?.invalid) {
-      faltantes.push('Fachada del Establecimiento');
+    if (!this.tieneValorObligatorio(tipoRegistro)) {
+      faltantes.push('TipoRegistro');
+    }
+    if (!this.tieneValorObligatorio(predioObra) && predioObra !== 0 && predioObra !== false) {
+      faltantes.push('PredioObra');
     }
 
     return faltantes;
@@ -824,18 +786,14 @@ export class LocalComercialFormularioComponent implements OnInit {
     return this.obtenerCamposObligatoriosFaltantes().length === 0;
   }
 
-  private irATabLicenciamiento(): void {
-    this.reservarAlturaTabPanels();
-    this.shouldScrollAfterTabNav = true;
-    this.activeTab = 2;
-    this.scrollFormToTop();
-  }
-
   submit() {
+    this.sincronizarCamposRaizAntesDeEnviar();
     generarJsonEnvioLocalComercial(
       this.localForm,
       (controlName) => this.valorDocumento(controlName),
-      'agregar'
+      'agregar',
+      this.opcionesPayloadRegistros(),
+      (controlName) => this.valorDocumentoMultiple(controlName)
     );
 
     this.submitted = true;
@@ -845,14 +803,29 @@ export class LocalComercialFormularioComponent implements OnInit {
     this.primerSpan = true;
     this.validSpan = true;
 
-    this.prepararValidacionObligatoria();
-    const faltanNombreOFachada =
-      this.localForm.get('NombreComercial')?.invalid ||
-      this.localForm.get('FachadaEstablecimiento')?.invalid;
+    const latActual = this.localForm.get('Latitud')?.value;
+    const lngActual = this.localForm.get('Longitud')?.value;
 
-    if (faltanNombreOFachada) {
-      this.irATabLicenciamiento();
-      mostrarAlertaCamposObligatorios(this.obtenerCamposObligatoriosFaltantes());
+    // Si ya hay coordenadas del pre-registro, validar solo los 4 obligatorios y enviar
+    if (tieneCoordenadasValidas(latActual, lngActual) && this.vieneDePreRegistro) {
+      this.localForm.patchValue({
+        Latitud: latActual,
+        Longitud: lngActual,
+        Licencias: {
+          ...(this.localForm.get('Licencias')?.value || {}),
+          FechaHora: this.localForm.get('Licencias.FechaHora')?.value || new Date(),
+        },
+      });
+      this.sincronizarCamposRaizAntesDeEnviar();
+      if (!this.validarCamposObligatorios()) {
+        mostrarAlertaCamposObligatorios(this.obtenerCamposObligatoriosFaltantes());
+        return;
+      }
+      this.loadIndicatorVisible = true;
+      this.botonSuccess = 'Enviando...';
+      this.primerIcon = false;
+      this.agregarLocal();
+      this.validSpan = false;
       return;
     }
 
@@ -864,8 +837,8 @@ export class LocalComercialFormularioComponent implements OnInit {
       autoFocus: false,
       disableClose: true,
       data: {
-        lat: this.localForm.get('Lat').value,
-        lng: this.localForm.get('Lng').value
+        lat: latActual,
+        lng: lngActual
       }
     });
 
@@ -875,12 +848,17 @@ export class LocalComercialFormularioComponent implements OnInit {
       }
 
       this.localForm.patchValue({
-        Lat: ubicacion.lat,
-        Lng: ubicacion.lng
+        Latitud: ubicacion.lat,
+        Longitud: ubicacion.lng,
+        Licencias: {
+          ...(this.localForm.get('Licencias')?.value || {}),
+          FechaHora: this.localForm.get('Licencias.FechaHora')?.value || new Date(),
+        },
       });
+      this.sincronizarCamposRaizAntesDeEnviar();
 
-      if (!tieneCoordenadasValidas(ubicacion.lat, ubicacion.lng)) {
-        mostrarAlertaCamposObligatorios(['Ubicación del Lugar']);
+      if (!this.validarCamposObligatorios()) {
+        mostrarAlertaCamposObligatorios(this.obtenerCamposObligatoriosFaltantes());
         return;
       }
 
@@ -893,51 +871,31 @@ export class LocalComercialFormularioComponent implements OnInit {
   }
 
   onChangeEventNI(event: any) {
-    const valor = event.target.value;
-    this.localForm.patchValue({ NoInteriorSapac: valor });
-    if (!this.cargandoDireccionEdicion) {
-      this.localForm.patchValue({ NoInteriorLicencia: valor });
-    }
+    this.localForm.patchValue({ NoInterior: event.target.value });
   }
 
   onChangeEventNE(event: any) {
-    const valor = event.target.value;
-    this.localForm.patchValue({ NoExteriorSapac: valor });
-    if (!this.cargandoDireccionEdicion) {
-      this.localForm.patchValue({ NoExteriorLicencia: valor });
-    }
+    this.localForm.patchValue({ NoExterior: event.target.value });
   }
 
   onChangeEventCP(event: any) {
     const valor = sanitizeNumericValue(event.target.value, 5);
-    this.localForm.patchValue({ CPSapac: valor });
-    if (!this.cargandoDireccionEdicion) {
-      this.localForm.patchValue({ CPLicencia: valor });
-    }
+    this.localForm.patchValue({ CP: valor });
+    this.buscarCodigoPostalSiCompleto(valor);
   }
 
   onChangeEventNILicencia(event: any) {
-    const valor = event.target.value;
-    this.localForm.patchValue({ NoInteriorLicencia: valor });
-    if (!this.cargandoDireccionEdicion) {
-      this.localForm.patchValue({ NoInteriorSapac: valor });
-    }
+    this.localForm.patchValue({ NoInterior: event.target.value });
   }
 
   onChangeEventNELicencia(event: any) {
-    const valor = event.target.value;
-    this.localForm.patchValue({ NoExteriorLicencia: valor });
-    if (!this.cargandoDireccionEdicion) {
-      this.localForm.patchValue({ NoExteriorSapac: valor });
-    }
+    this.localForm.patchValue({ NoExterior: event.target.value });
   }
 
   onChangeEventCPLicencia(event: any) {
     const valor = sanitizeNumericValue(event.target.value, 5);
-    this.localForm.patchValue({ CPLicencia: valor });
-    if (!this.cargandoDireccionEdicion) {
-      this.localForm.patchValue({ CPSapac: valor });
-    }
+    this.localForm.patchValue({ CP: valor });
+    this.buscarCodigoPostalSiCompleto(valor);
   }
 
   allowOnlyNumbers(event: KeyboardEvent): void {
@@ -960,6 +918,32 @@ export class LocalComercialFormularioComponent implements OnInit {
       input.value = sanitized;
     }
     this.localForm.get(controlName)?.setValue(sanitized, { emitEvent: false });
+    if (
+      maxLength === 5 &&
+      (controlName === 'CP' || controlName === 'CPLicencia')
+    ) {
+      this.buscarCodigoPostalSiCompleto(sanitized);
+    }
+  }
+
+  private buscarCodigoPostalSiCompleto(cp: string): void {
+    if (!cp || cp.length !== 5) {
+      return;
+    }
+    this.sepomexService.obtenerPorCp(cp).subscribe({
+      next: (res) => {
+        this.coloniasSepomex = Array.isArray(res?.colonias) ? res.colonias : [];
+        this.localForm.patchValue({
+          EntidadFederativa: res?.estado?.nombre ?? '',
+          Municipio: res?.municipio?.nombre ?? '',
+          Colonia: '',
+        });
+      },
+      error: (err) => {
+        this.coloniasSepomex = [];
+        mostrarSwalCodigoPostalNoEncontrado(err, cp);
+      },
+    });
   }
 
   esOtroSeleccionado(id: any): boolean {
@@ -1190,26 +1174,14 @@ export class LocalComercialFormularioComponent implements OnInit {
     this.localComercialService.obtenerEstados().subscribe(
       (res: FormGenerico[]) => {
         this.estadosRegistros = res;
-        if (!this.cargandoDireccionEdicion) {
-          const dataTime = this.estadosRegistros.find(c => c.id === 17);
-          if (dataTime) {
-            this.localForm.get('IdEntidadFederativaSapac').setValue(dataTime.id);
-          }
-        }
       }
     );
   }
 
-  obtenerMunicipios(aplicarDefault = true) {
+  obtenerMunicipios(_aplicarDefault = true) {
     this.localComercialService.obtenerMunicipiosEstado().subscribe(
       (res: FormGenerico[]) => {
         this.municipiosRegistros = res;
-        if (aplicarDefault && !this.cargandoDireccionEdicion) {
-          const dataTime = this.municipiosRegistros.find(c => c.id === 906);
-          if (dataTime) {
-            this.localForm.get('IdMunicipioSapac').setValue(dataTime.id);
-          }
-        }
         if (!this.cargandoDireccionEdicion) {
           this.municipioRegistros = [...this.municipiosRegistros];
         }

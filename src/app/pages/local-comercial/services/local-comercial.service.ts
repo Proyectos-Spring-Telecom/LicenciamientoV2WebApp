@@ -16,14 +16,53 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class LocalComercialService {
+  private readonly baseUrl = environment.API_SECURITY.replace(/\/$/, '');
+
   constructor(private http: HttpClient) {}
 
+  /** GET /registros?page=&limit= — listado paginado (visibilidad por rol en JWT). */
+  obtenerRegistros(page: number, limit: number): Observable<any> {
+    const pageNum = Math.max(1, Number(page) || 1);
+    const limitNum = Math.min(100, Math.max(1, Number(limit) || 10));
+    return this.http.get(`${this.baseUrl}/registros`, {
+      params: {
+        page: String(pageNum),
+        limit: String(limitNum),
+      },
+    });
+  }
+
+  /**
+   * POST /registros/por-rango-fechas — grid de licencias.
+   * Body solo fechaInicio/fechaFin (YYYY-MM-DD). Respuesta: arreglo JSON directo.
+   */
+  obtenerRegistrosPorRangoFechas(
+    fechaInicio: string,
+    fechaFin: string
+  ): Observable<any[]> {
+    return this.http.post<any[]>(`${this.baseUrl}/registros/por-rango-fechas`, {
+      fechaInicio,
+      fechaFin,
+    });
+  }
+
+  /** GET /registros/{idRegistro} — detalle / actualizar (patchValue). */
+  obtenerRegistroPorId(idRegistro: number): Observable<any> {
+    return this.http.get(`${this.baseUrl}/registros/${idRegistro}`);
+  }
+
+  /** PATCH /registros/{idRegistro}/estatus — solo cambia estatus. */
+  actualizarEstatusRegistro(idRegistro: number, estatus: number): Observable<unknown> {
+    return this.http.patch(`${this.baseUrl}/registros/${idRegistro}/estatus`, { estatus });
+  }
+
+  /** POST /registros — multipart form-data del alta de licencias. */
   agregarLocalComercial(formdata: FormData): Observable<unknown> {
-    return this.http.post(environment.API_SECURITY + '/api/Licencias/', formdata);
+    return this.http.post(`${this.baseUrl}/registros`, formdata);
   }
 
   actualizarLocal(formData: FormData): Observable<unknown> {
-    return this.http.put(environment.API_SECURITY + '/api/Licencias', formData);
+    return this.http.put(`${this.baseUrl}/api/Licencias`, formData);
   }
 
   eliminarLocalComercial(id: number): Observable<unknown> {

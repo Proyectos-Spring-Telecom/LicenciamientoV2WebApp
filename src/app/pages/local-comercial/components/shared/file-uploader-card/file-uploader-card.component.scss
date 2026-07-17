@@ -1,7 +1,13 @@
 @import '../../../styles/file-uploader.scss';
 
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   min-width: 0;
+  height: 100%;
+}
+
+:host .uploader-wrap {
+  flex: 1 1 auto;
 }

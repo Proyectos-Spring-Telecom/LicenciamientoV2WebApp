@@ -15,20 +15,21 @@ export interface DocumentoLocalConfig {
 }
 
 const DOCUMENTO_DEFAULTS = {
-  accept: 'image/*,.pdf',
+  accept: 'image/*,.pdf,application/pdf',
   badgeDefault: 'PNG · JPG · WEBP · PDF · Máx. 3 MB',
+  uploadTitle: 'Sube imagen o PDF',
 };
 
 export const DOCUMENTOS_LOCAL: DocumentoLocalConfig[] = [
-  { controlName: 'ReciboSapac', titulo: 'RECIBO SAPAC', idTipoFoto: 3, buttonClass: 'success', tab: 'sapac', uploadTitle: 'Sube tu imagen', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'CaratulaMedidor', titulo: 'CARÁTULA MEDIDOR', idTipoFoto: 4, buttonClass: 'primary', tab: 'sapac', uploadTitle: 'Sube tu imagen', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'CuadroMedidor', titulo: 'CUADRO MEDIDOR', idTipoFoto: 5, buttonClass: 'warning', tab: 'sapac', uploadTitle: 'Sube tu imagen', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'ReciboPredial', titulo: 'RECIBO PREDIAL', idTipoFoto: 2, buttonClass: 'success', tab: 'catastral', uploadTitle: 'Sube tu imagen', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'LicenciaFuncionamiento', titulo: 'LICENCIA DE FUNCIONAMIENTO', idTipoFoto: 1, buttonClass: 'success', tab: 'licenciamiento', uploadTitle: 'Sube archivo', icon: 'description', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'FachadaEstablecimiento', titulo: 'FACHADA DEL ESTABLECIMIENTO', idTipoFoto: 6, buttonClass: 'primary', tab: 'licenciamiento', uploadTitle: 'Sube tu imagen', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'Bodega', titulo: 'BODEGA', idTipoFoto: 8, buttonClass: 'warning', tab: 'licenciamiento', uploadTitle: 'Sube tu imagen', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'EstacionamientoIMG', titulo: 'ESTACIONAMIENTO', idTipoFoto: 7, buttonClass: 'danger', tab: 'licenciamiento', uploadTitle: 'Sube tu imagen', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'VistoBueno', titulo: 'VISTO BUENO', idTipoFoto: 9, buttonClass: 'success', tab: 'proteccion', uploadTitle: 'Sube archivo', icon: 'description', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Sapac.reciboSapac', titulo: 'RECIBO SAPAC', idTipoFoto: 3, buttonClass: 'success', tab: 'sapac', icon: 'image', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Sapac.caratulamedidor', titulo: 'CARÁTULA MEDIDOR', idTipoFoto: 4, buttonClass: 'primary', tab: 'sapac', icon: 'image', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Sapac.cuadromedidor', titulo: 'CUADRO MEDIDOR', idTipoFoto: 5, buttonClass: 'warning', tab: 'sapac', icon: 'image', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Catastro.reciboPredial', titulo: 'RECIBO PREDIAL', idTipoFoto: 2, buttonClass: 'success', tab: 'catastral', icon: 'image', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Licencias.licenciaFuncionamiento', titulo: 'LICENCIA DE FUNCIONAMIENTO', idTipoFoto: 1, buttonClass: 'success', tab: 'licenciamiento', icon: 'description', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Licencias.fachada', titulo: 'FACHADA DEL ESTABLECIMIENTO', idTipoFoto: 6, buttonClass: 'primary', tab: 'licenciamiento', icon: 'image', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Licencias.bodega', titulo: 'BODEGA', idTipoFoto: 8, buttonClass: 'warning', tab: 'licenciamiento', icon: 'image', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Licencias.estacionamiento', titulo: 'ESTACIONAMIENTO', idTipoFoto: 7, buttonClass: 'danger', tab: 'licenciamiento', icon: 'image', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'ProteccionCivil.vistoBueno', titulo: 'VISTO BUENO', idTipoFoto: 9, buttonClass: 'success', tab: 'proteccion', icon: 'description', ...DOCUMENTO_DEFAULTS },
 ];
 
 export const DOCUMENTOS_SAPAC = DOCUMENTOS_LOCAL.filter((d) => d.tab === 'sapac');

@@ -1,6 +1,6 @@
 ﻿// @ts-nocheck
 import { routeAnimation } from 'src/app/pipe/module-open.animation';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { LocalComercialService } from './../../services/local-comercial.service';
 import { Component, OnInit, inject, ElementRef, ViewChild, enableProdMode, Inject, } from '@angular/core';
 import { DetalleLocal, direccion, direccionSapac, contacto, representante, proteccionCivil } from '../../models/detalle-local-comercial';
@@ -17,6 +17,7 @@ import { GoogleMapsLoaderService } from 'src/app/services/google-maps-loader.ser
 import { environment } from 'src/environments/environment';
 import { LicenciamientoPermiso } from 'src/app/entities/licenciamiento-permiso.const';
 import { galeriaMetaAnimation, galeriaPhotoAnimation } from '../../animations/detalle-galeria.animation';
+import { mapRegistroToDetalleLocal, unwrapRegistroResponse } from '../../utils/map-registro-api.util';
 
 var currentInfoWindow = null;
 let map: google.maps.Map;
@@ -533,18 +534,23 @@ export class DetalleLocalComercialComponent implements OnInit {
 
   constructor(
     public router: Router,
+    private activatedRoute: ActivatedRoute,
     public localComercialService: LocalComercialService,
     private googleMapsLoader: GoogleMapsLoaderService) {
       this.showFilterRow = true;
-		  this.showHeaderFilter = true;
+      this.showHeaderFilter = true;
       this.informacion = this.crearInformacionVacia();
      }
 
   ngOnInit() {
     this.obtenerPermisos();
     this.datosCargados = false;
-    this.id = 1;
-    this.obtenerDetalleLocal(this.id, true);
+    this.activatedRoute.params.subscribe((param) => {
+      this.id = Number(param['id']);
+      if (this.id) {
+        this.obtenerDetalleLocal(this.id, true);
+      }
+    });
   }
 
   onShown() {
@@ -607,27 +613,38 @@ export class DetalleLocalComercialComponent implements OnInit {
       this.mostrarCargandoDetalle();
     }
 
-    /* Vista libre sin params: registro local (sin servicio). */
-    const res = this.crearDetalleLocalDemo(id);
-    this.informacion = this.normalizarInformacion(res);
-    this.nombreComercial = this.informacion.nombreComercial ?? '';
-    this.direccionNombreEntidadFederativa =
-      this.informacion.direccion?.nombreEntidadFederativaLicencia ?? null;
+    this.localComercialService.obtenerRegistroPorId(id).subscribe({
+      next: (response) => {
+        const api = unwrapRegistroResponse(response);
+        const res = mapRegistroToDetalleLocal(api);
+        this.informacion = this.normalizarInformacion(res);
+        this.nombreComercial = this.informacion.nombreComercial ?? '';
+        this.direccionNombreEntidadFederativa =
+          this.informacion.direccion?.nombreEntidadFederativaLicencia ?? null;
 
-    this.aplicarDetalleLocal();
-    this.tieneUbicacionMapa = this.tieneCoordenadasValidas(
-      this.informacion.lat,
-      this.informacion.lng
-    );
+        this.aplicarDetalleLocal();
+        this.tieneUbicacionMapa = this.tieneCoordenadasValidas(
+          this.informacion.lat,
+          this.informacion.lng
+        );
 
-    this.datosCargados = true;
-    this.ocultarCargandoDetalle(true);
+        this.datosCargados = true;
+        this.ocultarCargandoDetalle(true);
 
-    if (this.tieneUbicacionMapa) {
-      setTimeout(() => this.inicializarMapaDetalle(id), 0);
-    } else {
-      this.isAvailable = false;
-    }
+        if (this.tieneUbicacionMapa) {
+          setTimeout(() => this.inicializarMapaDetalle(id), 0);
+        } else {
+          this.isAvailable = false;
+        }
+      },
+      error: () => {
+        this.informacion = this.crearInformacionVacia();
+        this.datosCargados = true;
+        this.tieneUbicacionMapa = false;
+        this.isAvailable = false;
+        this.ocultarCargandoDetalle(false);
+      },
+    });
   }
 
   private crearDetalleLocalDemo(id: number): DetalleLocal {
@@ -676,34 +693,34 @@ export class DetalleLocalComercialComponent implements OnInit {
       VistoBueno: null,
       RfcProteccionCivil: null,
       direccion: {
-        idEntidadFederativaLicencia: 17,
-        idMunicipioLicencia: 1,
-        idLocalidadLicencia: 1,
-        idColoniaLicencia: 1,
-        idCalleLicencia: 1,
-        nombreEntidadFederativaLicencia: 'Morelos',
-        nombreMuncipioLicencia: 'Cuernavaca',
-        nombreLocalidadLicencia: 'Cuernavaca',
-        nombreColoniaLicencia: 'Centro',
-        nombreCalleLicencia: 'Calle Demo',
-        noInteriorLicencia: '1',
-        noExteriorLicencia: '100',
-        cpLicencia: 62000,
+        idEntidadFederativaLicencia: null,
+        idMunicipioLicencia: null,
+        idLocalidadLicencia: null,
+        idColoniaLicencia: null,
+        idCalleLicencia: null,
+        nombreEntidadFederativaLicencia: null,
+        nombreMuncipioLicencia: null,
+        nombreLocalidadLicencia: null,
+        nombreColoniaLicencia: null,
+        nombreCalleLicencia: null,
+        noInteriorLicencia: null,
+        noExteriorLicencia: null,
+        cpLicencia: null,
       },
       direccionSapac: {
-        idEntidadFederativaSapac: 17,
-        idMunicipioSapac: 1,
-        idLocalidadSapac: 1,
-        idColoniaSapac: 1,
-        idCalleSapac: 1,
-        nombreEntidadFederativaSapac: 'Morelos',
-        nombreMuncipioSapac: 'Cuernavaca',
-        nombreLocalidadSapac: 'Cuernavaca',
-        nombreColoniaSapac: 'Centro',
-        nombreCalleSapac: 'Calle Demo',
-        noInteriorSapac: '1',
-        noExteriorSapac: '100',
-        cpSapac: 62000,
+        idEntidadFederativaSapac: null,
+        idMunicipioSapac: null,
+        idLocalidadSapac: null,
+        idColoniaSapac: null,
+        idCalleSapac: null,
+        nombreEntidadFederativaSapac: null,
+        nombreMuncipioSapac: null,
+        nombreLocalidadSapac: null,
+        nombreColoniaSapac: null,
+        nombreCalleSapac: null,
+        noInteriorSapac: null,
+        noExteriorSapac: null,
+        cpSapac: null,
       },
       contacto: {
         contactoNombre: 'María',
@@ -1156,21 +1173,49 @@ export class DetalleLocalComercialComponent implements OnInit {
       2: 'Rechazo o Sin respuesta',
       3: 'Datos Correctos',
       4: 'Revisión',
+      5: 'Baja',
     };
-    this.informacion.estatus = nombreEstatus;
-    this.informacion.nombreEstatus = mapa[nombreEstatus] ?? etiqueta;
 
-    // NO BORRAR — Alerta de confirmación de cambio de estatus.
-    Swal.fire({
-      color: '#ffffff',
-      background: '#141a21',
-      title: '¡Confirmación Realizada!',
-      html: `El estatus se cambió a <strong>${etiqueta}</strong>.`,
-      icon: 'success',
-      confirmButtonColor: '#3085d6',
-      confirmButtonText: 'Confirmar',
+    this.localComercialService.actualizarEstatusRegistro(this.id, nombreEstatus).subscribe({
+      next: () => {
+        this.informacion.estatus = nombreEstatus;
+        this.informacion.nombreEstatus = mapa[nombreEstatus] ?? etiqueta;
+        this[flags.text] = etiqueta;
+        this[flags.load] = false;
+        this[flags.icon] = true;
+
+        // NO BORRAR — Alerta de confirmación de cambio de estatus.
+        Swal.fire({
+          color: '#ffffff',
+          background: '#141a21',
+          title: '¡Confirmación Realizada!',
+          html: `El estatus se cambió a <strong>${etiqueta}</strong>.`,
+          icon: 'success',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Confirmar',
+        }).then(() => {
+          this.regresar();
+        });
+      },
+      error: () => {
+        this[flags.text] = etiqueta;
+        this[flags.load] = false;
+        this[flags.icon] = true;
+        Swal.fire({
+          color: '#ffffff',
+          background: '#141a21',
+          title: 'Error',
+          html: 'No se pudo actualizar el estatus. Intente de nuevo.',
+          icon: 'error',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Entendido',
+        });
+      },
     });
-    this.regresar();
+  }
+
+  get esDatosCorrectos(): boolean {
+    return Number(this.informacion?.estatus) === 3;
   }
 
   private confirmarCambioEstatus(

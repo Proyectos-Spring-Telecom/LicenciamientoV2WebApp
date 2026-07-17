@@ -14,16 +14,23 @@ import {
   styleUrls: ['./file-uploader-card.component.scss']
 })
 export class FileUploaderCardComponent {
+  /** Todas las cards de licencias aceptan imagen y/o PDF. */
+  static readonly ACCEPT_IMAGEN_PDF = 'image/*,.pdf,application/pdf';
+  static readonly BADGE_IMAGEN_PDF = 'PNG · JPG · WEBP · PDF · Máx. 3 MB';
+
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   @Input() label = '';
-  @Input() accept = 'image/*,.pdf';
-  @Input() uploadTitle = 'Sube archivo';
+  /** Se mantiene por compatibilidad; el picker siempre usa imagen + PDF. */
+  @Input() accept = FileUploaderCardComponent.ACCEPT_IMAGEN_PDF;
+  @Input() uploadTitle = 'Sube imagen o PDF';
   @Input() icon = 'cloud_upload';
-  @Input() badgeDefault = 'PNG · JPG · WEBP · PDF · Máx. 3 MB';
+  @Input() badgeDefault = FileUploaderCardComponent.BADGE_IMAGEN_PDF;
   @Input() remoteUrl: string | null = null;
   @Input() allowPdf = true;
   @Input() colorVariant: 'success' | 'primary' | 'warning' | 'danger' | string = 'primary';
+
+  readonly acceptImagenPdf = FileUploaderCardComponent.ACCEPT_IMAGEN_PDF;
 
   @Output() fileSelected = new EventEmitter<File>();
   @Output() fileRejected = new EventEmitter<void>();
@@ -127,7 +134,8 @@ export class FileUploaderCardComponent {
     if (['jpg', 'jpeg', 'jfif', 'pjpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(extension)) {
       return true;
     }
-    return this.allowPdf && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'));
+    // Todas las cards de licencias aceptan PDF
+    return file.type === 'application/pdf' || extension === 'pdf';
   }
 
   private extraerNombreDesdeUrl(url: string): string {

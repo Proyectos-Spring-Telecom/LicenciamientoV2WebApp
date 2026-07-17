@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Router } from '@angular/router';
 import { LocalComercial } from '../local-comercial/models/local-comercial';
+import { mostrarCargandoLocalComercial } from '../local-comercial/utils/local-comercial-swal.util';
 import {
   createEmptyLocalEstatusFilterCounts,
   localMatchesEstatusFilter,
@@ -120,7 +121,12 @@ export class MonitoreoComponent implements OnInit, OnDestroy {
 
   irADetalle(local: LocalComercial, event: Event): void {
     event.stopPropagation();
-    this.router.navigateByUrl('/local-comercial/detalle-local-comercial');
+    const id = Number(local?.id);
+    if (!Number.isFinite(id) || id <= 0) {
+      return;
+    }
+    mostrarCargandoLocalComercial('Obteniendo información del local comercial');
+    this.router.navigateByUrl('/local-comercial/detalle-local-comercial/' + id);
   }
 
   /** Contrae/expande solo la lista; la card de filtros del mapa es independiente. */

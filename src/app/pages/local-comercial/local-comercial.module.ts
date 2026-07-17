@@ -37,6 +37,7 @@ import { SubirDocumentoModalComponent } from './components/formulario/subir-docu
 import { FileUploaderCardComponent } from './components/shared/file-uploader-card/file-uploader-card.component';
 import { BotonExportarTablaComponent } from './components/shared/boton-exportar-tabla/boton-exportar-tabla.component';
 import { LocalPermFieldComponent } from './components/shared/local-perm-field/local-perm-field.component';
+import { PreRegistroLocalComponent } from './components/pre-registro/pre-registro-local.component';
 
 @NgModule({
   declarations: [
@@ -49,6 +50,7 @@ import { LocalPermFieldComponent } from './components/shared/local-perm-field/lo
     FileUploaderCardComponent,
     BotonExportarTablaComponent,
     LocalPermFieldComponent,
+    PreRegistroLocalComponent,
   ],
   imports: [
     CommonModule,

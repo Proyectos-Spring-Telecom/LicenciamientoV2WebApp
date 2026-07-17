@@ -185,12 +185,15 @@ export class PerfilUsuarioComponent {
         },
         error: (err) => {
           this.loadingPassword = false;
+          const body = err?.error;
           const msg =
-            err?.error?.message ??
-            err?.error?.error ??
-            err?.message ??
+            (typeof body === 'string' && body.trim()) ||
+            body?.mensaje ||
+            body?.message ||
+            body?.error ||
+            err?.message ||
             'Error al actualizar la contraseña.';
-          this.toastr.error(msg, '¡Ops!');
+          this.toastr.error(String(msg).trim(), '¡Ops!');
         },
       });
   }

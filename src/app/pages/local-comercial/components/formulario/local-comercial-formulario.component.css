@@ -89,10 +89,14 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  color: currentColor;
+  color: rgba(255, 255, 255, 0.88);
   width: 100%;
   box-sizing: border-box;
   min-height: calc(3.5rem + 2px);
+}
+
+.proteccion-empresa-field .fas.fa-store {
+  color: color-mix(in srgb, #d5238b 70%, #fff);
 }
 
 .proteccion-empresa-title {
@@ -161,6 +165,20 @@
 }
 
 .local-form-tab-nav__btn .fa {
+  color: inherit;
+}
+
+.local-form-banner__back.local-form-pre-reg-back {
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  height: auto;
+  min-height: 50px;
+  padding: 0.65rem 1.15rem;
+  white-space: nowrap;
+}
+
+.local-form-banner__back.local-form-pre-reg-back .fa {
   color: inherit;
 }
 

@@ -77,6 +77,28 @@ export function mostrarSwalError(options: {
   });
 }
 
+/** NO BORRAR — Código postal no encontrado (Sepomex 404). */
+export function mostrarSwalCodigoPostalNoEncontrado(
+  error?: { error?: { message?: string }; message?: string } | null,
+  cp?: string
+): void {
+  const mensajeApi =
+    error?.error?.message ||
+    error?.message ||
+    (cp
+      ? `No se encontraron registros para el código postal ${cp}`
+      : 'No se encontraron registros para el código postal');
+
+  Swal.fire({
+    ...SWAL_SISTEMA,
+    title: 'Código postal no encontrado',
+    html: `<p style="text-align:center;margin:0;">${mensajeApi}</p>`,
+    icon: 'warning',
+    confirmButtonColor: '#3085d6',
+    confirmButtonText: 'Entendido',
+  });
+}
+
 /** NO BORRAR — Alerta/cargando (sin fondo azul). */
 export function mostrarCargandoLocalComercial(mensaje: string): void {
   Swal.fire({

@@ -2,7 +2,6 @@ import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/cor
 import { Router } from '@angular/router';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import Swal from 'sweetalert2';
-import { LocalComercialService } from '../../local-comercial/services/local-comercial.service';
 import { LocalComercial } from '../../local-comercial/models/local-comercial';
 import {
   mostrarCargandoLocalComercial,
@@ -14,8 +13,9 @@ import {
   localMatchesEstatusFilter,
   MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT,
   MonitoreoLocalEstatusFilter,
-  resolveLocalEstatusFilter,
 } from '../local-filter/monitoreo-local-estatus-filter.data';
+import { MonitoreoService } from '../services/monitoreo.service';
+
 const DEFAULT_IMAGE = 'assets/default.png';
 
 const MARKER_ASPECT_RATIO = 739 / 1067;
@@ -42,108 +42,6 @@ const MAP_STYLES_SIN_ESTABLECIMIENTOS: google.maps.MapTypeStyle[] = [
   { featureType: 'poi.attraction', stylers: [{ visibility: 'off' }] },
   { featureType: 'poi.government', stylers: [{ visibility: 'off' }] },
   { featureType: 'poi.park', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
-];
-
-/** Datos temporales mientras no exista el endpoint del mapa. */
-const LOCALES_DEMO_MAPA: LocalComercial[] = [
-  {
-    id: 9001,
-    lat: 18.92506594438654,
-    lng: -99.22440748392435,
-    nombreComercial: 'Abarrotes Centro',
-    nombreEstatus: 'Datos Correctos',
-    grupo: 'A',
-    giro: 'Abarrotes',
-    rfc: 'AAC900101AAA',
-    nombreCapturista: 'Demo Capturista',
-    urlLicencia: '',
-    estatus: 1,
-    fechaHora: null,
-  },
-  {
-    id: 9002,
-    lat: 18.9315,
-    lng: -99.2185,
-    nombreComercial: 'Farmacia Reforma',
-    nombreEstatus: 'Revisión',
-    grupo: 'B',
-    giro: 'Farmacia',
-    rfc: 'FAR900202BBB',
-    nombreCapturista: 'Demo Capturista',
-    urlLicencia: '',
-    estatus: 2,
-    fechaHora: null,
-  },
-  {
-    id: 9003,
-    lat: 18.9188,
-    lng: -99.2312,
-    nombreComercial: 'Café Plaza',
-    nombreEstatus: 'Información Faltante',
-    grupo: 'C',
-    giro: 'Cafetería',
-    rfc: 'CAF900303CCC',
-    nombreCapturista: 'Demo Capturista',
-    urlLicencia: '',
-    estatus: 3,
-    fechaHora: null,
-  },
-  {
-    id: 9004,
-    lat: 18.9224,
-    lng: -99.2108,
-    nombreComercial: 'Taller Automotriz',
-    nombreEstatus: 'Rechazo o Sin respuesta',
-    grupo: 'D',
-    giro: 'Taller mecánico',
-    rfc: 'TAL900404DDD',
-    nombreCapturista: 'Demo Capturista',
-    urlLicencia: '',
-    estatus: 4,
-    fechaHora: null,
-  },
-  {
-    id: 9005,
-    lat: 18.9282,
-    lng: -99.2278,
-    nombreComercial: 'Panadería La Espiga',
-    nombreEstatus: 'Revisión',
-    grupo: 'A',
-    giro: 'Panadería',
-    rfc: 'PAN900505EEE',
-    nombreCapturista: 'Demo Capturista',
-    urlLicencia: '',
-    estatus: 2,
-    fechaHora: null,
-  },
-  {
-    id: 9006,
-    lat: 18.9156,
-    lng: -99.2194,
-    nombreComercial: 'Óptica Visión+',
-    nombreEstatus: 'Datos Correctos',
-    grupo: 'B',
-    giro: 'Óptica',
-    rfc: 'OPT900606FFF',
-    nombreCapturista: 'Demo Capturista',
-    urlLicencia: '',
-    estatus: 1,
-    fechaHora: null,
-  },
-  {
-    id: 9007,
-    lat: 18.9331,
-    lng: -99.2132,
-    nombreComercial: 'Miscelánea Sol',
-    nombreEstatus: 'Información Faltante',
-    grupo: 'C',
-    giro: 'Miscelánea',
-    rfc: 'MIS900707GGG',
-    nombreCapturista: 'Demo Capturista',
-    urlLicencia: '',
-    estatus: 3,
-    fechaHora: null,
-  },
 ];
 
 interface MapaMarkerEntry {
@@ -191,7 +89,7 @@ export class MapaComponent implements OnInit, OnDestroy {
 
   constructor(
     public router: Router,
-    public localComercialService: LocalComercialService,
+    private monitoreoService: MonitoreoService,
     private googleMapsLoader: GoogleMapsLoaderService,
   ) {}
 
@@ -515,25 +413,23 @@ export class MapaComponent implements OnInit, OnDestroy {
   obtenerListaLocalesComerciales(): void {
     mostrarCargandoLocalComercial('Obteniendo información de los locales comerciales');
 
-    // TODO: reactivar cuando exista el endpoint de licencias para el mapa
-    // this.localComercialService.obtenerListaLocalesMapa().subscribe({
-    //   next: (response) => {
-    //     this.listaLocales = response;
-    //     this.inicializarMapa();
-    //   },
-    //   error: () => {
-    //     ocultarCargandoLocalComercial();
-    //     Swal.fire({
-    //       icon: 'error',
-    //       title: 'Error',
-    //       text: 'No se pudieron obtener los locales para el mapa.',
-    //     });
-    //   },
-    // });
-
-    this.listaLocales = [...LOCALES_DEMO_MAPA];
-    this.localesReady.emit(this.listaLocales);
-    this.inicializarMapa();
+    this.monitoreoService.obtenerLocalesMapa().subscribe({
+      next: (response) => {
+        this.listaLocales = response || [];
+        this.localesReady.emit(this.listaLocales);
+        this.inicializarMapa();
+      },
+      error: () => {
+        ocultarCargandoLocalComercial();
+        this.listaLocales = [];
+        this.localesReady.emit(this.listaLocales);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron obtener los locales para el mapa.',
+        });
+      },
+    });
   }
 
   private inicializarMapa(): void {
@@ -658,8 +554,12 @@ export class MapaComponent implements OnInit, OnDestroy {
                   e.preventDefault();
                   e.stopPropagation();
                   infoBtn.blur();
+                  const id = Number(local?.id);
+                  if (!Number.isFinite(id) || id <= 0) {
+                    return;
+                  }
                   mostrarCargandoLocalComercial('Obteniendo información del local comercial');
-                  this.router.navigateByUrl('/local-comercial/detalle-local-comercial');
+                  this.router.navigateByUrl('/local-comercial/detalle-local-comercial/' + id);
                 });
               }
               if (closeBtn) {

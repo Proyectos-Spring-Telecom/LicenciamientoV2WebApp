@@ -26,7 +26,7 @@
             <span class="documento-modal-file-name" [title]="nombreArchivo">{{ nombreArchivo }}</span>
           </div>
           <label class="documento-modal-upload documento-modal-upload--inline" *ngIf="!esSoloLectura">
-            <input type="file" accept="image/*,.pdf" (change)="onArchivoSeleccionado($event)">
+            <input type="file" accept="image/*,.pdf,application/pdf" (change)="onArchivoSeleccionado($event)">
             <span><i class="fas fa-folder-open"></i>&nbsp;Cambiar archivo</span>
           </label>
         </div>
@@ -47,7 +47,7 @@
         </div>
         <div class="documento-modal-preview-footer" *ngIf="!esSoloLectura">
           <label class="documento-modal-upload documento-modal-upload--inline">
-            <input type="file" accept="image/*,.pdf" (change)="onArchivoSeleccionado($event)">
+            <input type="file" accept="image/*,.pdf,application/pdf" (change)="onArchivoSeleccionado($event)">
             <span><i class="fas fa-folder-open"></i>&nbsp;Cambiar archivo</span>
           </label>
         </div>
@@ -60,7 +60,7 @@
           Este documento no ha sido cargado en la licencia.
         </span>
         <label class="documento-modal-upload documento-modal-upload--inline" *ngIf="!esSoloLectura">
-          <input type="file" accept="image/*,.pdf" (change)="onArchivoSeleccionado($event)">
+          <input type="file" accept="image/*,.pdf,application/pdf" (change)="onArchivoSeleccionado($event)">
           <span><i class="fas fa-folder-open"></i>&nbsp;{{ textoBotonSeleccion }}</span>
         </label>
       </ng-container>

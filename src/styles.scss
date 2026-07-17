@@ -597,237 +597,102 @@ body {
 }
 
 
-//Vista para la imagen
-.uploader-wrap {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-
-/* Etiquetas de documento: estilos globales bajo perm-wrapper (no dependen de encapsulación del componente) */
+/* Uploaders: tipografía de títulos = .perm-label (tamaño intacto 0.82rem).
+   El diseño visual vive en file-uploader.scss del componente. */
 .perm-wrapper .uploader-wrap .uploader-doc-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  display: block;
   width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
   margin: 0;
-  padding: 11px 16px;
-  border-radius: 14px 14px 0 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #e5e7eb !important;
   font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: #ffffff !important;
-  border: 2px solid rgba(255, 255, 255, 0.22);
-  border-bottom: none;
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: rgba(255, 255, 255, 0.14) 0 1px 2px inset;
-  transition: filter 0.13s ease-in-out;
+  font-weight: 300;
+  font-family: var(--mat-list-list-item-label-text-font, var(--mat-sys-body-large-font));
+  letter-spacing: 0.2px;
+  text-transform: none;
+  text-align: left;
+  line-height: 1.35;
   cursor: default;
 }
 
-.perm-wrapper .uploader-wrap .uploader-doc-label.uploader-label--success {
-  background: rgba(74, 222, 128, 0.26);
-  border-color: rgba(134, 239, 172, 0.92);
-  box-shadow: rgba(255, 255, 255, 0.14) 0 1px 2px inset, 0 0 0 1px rgba(34, 197, 94, 0.18);
-}
-
-.perm-wrapper .uploader-wrap .uploader-doc-label.uploader-label--primary {
-  background: rgba(96, 165, 250, 0.26);
-  border-color: rgba(147, 197, 253, 0.92);
-  box-shadow: rgba(255, 255, 255, 0.14) 0 1px 2px inset, 0 0 0 1px rgba(59, 130, 246, 0.18);
-}
-
-.perm-wrapper .uploader-wrap .uploader-doc-label.uploader-label--warning {
-  background: rgba(251, 191, 36, 0.26);
-  border-color: rgba(253, 224, 71, 0.92);
-  box-shadow: rgba(255, 255, 255, 0.14) 0 1px 2px inset, 0 0 0 1px rgba(245, 158, 11, 0.18);
-}
-
+.perm-wrapper .uploader-wrap .uploader-doc-label.uploader-label--success,
+.perm-wrapper .uploader-wrap .uploader-doc-label.uploader-label--primary,
+.perm-wrapper .uploader-wrap .uploader-doc-label.uploader-label--warning,
 .perm-wrapper .uploader-wrap .uploader-doc-label.uploader-label--danger {
-  background: rgba(251, 113, 133, 0.26);
-  border-color: rgba(254, 165, 165, 0.92);
-  box-shadow: rgba(255, 255, 255, 0.14) 0 1px 2px inset, 0 0 0 1px rgba(239, 68, 68, 0.2);
+  background: transparent !important;
+  border: none;
+  box-shadow: none !important;
+  color: #e5e7eb !important;
 }
 
-.perm-wrapper .uploader-wrap:has(.uploader-doc-label) .uploader {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+:root[data-theme='dark'] .perm-wrapper .uploader-wrap .uploader-doc-label {
+  color: rgba(255, 255, 255, 0.86) !important;
 }
 
-.uploader-hero {
-  width: 100%;
-  display: grid;
-  place-items: center;
-}
-
-.uploader {
-  position: relative;
-  width: 100%;
-  min-height: 150px;
-  border-radius: 18px;
-  background:
-    radial-gradient(1200px 300px at 10% -10%, rgba(255,255,255,.06), transparent 40%),
-    radial-gradient(900px 300px at 90% 110%, rgba(255,255,255,.06), transparent 40%),
-    rgba(255,255,255,.03);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+/* Modal ubicación: sin radio en esquinas superiores del header */
+.ubicacion-modal-panel .mat-mdc-dialog-container,
+.ubicacion-modal-panel .mdc-dialog__surface {
+  border-radius: 0 0 18px 18px !important;
   overflow: hidden;
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-  box-shadow:
-    0 10px 40px rgba(0, 0, 0, 0.35),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-}
-
-.uploader__glow {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: conic-gradient(from 0deg, #681330, #0f141a, #961641);
-  filter: blur(18px);
-  opacity: .18;
-  animation: hue 6s linear infinite;
-  z-index: 0;
-}
-
-.uploader__body {
-  position: relative;
-  z-index: 1;
-  padding: clamp(16px, 3.5vw, 28px);
-  display: grid;
-  justify-items: center;
-  gap: 10px;
-  text-align: center;
-}
-
-.uploader__icon {
-  width: 56px;
-  height: 56px;
-  display: grid;
-  place-items: center;
-  border-radius: 16px;
-  background: linear-gradient(180deg, rgba(167,139,250,.24), rgba(34,211,238,.2));
-  box-shadow: inset 0 0 18px rgba(255,255,255,.08), 0 10px 24px rgba(0,0,0,.25);
-}
-.uploader__icon mat-icon {
-  font-size: 34px;
-  width: 34px;
-  height: 34px;
-  opacity: .95;
-}
-
-.uploader__title {
-  margin: 6px 0 0 0;
-  font-weight: 800;
-  font-size: clamp(1rem, 2.2vw, 1.15rem);
-  letter-spacing: .2px;
-}
-
-.uploader__subtitle {
-  margin: 0;
-  opacity: .85;
-  font-size: .9rem;
-}
-
-/* Botón + etiqueta de formatos siempre en fila (evita alturas distintas entre tarjetas) */
-.uploader__cta {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 6px 8px;
-  align-items: center;
-  justify-content: center;
-  margin-top: 6px;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-.uploader__cta > .mat-mdc-unelevated-button,
-.uploader__cta > .mat-mdc-button,
-.uploader__cta > button {
-  flex-shrink: 0;
-}
-
-.uploader__badge {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-size: clamp(0.6rem, 1.4vw, 0.75rem);
-  padding: 4px 8px;
-  line-height: 1.2;
-  border-radius: 999px;
-  background: rgba(255,255,255,.06);
-  border: 1px dashed rgba(255,255,255,.18);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: 0.02em;
-  text-align: center;
-}
-
-.uploader__input {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
   padding: 0 !important;
-  margin: -1px !important;
+}
+
+.ubicacion-modal-panel .ubicacion-modal__title.mat-mdc-dialog-title,
+.ubicacion-modal-panel .ubicacion-modal__title.mdc-dialog__title {
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  line-height: 1.2 !important;
+}
+
+/* Entrada / salida rápida y notoria del modal de ubicación */
+.cdk-overlay-pane.ubicacion-modal-panel--animated {
+  transform-origin: center center;
+  animation: ubicacion-modal-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.cdk-overlay-pane.ubicacion-modal-panel--animated.ubicacion-modal-panel--leaving {
+  animation: ubicacion-modal-out 280ms cubic-bezier(0.55, 0.05, 0.9, 0.4) both !important;
+  pointer-events: none !important;
+}
+
+.cdk-overlay-pane.ubicacion-modal-panel--animated.ubicacion-modal-panel--leaving,
+.cdk-overlay-pane.ubicacion-modal-panel--animated.ubicacion-modal-panel--leaving .mdc-dialog__surface,
+.cdk-overlay-pane.ubicacion-modal-panel--animated.ubicacion-modal-panel--leaving .mat-mdc-dialog-component-host {
   overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
 }
 
-.uploader__status {
-  width: min(640px, 100%);
-  display: grid;
-  gap: 8px;
-  margin-top: 10px;
-  text-align: left;
+.cdk-overlay-backdrop.ubicacion-modal-backdrop--leaving {
+  opacity: 0 !important;
+  transition: opacity 220ms ease !important;
 }
 
-.uploader__filename {
-  font-size: .9rem;
-  opacity: .9;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.uploader__ok {
-  font-size: .9rem;
-  color: #22c55e;
-}
-
-.uploader.dragging {
-  transform: translateY(-2px) scale(1.01);
-  border-color: rgba(110,168,254,.8);
-  box-shadow: 0 14px 44px rgba(110,168,254,.25), inset 0 0 0 1px rgba(110,168,254,.25);
-}
-.uploader.dragging .uploader__glow {
-  opacity: .32;
-}
-
-@keyframes hue {
-  0% { filter: hue-rotate(0deg) blur(18px); }
-  100% { filter: hue-rotate(360deg) blur(18px); }
-}
-
-@media (max-width: 576px) {
-  .uploader { min-height: 130px; border-radius: 14px; }
-  .uploader__icon { width: 52px; height: 52px; border-radius: 14px; }
-  .uploader__badge {
-    font-size: clamp(0.55rem, 2.8vw, 0.68rem);
-    padding: 3px 6px;
+@keyframes ubicacion-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.9);
   }
-  .uploader__cta {
-    gap: 4px 6px;
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
-
-
+@keyframes ubicacion-modal-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-24px) scale(0.9);
+  }
+}
 
 .btnAcciones {
   --size: 36px;
@@ -1226,4 +1091,38 @@ body {
 .ul-root .ul-card .mdc-text-field__input::-moz-placeholder {
   color: rgba(255, 255, 255, 0.28) !important;
   opacity: 1 !important;
+}
+
+/* Pre-registro: panel de ocupación de corresponsables (overlay) */
+.pre-reg-corresp-select-panel.mat-mdc-select-panel {
+  background: #1c252e;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+}
+
+.pre-reg-corresp-select-panel .mat-mdc-option {
+  color: #fff;
+  min-height: 48px;
+}
+
+.pre-reg-corresp-select-panel .pre-reg-corresp-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1;
+}
+
+.pre-reg-corresp-select-panel .pre-reg-corresp-option mat-icon {
+  flex-shrink: 0;
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+  color: #f0c98a;
+  font-family: 'Material Icons' !important;
+  font-weight: normal;
+  font-style: normal;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }

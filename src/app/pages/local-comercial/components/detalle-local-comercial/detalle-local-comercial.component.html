@@ -53,21 +53,14 @@
             <div class="route-animations-elements detalle-campo">
               <i class="fa fa-globe"></i> &nbsp;&nbsp;
               <div class="informacion">Estado:</div>
-              <div class="respuesta">{{direccionNombreEntidadFederativa}}</div>
-              <div class="respuesta_null" *ngIf="informacion.direccion.idEntidadFederativaLicencia == null || informacion.direccion.nombreEntidadFederativaLicencia == null">Sin Informaci&oacute;n </div>
+              <div class="respuesta" *ngIf="tieneValor(direccionNombreEntidadFederativa)">{{direccionNombreEntidadFederativa}}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(direccionNombreEntidadFederativa)">Sin Informaci&oacute;n </div>
             </div>
             <div class="route-animations-elements detalle-campo">
               <i class="fa fa-compass"></i> &nbsp;&nbsp;
               <div class="informacion">Municipio:</div>
-              <div class="respuesta">{{informacion.direccion.nombreMuncipioLicencia}}</div>
-              <div class="respuesta_null" *ngIf="informacion.direccion.idMunicipioLicencia == null || informacion.direccion.nombreMuncipioLicencia == null">Sin Informaci&oacute;n </div>
-            </div>
-            <div class="route-animations-elements detalle-campo">
-              <i class="fa fa-flag"></i> &nbsp;&nbsp;
-              <div class="informacion">Localidad:</div>
-              <div class="respuesta">{{localidadNombreComercial}}</div>
-              <div class="respuesta_tipo_direcciones" *ngIf="localidadNombreComercial == null">{{informacion.direccion.nombreLocalidadLicencia}}</div>
-              <div class="respuesta_null_second" *ngIf="informacion.direccion.idLocalidadLicencia == null && informacion.direccion.nombreLocalidadLicencia == null">Sin Informaci&oacute;n </div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.direccion.nombreMuncipioLicencia)">{{informacion.direccion.nombreMuncipioLicencia}}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.direccion.nombreMuncipioLicencia)">Sin Informaci&oacute;n </div>
             </div>
           </div>
         </div><br>
@@ -76,16 +69,14 @@
             <div class="route-animations-elements detalle-campo">
               <i class="fa fa-map-marker"></i> &nbsp;&nbsp;
               <div class="informacion">Colonia:</div>
-              <div class="respuesta">{{coloniaNombreComercial}}</div>
-              <div class="respuesta_tipo_direcciones" *ngIf="coloniaNombreComercial == null">{{informacion.direccion.nombreColoniaLicencia}}</div>
-              <div class="respuesta_null_second" *ngIf="informacion.direccion.idColoniaLicencia == null && informacion.direccion.nombreColoniaLicencia == null">Sin Informaci&oacute;n </div>
+              <div class="respuesta" *ngIf="tieneValor(coloniaNombreComercial) || tieneValor(informacion.direccion.nombreColoniaLicencia)">{{ coloniaNombreComercial || informacion.direccion.nombreColoniaLicencia }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(coloniaNombreComercial) && !tieneValor(informacion.direccion.nombreColoniaLicencia)">Sin Informaci&oacute;n </div>
             </div>
             <div class="route-animations-elements detalle-campo">
               <i class="fa fa-road"></i> &nbsp;&nbsp;
               <div class="informacion">Calle:</div>
-              <div class="respuesta">{{calleNombreComercial}}</div>
-              <div class="respuesta_tipo_direcciones" *ngIf="calleNombreComercial == null">{{informacion.direccion.nombreCalleLicencia}}</div>
-              <div class="respuesta_null_second" *ngIf="informacion.direccion.idCalleLicencia == null && informacion.direccion.nombreCalleLicencia == null">Sin Informaci&oacute;n </div>
+              <div class="respuesta" *ngIf="tieneValor(calleNombreComercial) || tieneValor(informacion.direccion.nombreCalleLicencia)">{{ calleNombreComercial || informacion.direccion.nombreCalleLicencia }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(calleNombreComercial) && !tieneValor(informacion.direccion.nombreCalleLicencia)">Sin Informaci&oacute;n </div>
             </div>
             <div class="route-animations-elements detalle-campo">
               <i class="fa fa-sort-numeric-asc"></i> &nbsp;&nbsp;
@@ -154,8 +145,8 @@
             <div class="route-animations-elements detalle-campo">
               <i class="fa fa-globe"></i> &nbsp;&nbsp;
               <div class="informacion">Estado:</div>
-              <div class="respuesta">{{informacion.direccionSapac.nombreEntidadFederativaSapac}}</div>
-              <div class="respuesta_null" *ngIf="informacion.direccionSapac.idEntidadFederativaSapac == null || informacion.direccionSapac.nombreEntidadFederativaSapac == null">Sin Informaci&oacute;n </div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.direccionSapac.nombreEntidadFederativaSapac)">{{informacion.direccionSapac.nombreEntidadFederativaSapac}}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.direccionSapac.nombreEntidadFederativaSapac)">Sin Informaci&oacute;n </div>
             </div>
           </div>
         </div><br>
@@ -164,22 +155,14 @@
             <div class="route-animations-elements detalle-campo">
               <i class="fa fa-compass"></i> &nbsp;&nbsp;
               <div class="informacion">Municipio:</div>
-              <div class="respuesta">{{informacion.direccionSapac.nombreMuncipioSapac}}</div>
-              <div class="respuesta_null" *ngIf="informacion.direccionSapac.idMunicipioSapac == null || informacion.direccionSapac.nombreMuncipioSapac == null">Sin Informaci&oacute;n </div>
-            </div>
-            <div class="route-animations-elements detalle-campo">
-              <i class="fa fa-flag"></i> &nbsp;&nbsp;
-              <div class="informacion">Localidad:</div>
-              <div class="respuesta">{{localidadSapac}}</div>
-              <div class="respuesta_tipo_direcciones" *ngIf="localidadSapac == null">{{informacion.direccionSapac.nombreLocalidadSapac}}</div>
-              <div class="respuesta_null_second" *ngIf="informacion.direccionSapac.idLocalidadSapac == null && informacion.direccionSapac.nombreLocalidadSapac == null">Sin Informaci&oacute;n </div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.direccionSapac.nombreMuncipioSapac)">{{informacion.direccionSapac.nombreMuncipioSapac}}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.direccionSapac.nombreMuncipioSapac)">Sin Informaci&oacute;n </div>
             </div>
             <div class="route-animations-elements detalle-campo">
               <i class="fa fa-map-marker"></i> &nbsp;&nbsp;
               <div class="informacion">Colonia:</div>
-              <div class="respuesta">{{coloniaSapac}}</div>
-              <div class="respuesta_tipo_direcciones" *ngIf="coloniaSapac == null">{{informacion.direccionSapac.nombreColoniaSapac}}</div>
-              <div class="respuesta_null_second" *ngIf="informacion.direccionSapac.idColoniaSapac == null && informacion.direccionSapac.nombreColoniaSapac == null">Sin Informaci&oacute;n </div>
+              <div class="respuesta" *ngIf="tieneValor(coloniaSapac) || tieneValor(informacion.direccionSapac.nombreColoniaSapac)">{{ coloniaSapac || informacion.direccionSapac.nombreColoniaSapac }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(coloniaSapac) && !tieneValor(informacion.direccionSapac.nombreColoniaSapac)">Sin Informaci&oacute;n </div>
             </div>
           </div>
         </div><br>
@@ -188,9 +171,8 @@
             <div class="route-animations-elements detalle-campo">
               <i class="fa fa-road"></i> &nbsp;&nbsp;
               <div class="informacion">Calle:</div>
-              <div class="respuesta">{{calleSapac}}</div>
-              <div class="respuesta_tipo_direcciones" *ngIf="calleSapac == null">{{informacion.direccionSapac.nombreCalleSapac}}</div>
-              <div class="respuesta_null_second" *ngIf="informacion.direccionSapac.idCalleSapac == null && informacion.direccionSapac.nombreCalleSapac == null">Sin Informaci&oacute;n </div>
+              <div class="respuesta" *ngIf="tieneValor(calleSapac) || tieneValor(informacion.direccionSapac.nombreCalleSapac)">{{ calleSapac || informacion.direccionSapac.nombreCalleSapac }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(calleSapac) && !tieneValor(informacion.direccionSapac.nombreCalleSapac)">Sin Informaci&oacute;n </div>
             </div>
             <div class="route-animations-elements detalle-campo">
               <i class="fa fa-sort-numeric-asc"></i> &nbsp;&nbsp;
@@ -317,10 +299,10 @@
               <div class="respuesta_null" *ngIf="informacion.registro == null">Sin Informaci&oacute;n </div>
             </div>
             <div class="route-animations-elements detalle-campo">
-              <i class="fa fa-vcard-o"></i> &nbsp;&nbsp;
+              <i class="fa fa-building"></i> &nbsp;&nbsp;
               <div class="informacion">Nombre Comercial:</div>
-              <div class="respuesta">{{informacion.nombreComercial}}</div>
-              <div class="respuesta_null" *ngIf="informacion.nombreComercial == null">Sin Informaci&oacute;n </div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.nombreComercial)">{{informacion.nombreComercial}}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.nombreComercial)">Sin Informaci&oacute;n </div>
             </div>
             <div class="route-animations-elements detalle-campo">
               <i class="fa fa-shopping-cart"></i> &nbsp;&nbsp;
@@ -333,10 +315,10 @@
         <div class="detalle-campos-fila">
           <div class="detalle-campos-grid">
             <div class="route-animations-elements detalle-campo">
-              <i class="fa fa-vcard"></i> &nbsp;&nbsp;
+              <i class="fa fa-file-text-o"></i> &nbsp;&nbsp;
               <div class="informacion">Licencias de Uso de Suelo:</div>
-              <div class="respuesta">{{informacion.licenciaSuelo}}</div>
-              <div class="respuesta_null" *ngIf="informacion.licenciaSuelo == null">Sin Informaci&oacute;n </div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.licenciaSuelo)">{{informacion.licenciaSuelo}}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.licenciaSuelo)">Sin Informaci&oacute;n </div>
             </div>
             <div class="route-animations-elements detalle-campo">
               <i class="fa fa-user"></i> &nbsp;&nbsp;
@@ -427,39 +409,30 @@
             <div class="route-animations-elements detalle-campo">
               <i class="fa fa-globe"></i> &nbsp;&nbsp;
               <div class="informacion">Estado:</div>
-              <div class="respuesta">{{informacion.direccion.nombreEntidadFederativaLicencia}}</div>
-              <div class="respuesta_null" *ngIf="informacion.direccion.idEntidadFederativaLicencia == null || informacion.direccion.nombreEntidadFederativaLicencia == null">Sin Informaci&oacute;n </div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.direccion.nombreEntidadFederativaLicencia)">{{informacion.direccion.nombreEntidadFederativaLicencia}}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.direccion.nombreEntidadFederativaLicencia)">Sin Informaci&oacute;n </div>
             </div>
             <div class="route-animations-elements detalle-campo">
               <i class="fa fa-compass"></i> &nbsp;&nbsp;
               <div class="informacion">Municipio:</div>
-              <div class="respuesta">{{informacion.direccion.nombreMuncipioLicencia}}</div>
-              <div class="respuesta_null" *ngIf="informacion.direccion.idMunicipioLicencia == null || informacion.direccion.nombreMuncipioLicencia == null">Sin Informaci&oacute;n </div>
+              <div class="respuesta" *ngIf="tieneValor(informacion.direccion.nombreMuncipioLicencia)">{{informacion.direccion.nombreMuncipioLicencia}}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(informacion.direccion.nombreMuncipioLicencia)">Sin Informaci&oacute;n </div>
             </div>
           </div>
         </div><br>
         <div class="detalle-campos-fila">
           <div class="detalle-campos-grid">
             <div class="route-animations-elements detalle-campo">
-              <i class="fa fa-flag"></i> &nbsp;&nbsp;
-              <div class="informacion">Localidad:</div>
-              <div class="respuesta">{{localidadNombreComercial}}</div>
-              <div class="respuesta_tipo_direcciones" *ngIf="localidadNombreComercial == null">{{informacion.direccion.nombreLocalidadLicencia}}</div>
-              <div class="respuesta_null_second" *ngIf="informacion.direccion.idLocalidadLicencia == null && informacion.direccion.nombreLocalidadLicencia == null">Sin Informaci&oacute;n </div>
-            </div>
-            <div class="route-animations-elements detalle-campo">
               <i class="fa fa-map-marker"></i> &nbsp;&nbsp;
               <div class="informacion">Colonia:</div>
-              <div class="respuesta">{{coloniaNombreComercial}}</div>
-              <div class="respuesta_tipo_direcciones" *ngIf="coloniaNombreComercial == null">{{informacion.direccion.nombreColoniaLicencia}}</div>
-              <div class="respuesta_null_second" *ngIf="informacion.direccion.idColoniaLicencia == null && informacion.direccion.nombreColoniaLicencia == null">Sin Informaci&oacute;n </div>
+              <div class="respuesta" *ngIf="tieneValor(coloniaNombreComercial) || tieneValor(informacion.direccion.nombreColoniaLicencia)">{{ coloniaNombreComercial || informacion.direccion.nombreColoniaLicencia }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(coloniaNombreComercial) && !tieneValor(informacion.direccion.nombreColoniaLicencia)">Sin Informaci&oacute;n </div>
             </div>
             <div class="route-animations-elements detalle-campo">
               <i class="fa fa-road"></i> &nbsp;&nbsp;
               <div class="informacion">Calle:</div>
-              <div class="respuesta">{{calleNombreComercial}}</div>
-              <div class="respuesta_tipo_direcciones" *ngIf="calleNombreComercial == null"> {{informacion.direccion.nombreCalleLicencia}}</div>
-              <div class="respuesta_null_second" *ngIf="informacion.direccion.idCalleLicencia == null && informacion.direccion.nombreCalleLicencia == null">Sin Informaci&oacute;n </div>
+              <div class="respuesta" *ngIf="tieneValor(calleNombreComercial) || tieneValor(informacion.direccion.nombreCalleLicencia)">{{ calleNombreComercial || informacion.direccion.nombreCalleLicencia }}</div>
+              <div class="respuesta_null" *ngIf="!tieneValor(calleNombreComercial) && !tieneValor(informacion.direccion.nombreCalleLicencia)">Sin Informaci&oacute;n </div>
             </div>
           </div>
         </div><br>
@@ -696,35 +669,35 @@
       <div class="detalle-acciones__inner">
           <ng-container *appHasPermission="'12'">
             <button type="button" class="mt-3 btn btn-warning" (click)="cambiarEstatus(1)"
-              *ngIf="this.informacion.estatus ==1 || this.informacion.estatus !==3">
+              *ngIf="!esDatosCorrectos">
               <span class="loader" *ngIf="loadIndicatorVisible"></span>
               <span class="dx-button-text"> <i class="fa fa-folder-open" *ngIf="icon"></i>&nbsp;{{ buttonText }}</span>
             </button>
           </ng-container>
           <ng-container *appHasPermission="'13'">
             <button type="button" class="mt-3 btn btn-primary" (click)="cambiarEstatusSecond(4)"
-              *ngIf="this.informacion.estatus ==4 || this.informacion.estatus !==3">
+              *ngIf="!esDatosCorrectos">
               <span class="loader" *ngIf="loadIndicatorVisibleSecond"></span>
               <span class="dx-button-text"> <i class="fa fa-pencil-square-o" *ngIf="iconSecond"></i>&nbsp;{{ buttonTextSecond }}</span>
             </button>
           </ng-container>
           <ng-container *appHasPermission="'14'">
             <button type="button" class="mt-3 btn btn-danger" (click)="cambiarEstatusThird(2)"
-              *ngIf="this.informacion.estatus ==2 || this.informacion.estatus !==3">
+              *ngIf="!esDatosCorrectos">
               <span class="loader" *ngIf="loadIndicatorVisibleThird"></span>
                 <span class="dx-button-text"> <i class="fa fa-ban" *ngIf="iconThird"></i>&nbsp;{{ buttonTextThird }}</span>
             </button>
           </ng-container>
           <ng-container *appHasPermission="'15'">
             <button type="button" class="mt-3 btn btn-sucess" (click)="cambiarEstatusFourth(3)"
-              *ngIf="this.informacion.estatus ==4 || this.informacion.estatus !==3">
+              *ngIf="!esDatosCorrectos">
               <span class="loader" *ngIf="loadIndicatorVisibleFourth"></span>
                 <span class="dx-button-text"> <i class="fa fa-check-circle" *ngIf="iconFourth"></i>&nbsp;{{ buttonTextFourth }}</span>
             </button>
           </ng-container>
           <button type="button" class="mt-3 btn btn-secondary" (click)="regresar()">
             <span class="loader" *ngIf="loadIndicatorVisibleFifth"></span>
-            <span class="dx-button-text"> <i class="fa fa-arrow-left" *ngIf="iconFifth"></i>&nbsp;Regresar</span>
+            <span class="dx-button-text"> <i class="fa fa-arrow-left" *ngIf="iconFifth"></i>&nbsp;{{ buttonTextFifth }}</span>
           </button>
         </div>
       </div>

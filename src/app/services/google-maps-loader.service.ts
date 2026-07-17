@@ -31,9 +31,12 @@ export class GoogleMapsLoaderService {
       await this.injectScript(key);
     }
 
-    await google.maps.importLibrary('maps');
-    await google.maps.importLibrary('places');
-    await google.maps.importLibrary('streetView');
+    await Promise.all([
+      google.maps.importLibrary('maps'),
+      google.maps.importLibrary('places'),
+      google.maps.importLibrary('streetView'),
+      google.maps.importLibrary('geocoding'),
+    ]);
   }
 
   /** Agrega el script de Google Maps al HTML de la página. */
