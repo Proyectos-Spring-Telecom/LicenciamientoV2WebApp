@@ -11,6 +11,7 @@ import { lastValueFrom } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { LocalComercial } from '../../models/local-comercial';
 import { LocalComercialService } from '../../services/local-comercial.service';
+import { PreRegistroStateService } from '../../services/pre-registro-state.service';
 
 @Component({
   selector: 'app-lista-local-comercial',
@@ -59,6 +60,16 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
   /** Valores `datetime-local` (yyyy-MM-ddTHH:mm) */
   public fechaInicio: string | null = null;
   public fechaFinal: string | null = null;
+  /** `null` = todos excepto Baja (ocultos por defecto). */
+  public filtroEstatus: number | null = null;
+  public readonly opcionesFiltroEstatus: { id: number | null; nombre: string }[] = [
+    { id: null, nombre: 'Todos (sin Baja)' },
+    { id: 1, nombre: 'Información Faltante' },
+    { id: 2, nombre: 'Rechazo o Sin respuesta' },
+    { id: 3, nombre: 'Datos Correctos' },
+    { id: 4, nombre: 'Revisión' },
+    { id: 5, nombre: 'Baja' },
+  ];
   public showTable: boolean = false;
   public detalle: User;
   public showButtonReload: boolean = false;
@@ -269,7 +280,8 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
   constructor(
 	  private router: Router,
 	  private datepipe: DatePipe,
-	  private localComercialService: LocalComercialService) {
+	  private localComercialService: LocalComercialService,
+	  private preRegistroState: PreRegistroStateService) {
 		this.showHeaderFilter = true;
         this.showFilterRow = true;
   	}
@@ -318,19 +330,20 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
 						rows.map((item) => this.mapRegistroToLocal(item))
 					);
 
-					this.totalRegistros = dataTransformada.length;
+					this.paginaActualData = dataTransformada;
+					const dataFiltrada = this.filtrarPorEstatus(dataTransformada);
+					this.totalRegistros = dataFiltrada.length;
 					this.paginaActual = 1;
 					this.totalPaginas = Math.max(
 						1,
 						Math.ceil(this.totalRegistros / (this.pageSize || 100))
 					);
-					this.paginaActualData = dataTransformada;
 					this.showTable = true;
-					this.crearReporte(dataTransformada);
+					this.crearReporte(dataFiltrada);
 
 					return {
-						data: dataTransformada,
-						totalCount: dataTransformada.length,
+						data: dataFiltrada,
+						totalCount: dataFiltrada.length,
 					};
 				} catch (error) {
 					this.loading = false;
@@ -356,7 +369,7 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
 
 		if (!q) {
 			this.filtroActivo = '';
-			grid?.option('dataSource', this.listaLocales);
+			this.aplicarVistaFiltrada();
 			return;
 		}
 		this.filtroActivo = q;
@@ -400,7 +413,8 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
 			return String(val).toLowerCase();
 		};
 
-		const dataFiltrada = (this.paginaActualData || []).filter((row: any) => {
+		const base = this.filtrarPorEstatus(this.paginaActualData || []);
+		const dataFiltrada = base.filter((row: any) => {
 			const hitEnColumnas = dataFields.some((df) =>
 				normalizar(getByPath(row, df)).includes(q)
 			);
@@ -415,6 +429,59 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
 			const hitExtras = extras.some((s) => s.includes(q));
 			return hitEnColumnas || hitExtras;
 		});
+		grid?.option('dataSource', dataFiltrada);
+	}
+
+	/** Oculta Baja por defecto; si hay id de estatus, filtra solo ese. */
+	private filtrarPorEstatus(locales: LocalComercial[]): LocalComercial[] {
+		const data = locales || [];
+		if (this.filtroEstatus == null) {
+			return data.filter((row) => !this.estaDeBaja(row));
+		}
+		return data.filter((row) => Number(row.estatus) === Number(this.filtroEstatus));
+	}
+
+	onFiltroEstatusChange(): void {
+		this.aplicarVistaFiltrada();
+	}
+
+	private aplicarVistaFiltrada(): void {
+		const grid = this.dataGrid?.instance;
+		const base = this.filtrarPorEstatus(this.paginaActualData || []);
+		const q = (this.filtroActivo || '').trim().toLowerCase();
+
+		let dataFiltrada = base;
+		if (q) {
+			const normalizar = (val: any): string => {
+				if (val === null || val === undefined) return '';
+				if (val instanceof Date) {
+					const dd = String(val.getDate()).padStart(2, '0');
+					const mm = String(val.getMonth() + 1).padStart(2, '0');
+					const yyyy = val.getFullYear();
+					return `${dd}/${mm}/${yyyy}`.toLowerCase();
+				}
+				return String(val).toLowerCase();
+			};
+			dataFiltrada = base.filter((row: any) => {
+				const extras = [
+					normalizar(row?.id),
+					normalizar(row?.rfc),
+					normalizar(row?.nombreComercial),
+					normalizar(row?.giro),
+					normalizar(row?.nombreCapturista),
+					normalizar(row?.nombreEstatus),
+					normalizar(row?.grupo),
+				];
+				return extras.some((s) => s.includes(q));
+			});
+		}
+
+		this.totalRegistros = dataFiltrada.length;
+		this.totalPaginas = Math.max(
+			1,
+			Math.ceil(this.totalRegistros / (this.pageSize || 100))
+		);
+		this.crearReporte(dataFiltrada);
 		grid?.option('dataSource', dataFiltrada);
 	}
 
@@ -511,11 +578,13 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
 	Enrutamiento
 -------------------------------*/
   AgregarLocal(){
-    this.router.navigateByUrl('/local-comercial/pre-alta-local-comercial')
+    this.preRegistroState.beginFlow('nuevo');
+    this.router.navigateByUrl('/local-comercial/pre-alta-local-comercial');
   }
 
   EditarLocal(id: number){
-    this.router.navigateByUrl('/local-comercial/actualizar-local-comercial/' + id )
+    this.preRegistroState.beginFlow(id);
+    this.router.navigateByUrl('/local-comercial/pre-actualizar-local-comercial/' + id);
   }
 
   detalleLocal(id: number){
@@ -568,18 +637,12 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
 			cancelButtonText: 'Cancelar',
 		}).then((result) => {
 			if (result.value) {
-				rowData.estatus = this.ESTATUS_ALTA;
-				rowData.nombreEstatus = 'Revisión';
-				// NO BORRAR — Alerta éxito al activar.
-				Swal.fire({
-					color: '#ffffff',
-					background: '#141a21',
-					title: '¡Confirmación Realizada!',
-					html: `El local comercial ha sido activado.`,
-					icon: 'success',
-					confirmButtonColor: '#3085d6',
-					confirmButtonText: 'Confirmar',
-				});
+				this.aplicarCambioEstatusLista(
+					rowData,
+					this.ESTATUS_ALTA,
+					'Revisión',
+					'El local comercial ha sido activado.'
+				);
 			}
 		});
 	}
@@ -600,19 +663,69 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
 			cancelButtonText: 'Cancelar',
 		}).then((result) => {
 			if (result.value) {
-				rowData.estatus = this.ESTATUS_BAJA;
-				rowData.nombreEstatus = 'Baja';
-				// NO BORRAR — Alerta éxito al desactivar.
+				this.aplicarCambioEstatusLista(
+					rowData,
+					this.ESTATUS_BAJA,
+					'Baja',
+					'El local comercial ha sido desactivado.'
+				);
+			}
+		});
+	}
+
+	/** Mismo contrato que detalle: PATCH /registros/{id}/estatus. Baja siempre envía id 5. */
+	private aplicarCambioEstatusLista(
+		rowData: LocalComercial,
+		estatus: number,
+		nombreEstatus: string,
+		mensajeExito: string
+	): void {
+		const id = Number(rowData?.id);
+		if (!id) {
+			Swal.fire({
+				color: '#ffffff',
+				background: '#141a21',
+				title: 'Error',
+				html: 'No se pudo identificar el local comercial.',
+				icon: 'error',
+				confirmButtonColor: '#3085d6',
+				confirmButtonText: 'Entendido',
+			});
+			return;
+		}
+
+		this.loadingVisible = true;
+		this.loadingMessage = 'Actualizando estatus...';
+
+		this.localComercialService.actualizarEstatusRegistro(id, estatus).subscribe({
+			next: () => {
+				rowData.estatus = estatus;
+				rowData.nombreEstatus = this.NOMBRE_ESTATUS[estatus] ?? nombreEstatus;
+				this.loadingVisible = false;
+				this.aplicarVistaFiltrada();
+				// NO BORRAR — Alerta éxito al cambiar estatus.
 				Swal.fire({
 					color: '#ffffff',
 					background: '#141a21',
 					title: '¡Confirmación Realizada!',
-					html: `El local comercial ha sido desactivado.`,
+					html: mensajeExito,
 					icon: 'success',
 					confirmButtonColor: '#3085d6',
 					confirmButtonText: 'Confirmar',
 				});
-			}
+			},
+			error: () => {
+				this.loadingVisible = false;
+				Swal.fire({
+					color: '#ffffff',
+					background: '#141a21',
+					title: 'Error',
+					html: 'No se pudo actualizar el estatus. Intente de nuevo.',
+					icon: 'error',
+					confirmButtonColor: '#3085d6',
+					confirmButtonText: 'Entendido',
+				});
+			},
 		});
 	}
 
@@ -665,6 +778,7 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
 		this.dataGrid?.instance?.clearGrouping();
 		this.dataGrid?.instance?.pageIndex(0);
 		this.filtroActivo = '';
+		this.filtroEstatus = null;
 		this.setupDataSource();
 		this.dataGrid?.instance?.refresh();
 		this.isGrouped = false;

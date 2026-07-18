@@ -34,6 +34,7 @@ export class MonitoreoLocalFilterComponent {
     'info-faltante': 0,
     rechazo: 0,
     'datos-correctos': 0,
+    baja: 0,
   };
 
   @Output() selectedEstatusChange = new EventEmitter<MonitoreoLocalEstatusFilter>();

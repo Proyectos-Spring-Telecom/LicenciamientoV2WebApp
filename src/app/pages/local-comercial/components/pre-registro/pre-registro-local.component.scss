@@ -709,17 +709,13 @@
   font-size: 0.9rem;
 }
 
-/* Fotos del Predio — principal + extras en fila debajo */
+/* Fotos del Predio — misma grilla; Agregar debajo de la principal */
 .pre-reg-fotos-main {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   width: 100%;
   height: 100%;
-}
-
-.pre-reg-fotos-extra-row {
-  margin-top: 0.15rem;
 }
 
 .pre-reg-fotos-stack__item {
@@ -807,12 +803,29 @@
   touch-action: none;
   cursor: crosshair;
   user-select: none;
+  position: relative;
+  z-index: 1;
+}
+
+.pre-reg-sign__preview {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 14px;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.18));
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .pre-reg-sign__reset {
   position: absolute;
   right: 10px;
   bottom: 10px;
+  z-index: 3;
   width: 36px;
   height: 36px;
   display: grid;

@@ -19,7 +19,10 @@
     <section class="perm-form-nc container-fluid py-3 py-md-4">
 
       <!-- ═══════ FORMULARIO 1: Tipo de Local ═══════ -->
-      <div class="local-form-shell pre-reg-shell" *ngIf="!mostrarApartadoObra" @preRegReveal (@preRegReveal.done)="onPreRegRevealDone()" data-accent="licenciamiento">
+      <div class="local-form-shell pre-reg-shell"
+        [hidden]="mostrarApartadoObra"
+        [class.is-step-hidden]="mostrarApartadoObra"
+        [attr.aria-hidden]="mostrarApartadoObra" data-accent="licenciamiento">
 
         <div class="local-form-banner local-tab-header--licenciamiento">
           <div class="row g-3 align-items-center">
@@ -125,13 +128,35 @@
               </div>
             </div>
             <div class="col-12 col-sm-6 col-xl-3">
-              <label class="form-label perm-label" for="preCalle">Calle y número</label>
+              <label class="form-label perm-label" for="preCalle">Calle</label>
               <div class="input-group input-group-lg perm-ig">
                 <span class="input-group-text fw-bold"><mat-icon>route</mat-icon></span>
                 <div class="form-floating flex-grow-1">
-                  <input id="preCalle" class="form-control" placeholder="Ej. Av. Juárez 123"
-                    [(ngModel)]="calleNumero" />
-                  <label for="preCalle">Ej. Av. Juárez 123</label>
+                  <input id="preCalle" class="form-control" placeholder="Calle"
+                    [(ngModel)]="calleNumero" name="preCalle" />
+                  <label for="preCalle">Calle</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+              <label class="form-label perm-label" for="preNoInt">No. Interior</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>numbers</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preNoInt" class="form-control" placeholder="No. Interior"
+                    [(ngModel)]="noInterior" name="preNoInt" />
+                  <label for="preNoInt">No. Interior</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+              <label class="form-label perm-label" for="preNoExt">No. Exterior</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>numbers</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preNoExt" class="form-control" placeholder="No. Exterior"
+                    [(ngModel)]="noExterior" name="preNoExt" />
+                  <label for="preNoExt">No. Exterior</label>
                 </div>
               </div>
             </div>
@@ -155,7 +180,7 @@
                 [remoteUrl]="documentosExistentes[doc.controlName]"
                 (fileSelected)="onDocumentoSeleccionado(doc.controlName, $event)"
                 (fileRejected)="onDocumentoRechazado(doc.controlName)"
-                (remoteFileClick)="verDocumentoExistente(doc)">
+                (remoteFileClick)="verDocumentoExistente(doc, $event)">
               </app-file-uploader-card>
             </div>
           </div>
@@ -221,7 +246,10 @@
       </div>
 
       <!-- ═══════ FORMULARIO 2: Finalización del Trámite (predio en obra) ═══════ -->
-      <div class="local-form-shell pre-reg-shell pre-reg-shell--obra" *ngIf="mostrarApartadoObra" @preRegReveal (@preRegReveal.done)="onPreRegRevealDone()" data-accent="proteccion">
+      <div class="local-form-shell pre-reg-shell pre-reg-shell--obra"
+        [hidden]="!mostrarApartadoObra"
+        [class.is-step-hidden]="!mostrarApartadoObra"
+        [attr.aria-hidden]="!mostrarApartadoObra" data-accent="proteccion">
 
         <div class="local-form-banner local-tab-header--proteccion">
           <div class="row g-3 align-items-center">
@@ -348,7 +376,7 @@
             </div>
           </div>
           <div class="row g-3 g-md-4">
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-4">
               <label class="form-label perm-label" for="preDirNombre">Nombre del Director</label>
               <div class="input-group input-group-lg perm-ig">
                 <span class="input-group-text fw-bold"><mat-icon>person</mat-icon></span>
@@ -359,7 +387,7 @@
                 </div>
               </div>
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-4">
               <label class="form-label perm-label" for="preDirLic">Número de Licencia / Registro</label>
               <div class="input-group input-group-lg perm-ig">
                 <span class="input-group-text fw-bold"><mat-icon>verified</mat-icon></span>
@@ -370,7 +398,7 @@
                 </div>
               </div>
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-4">
               <label class="form-label perm-label" for="preDirCedula">Cédula Profesional</label>
               <div class="input-group input-group-lg perm-ig">
                 <span class="input-group-text fw-bold"><mat-icon>badge</mat-icon></span>
@@ -381,7 +409,9 @@
                 </div>
               </div>
             </div>
-            <div class="col-12 col-md-6">
+          </div>
+          <div class="row g-3 g-md-4 mt-1">
+            <div class="col-12 col-md-4">
               <label class="form-label perm-label" for="preSupTerreno">Superficie terreno (m²)</label>
               <div class="input-group input-group-lg perm-ig">
                 <span class="input-group-text fw-bold"><mat-icon>square_foot</mat-icon></span>
@@ -393,7 +423,7 @@
                 </div>
               </div>
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-4">
               <label class="form-label perm-label" for="preSupObra">Superficie obra (m²)</label>
               <div class="input-group input-group-lg perm-ig">
                 <span class="input-group-text fw-bold"><mat-icon>straighten</mat-icon></span>
@@ -405,7 +435,7 @@
                 </div>
               </div>
             </div>
-            <div class="col-12">
+            <div class="col-12 col-md-4">
               <label class="form-label perm-label" for="preSistConst">Sistema constructivo</label>
               <div class="input-group input-group-lg perm-ig">
                 <span class="input-group-text fw-bold"><mat-icon>construction</mat-icon></span>
@@ -439,6 +469,28 @@
                 </div>
               </div>
             </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label perm-label" for="preFechaLc">Fecha</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>event</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preFechaLc" class="form-control" type="datetime-local"
+                    [(ngModel)]="fechaLicenciaConstruccion" name="preFechaLc" />
+                  <label for="preFechaLc">Fecha</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label perm-label" for="preSegObra">Seguimiento de obra</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>fact_check</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preSegObra" class="form-control" type="text" placeholder="Seguimiento de obra"
+                    [(ngModel)]="seguimientoObra" name="preSegObra" />
+                  <label for="preSegObra">Seguimiento de obra</label>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -461,11 +513,13 @@
           <div class="pre-reg-corresp-list" *ngIf="corresponsables.length">
             <div class="pre-reg-corresp" *ngFor="let item of corresponsables" @correspCard>
               <span class="pre-reg-corresp__icon" aria-hidden="true">
-                <mat-icon>{{ item.icon }}</mat-icon>
+                <mat-icon>person</mat-icon>
               </span>
               <div class="pre-reg-corresp__copy">
                 <span class="pre-reg-corresp__name">{{ item.nombre }}</span>
-                <span class="pre-reg-corresp__role">{{ item.especialidad }}</span>
+                <span class="pre-reg-corresp__role" *ngIf="item.noRegLicenciaConstruccion || item.cedulaProfesional">
+                  {{ item.noRegLicenciaConstruccion || item.cedulaProfesional }}
+                </span>
               </div>
               <button type="button" class="pre-reg-corresp__delete-icon" (click)="quitarCorresponsable(item.id)"
                 title="Eliminar">
@@ -511,51 +565,6 @@
               </div>
             </div>
 
-            <div class="pre-reg-corresp-row__field pre-reg-corresp-row__field--ocupacion"
-              *ngIf="!esOcupacionOtro" @correspOtroField>
-              <label class="form-label perm-label" for="preCorrOcupDraft">Ocupación</label>
-              <div class="pre-reg-corresp-select-wrap">
-                <mat-select
-                  id="preCorrOcupDraft"
-                  class="pre-reg-corresp-select"
-                  [(ngModel)]="draftOcupacionCorresponsable"
-                  name="preCorrOcupDraft"
-                  placeholder="Seleccionar ocupación"
-                  panelClass="pre-reg-corresp-select-panel"
-                  (selectionChange)="onOcupacionDraftChange($event)">
-                  <mat-select-trigger>
-                    <span class="pre-reg-corresp-option" *ngIf="draftOcupacionCorresponsable">
-                      <mat-icon aria-hidden="true">{{ iconoDraftOcupacion() }}</mat-icon>
-                      <span>{{ etiquetaDraftOcupacion() }}</span>
-                    </span>
-                  </mat-select-trigger>
-                  <mat-option *ngFor="let ocup of ocupacionesCorresponsable" [value]="ocup.value">
-                    <span class="pre-reg-corresp-option">
-                      <mat-icon aria-hidden="true">{{ ocup.icon }}</mat-icon>
-                      <span>{{ ocup.label }}</span>
-                    </span>
-                  </mat-option>
-                </mat-select>
-              </div>
-            </div>
-
-            <div class="pre-reg-corresp-row__field pre-reg-corresp-row__field--ocupacion"
-              *ngIf="esOcupacionOtro" @correspOtroField>
-              <label class="form-label perm-label" for="preCorrOcupOtro">Ocupación</label>
-              <div class="input-group input-group-lg perm-ig">
-                <span class="input-group-text fw-bold"><mat-icon>work</mat-icon></span>
-                <div class="form-floating flex-grow-1">
-                  <input id="preCorrOcupOtro" class="form-control" type="text" name="preCorrOcupOtro"
-                    placeholder="Escriba la ocupación" [(ngModel)]="draftOcupacionOtroTexto" />
-                  <label for="preCorrOcupOtro">Escriba la ocupación</label>
-                </div>
-                <button type="button" class="pre-reg-corresp-otro-back" (click)="volverASelectOcupacion()"
-                  title="Volver al listado">
-                  <mat-icon>arrow_back</mat-icon>
-                </button>
-              </div>
-            </div>
-
             <div class="pre-reg-corresp-row__actions">
               <button type="button" class="pre-reg-corresp__add" (click)="confirmarCorresponsable()"
                 title="Agregar">
@@ -593,8 +602,10 @@
                 icon="description"
                 badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
                 colorVariant="primary"
+                [remoteUrl]="documentosExistentes['constanciaAlineamiento']"
                 (fileSelected)="onDocumentoSeleccionado('constanciaAlineamiento', $event)"
-                (fileRejected)="onDocumentoRechazado('constanciaAlineamiento')">
+                (fileRejected)="onDocumentoRechazado('constanciaAlineamiento')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Constancia alineamiento y número', controlName: 'constanciaAlineamiento' }, $event)">
               </app-file-uploader-card>
             </div>
             <div class="col-12 col-md-4">
@@ -605,8 +616,10 @@
                 icon="description"
                 badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
                 colorVariant="success"
+                [remoteUrl]="documentosExistentes['permisoSuelo']"
                 (fileSelected)="onDocumentoSeleccionado('permisoSuelo', $event)"
-                (fileRejected)="onDocumentoRechazado('permisoSuelo')">
+                (fileRejected)="onDocumentoRechazado('permisoSuelo')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Licencia de uso y plano', controlName: 'permisoSuelo' }, $event)">
               </app-file-uploader-card>
             </div>
             <div class="col-12 col-md-4">
@@ -617,8 +630,10 @@
                 icon="architecture"
                 badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
                 colorVariant="warning"
+                [remoteUrl]="documentosExistentes['planos']"
                 (fileSelected)="onDocumentoSeleccionado('planos', $event)"
-                (fileRejected)="onDocumentoRechazado('planos')">
+                (fileRejected)="onDocumentoRechazado('planos')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Juego de planos arquitectónicos', controlName: 'planos' }, $event)">
               </app-file-uploader-card>
             </div>
             <div class="col-12 col-md-4">
@@ -629,8 +644,10 @@
                 icon="person"
                 badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
                 colorVariant="primary"
+                [remoteUrl]="documentosExistentes['constanciaPropietario']"
                 (fileSelected)="onDocumentoSeleccionado('constanciaPropietario', $event)"
-                (fileRejected)="onDocumentoRechazado('constanciaPropietario')">
+                (fileRejected)="onDocumentoRechazado('constanciaPropietario')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Constancia propietario', controlName: 'constanciaPropietario' }, $event)">
               </app-file-uploader-card>
             </div>
             <div class="col-12 col-md-4">
@@ -641,8 +658,10 @@
                 icon="water_drop"
                 badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
                 colorVariant="success"
+                [remoteUrl]="documentosExistentes['factibilidad']"
                 (fileSelected)="onDocumentoSeleccionado('factibilidad', $event)"
-                (fileRejected)="onDocumentoRechazado('factibilidad')">
+                (fileRejected)="onDocumentoRechazado('factibilidad')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Factibilidad', controlName: 'factibilidad' }, $event)">
               </app-file-uploader-card>
             </div>
             <div class="col-12 col-md-4">
@@ -653,8 +672,66 @@
                 icon="receipt"
                 badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
                 colorVariant="danger"
+                [remoteUrl]="documentosExistentes['recibosPredial']"
                 (fileSelected)="onDocumentoSeleccionado('recibosPredial', $event)"
-                (fileRejected)="onDocumentoRechazado('recibosPredial')">
+                (fileRejected)="onDocumentoRechazado('recibosPredial')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Recibos impuesto predial', controlName: 'recibosPredial' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Plano autorizado"
+                accept="image/*,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="verified"
+                badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
+                colorVariant="primary"
+                [remoteUrl]="documentosExistentes['planoAutorizado']"
+                (fileSelected)="onDocumentoSeleccionado('planoAutorizado', $event)"
+                (fileRejected)="onDocumentoRechazado('planoAutorizado')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Plano autorizado', controlName: 'planoAutorizado' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Licencia fraccionamiento"
+                accept="image/*,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="apartment"
+                badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
+                colorVariant="success"
+                [remoteUrl]="documentosExistentes['licenciaFraccionamiento']"
+                (fileSelected)="onDocumentoSeleccionado('licenciaFraccionamiento', $event)"
+                (fileRejected)="onDocumentoRechazado('licenciaFraccionamiento')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Licencia fraccionamiento', controlName: 'licenciaFraccionamiento' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Escrituras"
+                accept="image/*,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="menu_book"
+                badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
+                colorVariant="warning"
+                [remoteUrl]="documentosExistentes['escrituras']"
+                (fileSelected)="onDocumentoSeleccionado('escrituras', $event)"
+                (fileRejected)="onDocumentoRechazado('escrituras')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Escrituras', controlName: 'escrituras' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Recibos municipales"
+                accept="image/*,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="receipt_long"
+                badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
+                colorVariant="danger"
+                [remoteUrl]="documentosExistentes['recibosMunicipales']"
+                (fileSelected)="onDocumentoSeleccionado('recibosMunicipales', $event)"
+                (fileRejected)="onDocumentoRechazado('recibosMunicipales')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Recibos municipales', controlName: 'recibosMunicipales' }, $event)">
               </app-file-uploader-card>
             </div>
             <div class="col-12 col-md-4">
@@ -666,8 +743,10 @@
                   icon="photo_camera"
                   badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
                   colorVariant="warning"
+                  [remoteUrl]="documentosExistentes['fotosPredio_1']"
                   (fileSelected)="onDocumentoSeleccionado('fotosPredio_1', $event)"
-                  (fileRejected)="onDocumentoRechazado('fotosPredio_1')">
+                  (fileRejected)="onDocumentoRechazado('fotosPredio_1')"
+                  (remoteFileClick)="verDocumentoExistente({ titulo: 'Otros / Fotos del Predio', controlName: 'fotosPredio_1' }, $event)">
                 </app-file-uploader-card>
                 <button type="button" class="pre-reg-fotos-stack__add" (click)="agregarFotoPredio()">
                   <mat-icon>add</mat-icon>
@@ -675,9 +754,6 @@
                 </button>
               </div>
             </div>
-          </div>
-
-          <div class="row g-3 local-form-uploaders pre-reg-fotos-extra-row" *ngIf="fotosPredioExtras.length">
             <div class="col-12 col-md-4" *ngFor="let foto of fotosPredioExtras; let i = index" @correspCard>
               <div class="pre-reg-fotos-stack__item">
                 <app-file-uploader-card
@@ -687,8 +763,10 @@
                   icon="photo_camera"
                   badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
                   colorVariant="warning"
+                  [remoteUrl]="documentosExistentes['fotosPredio_' + foto.id]"
                   (fileSelected)="onDocumentoSeleccionado('fotosPredio_' + foto.id, $event)"
-                  (fileRejected)="onDocumentoRechazado('fotosPredio_' + foto.id)">
+                  (fileRejected)="onDocumentoRechazado('fotosPredio_' + foto.id)"
+                  (remoteFileClick)="verDocumentoExistente({ titulo: 'Fotos del Predio ' + (i + 2), controlName: 'fotosPredio_' + foto.id }, $event)">
                 </app-file-uploader-card>
                 <button
                   type="button"
@@ -715,6 +793,12 @@
             <div class="col-12 col-md-6">
               <label class="form-label perm-label">Firma del Propietario</label>
               <div class="pre-reg-sign">
+                <img
+                  *ngIf="urlFirmaVisible('propietario') as urlFirma"
+                  class="pre-reg-sign__preview"
+                  [src]="urlFirma"
+                  alt="Firma del propietario"
+                />
                 <canvas
                   #firmaPropietario
                   class="pre-reg-sign__pad"
@@ -732,8 +816,14 @@
               <p class="pre-reg-sign__hint">Utilice el ratón o lápiz óptico</p>
             </div>
             <div class="col-12 col-md-6">
-              <label class="form-label perm-label">Firma del Director Responsable</label>
+              <label class="form-label perm-label">Firma del Director Responsable (DRO)</label>
               <div class="pre-reg-sign">
+                <img
+                  *ngIf="urlFirmaVisible('director') as urlFirma"
+                  class="pre-reg-sign__preview"
+                  [src]="urlFirma"
+                  alt="Firma del director"
+                />
                 <canvas
                   #firmaDirector
                   class="pre-reg-sign__pad"
@@ -749,6 +839,56 @@
                 </button>
               </div>
               <p class="pre-reg-sign__hint">Requiere firma autógrafa digital</p>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label perm-label">Firma del Corresponsable</label>
+              <div class="pre-reg-sign">
+                <img
+                  *ngIf="urlFirmaVisible('corresponsable') as urlFirma"
+                  class="pre-reg-sign__preview"
+                  [src]="urlFirma"
+                  alt="Firma del corresponsable"
+                />
+                <canvas
+                  #firmaCorresponsable
+                  class="pre-reg-sign__pad"
+                  aria-label="Área de firma del corresponsable"
+                  (pointerdown)="onFirmaPointerDown('corresponsable', $event)"
+                  (pointermove)="onFirmaPointerMove('corresponsable', $event)"
+                  (pointerup)="onFirmaPointerUp('corresponsable', $event)"
+                  (pointerleave)="onFirmaPointerUp('corresponsable', $event)"
+                  (pointercancel)="onFirmaPointerUp('corresponsable', $event)">
+                </canvas>
+                <button type="button" class="pre-reg-sign__reset" (click)="limpiarFirma('corresponsable')" title="Limpiar">
+                  <mat-icon>refresh</mat-icon>
+                </button>
+              </div>
+              <p class="pre-reg-sign__hint">Firma del corresponsable</p>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label perm-label">Firma responsable recepción de documento</label>
+              <div class="pre-reg-sign">
+                <img
+                  *ngIf="urlFirmaVisible('recepcion') as urlFirma"
+                  class="pre-reg-sign__preview"
+                  [src]="urlFirma"
+                  alt="Firma de recepción"
+                />
+                <canvas
+                  #firmaRecepcion
+                  class="pre-reg-sign__pad"
+                  aria-label="Área de firma de recepción"
+                  (pointerdown)="onFirmaPointerDown('recepcion', $event)"
+                  (pointermove)="onFirmaPointerMove('recepcion', $event)"
+                  (pointerup)="onFirmaPointerUp('recepcion', $event)"
+                  (pointerleave)="onFirmaPointerUp('recepcion', $event)"
+                  (pointercancel)="onFirmaPointerUp('recepcion', $event)">
+                </canvas>
+                <button type="button" class="pre-reg-sign__reset" (click)="limpiarFirma('recepcion')" title="Limpiar">
+                  <mat-icon>refresh</mat-icon>
+                </button>
+              </div>
+              <p class="pre-reg-sign__hint">Firma de quien recibe el documento</p>
             </div>
           </div>
         </div>

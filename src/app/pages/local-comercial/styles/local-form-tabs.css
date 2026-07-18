@@ -19,6 +19,14 @@
   gap: 1.25rem;
 }
 
+/* display:flex anula el [hidden] del UA; forzar ocultar pasos inactivos */
+.local-form-shell[hidden],
+.pre-reg-shell[hidden],
+.local-form-shell.is-step-hidden,
+.pre-reg-shell.is-step-hidden {
+  display: none !important;
+}
+
 .local-form-shell[data-accent="sapac"] { --lf-accent: var(--lf-sapac); }
 .local-form-shell[data-accent="catastral"] { --lf-accent: var(--lf-catastral); }
 .local-form-shell[data-accent="licenciamiento"] { --lf-accent: var(--lf-licenciamiento); }
@@ -276,7 +284,8 @@
   box-sizing: border-box;
 }
 
-.local-form-tab-panel[hidden] {
+.local-form-tab-panel[hidden],
+.local-form-tab-panel.is-step-hidden {
   display: none !important;
 }
 

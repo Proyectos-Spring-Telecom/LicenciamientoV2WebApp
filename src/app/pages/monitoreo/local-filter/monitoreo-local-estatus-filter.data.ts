@@ -3,7 +3,8 @@ export type MonitoreoLocalEstatusFilter =
   | 'pendiente'
   | 'info-faltante'
   | 'rechazo'
-  | 'datos-correctos';
+  | 'datos-correctos'
+  | 'baja';
 
 export interface MonitoreoLocalEstatusFilterOption {
   id: MonitoreoLocalEstatusFilter;
@@ -17,6 +18,7 @@ export const MONITOREO_LOCAL_ESTATUS_FILTER_OPTIONS: MonitoreoLocalEstatusFilter
   { id: 'info-faltante', shortLabel: 'Información Faltante', ariaLabel: 'Información Faltante' },
   { id: 'rechazo', shortLabel: 'Rechazo', ariaLabel: 'Rechazo' },
   { id: 'datos-correctos', shortLabel: 'Datos Correctos', ariaLabel: 'Datos Correctos' },
+  { id: 'baja', shortLabel: 'Baja', ariaLabel: 'Estatus Baja' },
 ];
 
 export const MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT: MonitoreoLocalEstatusFilter = 'todo';
@@ -32,6 +34,7 @@ export function createEmptyLocalEstatusFilterCounts(): MonitoreoLocalEstatusFilt
     'info-faltante': 0,
     rechazo: 0,
     'datos-correctos': 0,
+    baja: 0,
   };
 }
 
@@ -47,6 +50,10 @@ export function resolveLocalEstatusFilter(
 
   if (!raw) {
     return null;
+  }
+
+  if (raw.includes('baja')) {
+    return 'baja';
   }
 
   if (

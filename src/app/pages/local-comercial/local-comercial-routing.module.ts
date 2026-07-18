@@ -23,6 +23,10 @@ const routes: Routes = [
         component: PreRegistroLocalComponent,
       },
       {
+        path: 'pre-actualizar-local-comercial/:id',
+        component: PreRegistroLocalComponent,
+      },
+      {
         path: 'alta-local-comercial',
         component: LocalComercialFormularioComponent,
       },

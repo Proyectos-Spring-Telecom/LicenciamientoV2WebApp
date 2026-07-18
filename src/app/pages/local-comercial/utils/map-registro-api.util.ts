@@ -1,5 +1,6 @@
 import { DetalleLocal } from '../models/detalle-local-comercial';
 import { esRutaArchivoValida, toDateInputValue } from './documentos-local.config';
+import { esEmpresaApiAForm } from './local-comercial-form-payload.util';
 
 /** Desenvuelve `{ data: {...} }` o el objeto plano de GET /registros/{id}. */
 export function unwrapRegistroResponse(response: any): any {
@@ -71,7 +72,7 @@ function getBloque(api: any, camel: string, pascal: string): any {
   return api?.[pascal] ?? api?.[camel] ?? {};
 }
 
-/** URLs de documentos embebidas en Sapac/Catastro/Licencias/ProteccionCivil. */
+/** URLs de documentos embebidas en Sapac/Catastro/Licencias/PC/LicenciaConstruccion. */
 export function mapDocumentosFromRegistro(apiRaw: any): Record<string, string> {
   const api = unwrapRegistroResponse(apiRaw);
   const sapac = getBloque(api, 'sapac', 'Sapac');
@@ -96,6 +97,81 @@ export function mapDocumentosFromRegistro(apiRaw: any): Record<string, string> {
   setUrl('Licencias.estacionamiento', pick(licencias, 'estacionamiento'));
   setUrl('Licencias.bodega', pick(licencias, 'bodega'));
   setUrl('ProteccionCivil.vistoBueno', pick(pc, 'vistoBueno'));
+
+  const lc = getBloque(api, 'licenciaConstruccion', 'LicenciaConstruccion');
+
+  const urlsDesdeLista = (lista: unknown): string[] => {
+    const arr = Array.isArray(lista) ? lista : [];
+    return arr
+      .map((item) => {
+        if (typeof item === 'string') {
+          return item;
+        }
+        if (item && typeof item === 'object') {
+          return pick(item, 'ruta', 'url', 'path', 'Ruta', 'Url');
+        }
+        return null;
+      })
+      .map((r) => textoApi(r))
+      .filter((r) => esRutaArchivoValida(r));
+  };
+
+  const setUrlsMulti = (controls: string | string[], lista: unknown) => {
+    const primera = urlsDesdeLista(lista)[0];
+    if (!primera) {
+      return;
+    }
+    const keys = Array.isArray(controls) ? controls : [controls];
+    keys.forEach((control) => {
+      urls[control] = primera;
+    });
+  };
+
+  // Claves API (formulario) + alias UI pre-registro (uploader cards)
+  setUrlsMulti(
+    [
+      'LicenciaConstruccion.constanciaAlineamientoyNumero',
+      'constanciaAlineamiento',
+    ],
+    pick(lc, 'constanciaAlineamientoyNumero', 'constanciaAlineamientoYNumero')
+  );
+  setUrlsMulti(
+    ['LicenciaConstruccion.LicenciaUsoyPlano', 'permisoSuelo'],
+    pick(lc, 'LicenciaUsoyPlano', 'LicenciaUsoYPlano')
+  );
+  setUrlsMulti(
+    ['LicenciaConstruccion.ConstanciaPropietario', 'constanciaPropietario'],
+    pick(lc, 'ConstanciaPropietario')
+  );
+  setUrlsMulti(
+    ['LicenciaConstruccion.Factibilidad', 'factibilidad'],
+    pick(lc, 'Factibilidad')
+  );
+  setUrlsMulti(
+    ['LicenciaConstruccion.RecibosImpuestoPredial', 'recibosPredial'],
+    pick(lc, 'RecibosImpuestoPredial')
+  );
+  setUrlsMulti(
+    ['LicenciaConstruccion.JuegoDePlanosArquitectonicos', 'planos'],
+    pick(lc, 'JuegoDePlanosArquitectonicos')
+  );
+
+  // `otros` → fotos del predio (1..N) para el botón "Ver" en pre-registro
+  const otrosUrls = urlsDesdeLista(pick(lc, 'otros', 'Otros'));
+  if (otrosUrls.length) {
+    setUrl('LicenciaConstruccion.otros', otrosUrls[0]);
+    otrosUrls.forEach((url, index) => {
+      urls[`fotosPredio_${index + 1}`] = url;
+    });
+  }
+
+  setUrl('LicenciaConstruccion.FirmaPropietario', pick(lc, 'FirmaPropietario'));
+  setUrl('LicenciaConstruccion.FirmaDRO', pick(lc, 'FirmaDRO'));
+  setUrl('LicenciaConstruccion.FirmaCorresponsable', pick(lc, 'FirmaCorresponsable'));
+  setUrl(
+    'LicenciaConstruccion.FirmaResponsableRecepcionDocumento',
+    pick(lc, 'FirmaResponsableRecepcionDocumento')
+  );
 
   return urls;
 }
@@ -152,6 +228,66 @@ function mergeFotosRegistro(api: any): any[] {
   );
 }
 
+function mapCorresponsablesApi(lc: any): Array<{
+  Id: number | null;
+  NombreCompleto: string;
+  NoRegLicenciaConstruccion: string;
+  CedulaProfesional: string;
+}> {
+  const lista = pick(lc, 'Corresponsables', 'corresponsables');
+  if (!Array.isArray(lista)) {
+    return [];
+  }
+  return lista.map((item: any) => ({
+    Id: numeroApi(pick(item, 'Id', 'id')) ?? null,
+    NombreCompleto: textoApi(pick(item, 'NombreCompleto', 'nombreCompleto')),
+    NoRegLicenciaConstruccion: textoApi(
+      pick(item, 'NoRegLicenciaConstruccion', 'noRegLicenciaConstruccion')
+    ),
+    CedulaProfesional: textoApi(pick(item, 'CedulaProfesional', 'cedulaProfesional')),
+  }));
+}
+
+function mapLicenciaConstruccionPatch(api: any): Record<string, unknown> {
+  const lc = getBloque(api, 'licenciaConstruccion', 'LicenciaConstruccion');
+  if (!lc || typeof lc !== 'object') {
+    return {};
+  }
+  return {
+    TipoSolicitudLicencia: numeroApi(pick(lc, 'TipoSolicitudLicencia', 'tipoSolicitudLicencia')) ?? '',
+    DescripcionProyecto: textoApi(pick(lc, 'DescripcionProyecto', 'descripcionProyecto')),
+    SuperficieTerrenoM2: numeroApi(pick(lc, 'SuperficieTerrenoM2', 'superficieTerrenoM2')) ?? '',
+    SuperficieTerrenoObraM2:
+      numeroApi(pick(lc, 'SuperficieTerrenoObraM2', 'superficieTerrenoObraM2')) ?? '',
+    DescripcionSistemaConstructivo: textoApi(
+      pick(lc, 'DescripcionSistemaConstructivo', 'descripcionSistemaConstructivo')
+    ),
+    NombrePropietario: textoApi(pick(lc, 'NombrePropietario', 'nombrePropietario')),
+    DomicilioNotificacion: textoApi(pick(lc, 'DomicilioNotificacion', 'domicilioNotificacion')),
+    RFC: textoApi(pick(lc, 'RFC', 'rfc')),
+    NombreDRO: textoApi(pick(lc, 'NombreDRO', 'nombreDRO')),
+    NoRegLicenciaConstruccion: textoApi(
+      pick(lc, 'NoRegLicenciaConstruccion', 'noRegLicenciaConstruccion')
+    ),
+    CedulaProfesional: textoApi(pick(lc, 'CedulaProfesional', 'cedulaProfesional')),
+    Fecha: toDateInputValue(valorApi(pick(lc, 'Fecha', 'fecha')) as any),
+    NumeroExpediente: textoApi(pick(lc, 'NumeroExpediente', 'numeroExpediente')),
+    NumeroControl: textoApi(pick(lc, 'NumeroControl', 'numeroControl')),
+    SeguimientoObra: textoApi(pick(lc, 'SeguimientoObra', 'seguimientoObra')),
+    ConstanciaAlineamiento: asFlag(pick(lc, 'ConstanciaAlineamiento', 'constanciaAlineamiento')),
+    LicenciaUsoSuelo: asFlag(pick(lc, 'LicenciaUsoSuelo', 'licenciaUsoSuelo')),
+    PlanoAutorizado: asFlag(pick(lc, 'PlanoAutorizado', 'planoAutorizado')),
+    LicenciaFraccionamiento: asFlag(pick(lc, 'LicenciaFraccionamiento', 'licenciaFraccionamiento')),
+    Escrituras: asFlag(pick(lc, 'Escrituras', 'escrituras')),
+    FactibilidadAguaPotable: asFlag(pick(lc, 'FactibilidadAguaPotable', 'factibilidadAguaPotable')),
+    RecibosPagoPredial: asFlag(pick(lc, 'RecibosPagoPredial', 'recibosPagoPredial')),
+    RecibosMunicipales: asFlag(pick(lc, 'RecibosMunicipales', 'recibosMunicipales')),
+    PlanoArquitectonicos: asFlag(pick(lc, 'PlanoArquitectonicos', 'planoArquitectonicos')),
+    Otros: asFlag(pick(lc, 'Otros')),
+    Corresponsables: mapCorresponsablesApi(lc),
+  };
+}
+
 /**
  * patchValue 1:1 con createRegistrosFormGroup desde GET /registros/{id}.
  */
@@ -163,6 +299,7 @@ export function mapRegistroToFormPatch(apiRaw: any): Record<string, unknown> {
   const contacto = getBloque(licencias, 'contacto', 'Contacto');
   const pc = getBloque(api, 'proteccionCivil', 'ProteccionCivil');
   const pcContacto = getBloque(pc, 'contactoRepresentante', 'ContactoRepresentante');
+  const licenciaConstruccion = mapLicenciaConstruccionPatch(api);
 
   return {
     Latitud: textoApi(pick(api, 'latitud', 'Latitud', 'lat', 'Lat')),
@@ -228,7 +365,7 @@ export function mapRegistroToFormPatch(apiRaw: any): Record<string, unknown> {
       },
     },
     ProteccionCivil: {
-      EsEmpresa: asFlag(pick(pc, 'EsEmpresa', 'esEmpresa')) || 0,
+      EsEmpresa: esEmpresaApiAForm(pick(pc, 'EsEmpresa', 'esEmpresa')),
       RazonSocial: textoApi(pick(pc, 'RazonSocial', 'razonSocial')),
       RFC: textoApi(pick(pc, 'RFC', 'rfc')),
       Nombre: textoApi(pick(pc, 'Nombre', 'nombre')),
@@ -245,6 +382,9 @@ export function mapRegistroToFormPatch(apiRaw: any): Record<string, unknown> {
         Correo: textoApi(pick(pcContacto, 'Correo', 'correo', 'email')),
       },
     },
+    ...(Object.keys(licenciaConstruccion).length
+      ? { LicenciaConstruccion: licenciaConstruccion }
+      : {}),
   };
 }
 

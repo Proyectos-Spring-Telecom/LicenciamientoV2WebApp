@@ -72,12 +72,13 @@
           </div>
         </div>
 
-        <div #tabPanels class="local-form-tab-panels" [@localFormTabPanel]="activeTab"
-          (@localFormTabPanel.done)="onTabPanelAnimationDone()"
+        <div #tabPanels class="local-form-tab-panels"
           [style.min-height.px]="activeTabPanelMinHeight || null">
 
           <!-- TAB 0: Sapac -->
-          <div class="local-form-tab-panel" role="tabpanel" *ngIf="activeTab === 0">
+          <div class="local-form-tab-panel" role="tabpanel" [hidden]="activeTab !== 0"
+            [class.is-step-hidden]="activeTab !== 0"
+            [attr.aria-hidden]="activeTab !== 0">
             <div class="local-form-tab-content">
 
               <div class="local-form-section">
@@ -91,7 +92,7 @@
                 <div class="row g-3 g-md-4" formGroupName="Sapac">
                   <app-local-perm-field label="N&uacute;mero de Cuenta" icon="numbers" fieldId="numeroCuenta">
                     <div class="form-floating flex-grow-1">
-                      <input type="number" formControlName="NumeroCuenta" class="form-control" id="numeroCuenta" placeholder="N&uacute;mero de Cuenta">
+                      <input formControlName="NumeroCuenta" class="form-control" id="numeroCuenta" placeholder="N&uacute;mero de Cuenta">
                       <label for="numeroCuenta">N&uacute;mero de Cuenta</label>
                     </div>
                   </app-local-perm-field>
@@ -144,18 +145,10 @@
                       <label for="municipioSapac">Municipio</label>
                     </div>
                   </app-local-perm-field>
-                  <app-local-perm-field label="Localidad" icon="flag" fieldId="localidadSapac">
-                    <div class="form-floating flex-grow-1">
-                      <input formControlName="Localidad" class="form-control" id="localidadSapac" placeholder="Localidad">
-                      <label for="localidadSapac">Localidad</label>
-                    </div>
-                  </app-local-perm-field>
                   <app-local-perm-field label="Colonia" icon="location_on" fieldId="coloniaSapac">
-                    <div class="form-floating flex-grow-1 perm-select-floating">
-                      <select class="form-select" id="coloniaSapac" formControlName="Colonia">
-                        <option value="">Seleccionar...</option>
-                        <option *ngFor="let col of coloniasSepomex" [ngValue]="col.nombre">{{ col.nombre }}</option>
-                      </select>
+                    <div class="form-floating flex-grow-1">
+                      <input formControlName="Colonia" class="form-control" id="coloniaSapac" placeholder="Colonia">
+                      <label for="coloniaSapac">Colonia</label>
                     </div>
                   </app-local-perm-field>
                   <app-local-perm-field label="Calle" icon="route" fieldId="calleSapac">
@@ -217,6 +210,7 @@
                   <app-local-perm-field label="Tipo de Servicio" icon="work" fieldId="idTipoServicio">
                     <div class="form-floating flex-grow-1 perm-select-floating">
                       <select class="form-select" id="idTipoServicio" formControlName="IdTipoServicio">
+                        <option [ngValue]="''">Seleccionar...</option>
                         <option *ngFor="let tipo of tipos" [ngValue]="tipo.id">{{ tipo.nombre }}</option>
                       </select>
                     </div>
@@ -245,7 +239,7 @@
                       [colorVariant]="doc.buttonClass" [remoteUrl]="documentosExistentes[doc.controlName]"
                       (fileSelected)="onDocumentoSeleccionado(doc.controlName, $event)"
                       (fileRejected)="onDocumentoRechazado(doc.controlName)"
-                      (remoteFileClick)="verDocumentoExistente(doc)">
+                      (remoteFileClick)="verDocumentoExistente(doc, $event)">
                     </app-file-uploader-card>
                   </div>
                 </div>
@@ -267,7 +261,9 @@
           </div>
 
           <!-- TAB 1: Catastral -->
-          <div class="local-form-tab-panel" role="tabpanel" *ngIf="activeTab === 1">
+          <div class="local-form-tab-panel" role="tabpanel" [hidden]="activeTab !== 1"
+            [class.is-step-hidden]="activeTab !== 1"
+            [attr.aria-hidden]="activeTab !== 1">
             <div class="local-form-tab-content">
 
               <div class="local-form-section">
@@ -322,7 +318,7 @@
                       [remoteUrl]="documentosExistentes[doc.controlName]"
                       (fileSelected)="onDocumentoSeleccionado(doc.controlName, $event)"
                       (fileRejected)="onDocumentoRechazado(doc.controlName)"
-                      (remoteFileClick)="verDocumentoExistente(doc)">
+                      (remoteFileClick)="verDocumentoExistente(doc, $event)">
                     </app-file-uploader-card>
                   </div>
                 </div>
@@ -347,7 +343,9 @@
           </div>
 
           <!-- TAB 2: Licenciamiento -->
-          <div class="local-form-tab-panel" role="tabpanel" *ngIf="activeTab === 2">
+          <div class="local-form-tab-panel" role="tabpanel" [hidden]="activeTab !== 2"
+            [class.is-step-hidden]="activeTab !== 2"
+            [attr.aria-hidden]="activeTab !== 2">
             <div class="local-form-tab-content">
 
               <div class="local-form-section">
@@ -361,7 +359,7 @@
                 <div class="row g-3 g-md-4" formGroupName="Licencias">
                   <app-local-perm-field label="Registro Municipal" icon="credit_card" fieldId="registro">
                     <div class="form-floating flex-grow-1">
-                      <input type="number" formControlName="Registro" class="form-control" id="registro" placeholder="Registro Municipal">
+                      <input formControlName="Registro" class="form-control" id="registro" placeholder="Registro Municipal">
                       <label for="registro">Registro Municipal</label>
                     </div>
                   </app-local-perm-field>
@@ -372,10 +370,15 @@
                     </div>
                   </app-local-perm-field>
                   <app-local-perm-field label="Giro" icon="store" fieldId="tipo">
-                    <div class="form-floating flex-grow-1 perm-select-floating">
-                      <select class="form-select" id="tipo" aria-placeholder="Giro" formControlName="Giro">
-                        <option *ngFor="let giro of giros" [ngValue]="giro.nombre">{{ giro.nombre }}</option>
-                      </select>
+                    <div class="form-floating flex-grow-1">
+                      <input formControlName="Giro" class="form-control" id="tipo" placeholder="Giro">
+                      <label for="tipo">Giro</label>
+                    </div>
+                  </app-local-perm-field>
+                  <app-local-perm-field label="Tipo" icon="category" fieldId="licenciasTipo">
+                    <div class="form-floating flex-grow-1">
+                      <input type="number" formControlName="Tipo" class="form-control" id="licenciasTipo" placeholder="Tipo">
+                      <label for="licenciasTipo">Tipo</label>
                     </div>
                   </app-local-perm-field>
                   <app-local-perm-field label="Licencias de Uso de Suelo" icon="badge" fieldId="licenciaSuelo">
@@ -483,7 +486,7 @@
                   <app-local-perm-field label="Tel&eacute;fono del Contacto" icon="phone" fieldId="contactoTelefono">
                     <div class="form-floating flex-grow-1">
                       <input maxlength="10" inputmode="numeric" (keypress)="blockNonNumericKey($event)"
-                        (input)="onNumericInput($event, 'ContactoTelefono', 10)" formControlName="Telefono"
+                        (input)="onNumericInput($event, 'Licencias.Contacto.Telefono', 10)" formControlName="Telefono"
                         class="form-control" id="contactoTelefono" placeholder="Tel&eacute;fono del Contacto">
                       <label for="contactoTelefono">Tel&eacute;fono del Contacto</label>
                     </div>
@@ -519,20 +522,11 @@
                       <label for="municipioLicencia">Municipio</label>
                     </div>
                   </app-local-perm-field>
-                  <app-local-perm-field label="Localidad" icon="flag" fieldId="localidadLicencia">
-                    <div class="form-floating flex-grow-1">
-                      <input formControlName="Localidad" class="form-control" id="localidadLicencia" placeholder="Localidad"
-                        (input)="onNombreLocalidadLicenciaChange()">
-                      <label for="localidadLicencia">Localidad</label>
-                    </div>
-                  </app-local-perm-field>
                   <app-local-perm-field label="Colonia" icon="location_on" fieldId="coloniaLicencia">
-                    <div class="form-floating flex-grow-1 perm-select-floating">
-                      <select class="form-select" id="coloniaLicencia" formControlName="Colonia"
-                        (change)="onNombreColoniaLicenciaChange()">
-                        <option value="">Seleccionar...</option>
-                        <option *ngFor="let col of coloniasSepomex" [ngValue]="col.nombre">{{ col.nombre }}</option>
-                      </select>
+                    <div class="form-floating flex-grow-1">
+                      <input formControlName="Colonia" class="form-control" id="coloniaLicencia" placeholder="Colonia"
+                        (input)="onNombreColoniaLicenciaChange()">
+                      <label for="coloniaLicencia">Colonia</label>
                     </div>
                   </app-local-perm-field>
                   <app-local-perm-field label="Calle" icon="route" fieldId="calleLicencia">
@@ -559,7 +553,7 @@
                   <app-local-perm-field label="C&oacute;digo Postal" icon="pin" fieldId="cplicencia" colClass="col-12 col-sm-6 col-md-4">
                     <div class="form-floating flex-grow-1">
                       <input maxlength="5" inputmode="numeric" (keypress)="blockNonNumericKey($event)"
-                        (input)="onNumericInput($event, 'CPLicencia', 5)" id="cplicencia"
+                        (input)="onNumericInput($event, 'CP', 5)" id="cplicencia"
                         (change)="onChangeEventCPLicencia($event)" formControlName="CP" class="form-control" placeholder="C&oacute;digo Postal">
                       <label for="cplicencia">C&oacute;digo Postal</label>
                     </div>
@@ -583,7 +577,7 @@
                       [remoteUrl]="documentosExistentes[doc.controlName]"
                       (fileSelected)="onDocumentoSeleccionado(doc.controlName, $event)"
                       (fileRejected)="onDocumentoRechazado(doc.controlName)"
-                      (remoteFileClick)="verDocumentoExistente(doc)">
+                      (remoteFileClick)="verDocumentoExistente(doc, $event)">
                     </app-file-uploader-card>
                   </div>
                 </div>
@@ -608,7 +602,9 @@
           </div>
 
           <!-- TAB 3: Protecci&oacute;n Civil -->
-          <div class="local-form-tab-panel" role="tabpanel" *ngIf="activeTab === 3">
+          <div class="local-form-tab-panel" role="tabpanel" [hidden]="activeTab !== 3"
+            [class.is-step-hidden]="activeTab !== 3"
+            [attr.aria-hidden]="activeTab !== 3">
             <div class="local-form-tab-content">
 
               <div class="local-form-section">
@@ -641,7 +637,7 @@
                   <app-local-perm-field label="Tel&eacute;fono del Representante Legal" icon="phone" fieldId="telefonoProteccionCivil">
                     <div class="form-floating flex-grow-1">
                       <input maxlength="10" inputmode="numeric" (keypress)="blockNonNumericKey($event)"
-                        (input)="onNumericInput($event, 'TelefonoProteccionCivil', 10)"
+                        (input)="onNumericInput($event, 'ProteccionCivil.Telefono', 10)"
                         formControlName="Telefono" class="form-control" id="telefonoProteccionCivil" placeholder="Tel&eacute;fono del Representante Legal">
                       <label for="telefonoProteccionCivil">Tel&eacute;fono del Representante Legal</label>
                     </div>
@@ -671,11 +667,11 @@
                     <p class="local-form-section__desc">Indica si una empresa realiza la gesti&oacute;n</p>
                   </div>
                 </div>
-                <div class="result local-form-row-gap">
-                  <div class="local-proteccion-empresa-row row g-3">
+                <div class="result local-form-row-gap" formGroupName="ProteccionCivil">
+                  <div class="local-proteccion-empresa-row row g-3 mb-3">
                     <div class="proteccion-empresa-field fury-flex-form-field col-12 col-md-4">
                       <span>
-                        <i class="fas fa-store"></i>&nbsp;&iquest;La gesti&oacute;n la realiza una Empresa?
+                        <i class="fa fa-store"></i>&nbsp;&iquest;La gesti&oacute;n la realiza una Empresa?
                       </span>
                       <label class="toggle-switch">
                         <input id="es-empresa-proteccion" type="checkbox" [checked]="checkedBox()"
@@ -704,6 +700,52 @@
                 </div>
               </div>
 
+              <div class="local-form-section">
+                <div class="local-form-section__head">
+                  <span class="local-form-section__badge"><mat-icon>contact_phone</mat-icon></span>
+                  <div>
+                    <h4 class="local-form-section__title">Contacto del representante</h4>
+                    <p class="local-form-section__desc">Datos de contacto del representante ante Protecci&oacute;n Civil</p>
+                  </div>
+                </div>
+                <div class="row g-3 g-md-4" formGroupName="ProteccionCivil">
+                  <ng-container formGroupName="ContactoRepresentante">
+                    <app-local-perm-field label="Nombre del Contacto Representante" icon="person" fieldId="contactoRepNombre">
+                      <div class="form-floating flex-grow-1">
+                        <input formControlName="Nombre" class="form-control" id="contactoRepNombre" placeholder="Nombre del Contacto Representante">
+                        <label for="contactoRepNombre">Nombre del Contacto Representante</label>
+                      </div>
+                    </app-local-perm-field>
+                    <app-local-perm-field label="Apellido Paterno" icon="badge" fieldId="contactoRepPaterno">
+                      <div class="form-floating flex-grow-1">
+                        <input formControlName="ApellidoPaterno" class="form-control" id="contactoRepPaterno" placeholder="Apellido Paterno">
+                        <label for="contactoRepPaterno">Apellido Paterno</label>
+                      </div>
+                    </app-local-perm-field>
+                    <app-local-perm-field label="Apellido Materno" icon="badge" fieldId="contactoRepMaterno">
+                      <div class="form-floating flex-grow-1">
+                        <input formControlName="ApellidoMaterno" class="form-control" id="contactoRepMaterno" placeholder="Apellido Materno">
+                        <label for="contactoRepMaterno">Apellido Materno</label>
+                      </div>
+                    </app-local-perm-field>
+                    <app-local-perm-field label="Tel&eacute;fono" icon="phone" fieldId="contactoRepTelefono">
+                      <div class="form-floating flex-grow-1">
+                        <input maxlength="10" inputmode="numeric" (keypress)="blockNonNumericKey($event)"
+                          (input)="onNumericInput($event, 'ProteccionCivil.ContactoRepresentante.Telefono', 10)"
+                          formControlName="Telefono" class="form-control" id="contactoRepTelefono" placeholder="Tel&eacute;fono">
+                        <label for="contactoRepTelefono">Tel&eacute;fono</label>
+                      </div>
+                    </app-local-perm-field>
+                    <app-local-perm-field label="Correo Electr&oacute;nico" icon="email" fieldId="contactoRepCorreo">
+                      <div class="form-floating flex-grow-1">
+                        <input formControlName="Correo" class="form-control" id="contactoRepCorreo" placeholder="Correo Electr&oacute;nico">
+                        <label for="contactoRepCorreo">Correo Electr&oacute;nico</label>
+                      </div>
+                    </app-local-perm-field>
+                  </ng-container>
+                </div>
+              </div>
+
               <div class="local-form-section local-form-section--docs">
                 <div class="local-form-section__head">
                   <span class="local-form-section__badge"><mat-icon>photo_library</mat-icon></span>
@@ -720,7 +762,7 @@
                       [remoteUrl]="documentosExistentes[doc.controlName]"
                       (fileSelected)="onDocumentoSeleccionado(doc.controlName, $event)"
                       (fileRejected)="onDocumentoRechazado(doc.controlName)"
-                      (remoteFileClick)="verDocumentoExistente(doc)">
+                      (remoteFileClick)="verDocumentoExistente(doc, $event)">
                     </app-file-uploader-card>
                   </div>
                 </div>

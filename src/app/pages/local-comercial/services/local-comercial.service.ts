@@ -12,6 +12,39 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+/** Respuesta HTTP 200 de PATCH /registros_actualizar. */
+export interface ActualizarRegistroResponse {
+  status: string;
+  message: string;
+  data: {
+    id: number;
+    nombre: string;
+    predioObra?: number | null;
+    idSapac?: number | null;
+    idCatastro?: number | null;
+    idLicencia?: number | null;
+    contacto?: { id: number } | null;
+    idProteccionCivil?: number | null;
+    contactoRepresentante?: { id: number } | null;
+    idLicenciaConstruccion?: number | null;
+    corresponsables?: Array<{
+      id: number;
+      nombreCompleto: string | null;
+    }>;
+    fotos?: Array<{
+      id: number;
+      idTipoFoto: number;
+      ruta: string;
+      accion?: 'creada' | 'actualizada';
+    }>;
+    fotosLicenciaConstruccion?: Array<{
+      id: number;
+      idTipoFoto: number;
+      ruta: string;
+    }>;
+  };
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -61,8 +94,18 @@ export class LocalComercialService {
     return this.http.post(`${this.baseUrl}/registros`, formdata);
   }
 
-  actualizarLocal(formData: FormData): Observable<unknown> {
-    return this.http.put(`${this.baseUrl}/api/Licencias`, formData);
+  /**
+   * PATCH /registros_actualizar — actualización parcial multipart.
+   * `idRegistro` va en el FormData (no en la URL). No envía Estatus.
+   */
+  actualizarLocal(idRegistro: number, formData: FormData): Observable<ActualizarRegistroResponse> {
+    if (!formData.has('idRegistro')) {
+      formData.append('idRegistro', String(idRegistro));
+    }
+    return this.http.patch<ActualizarRegistroResponse>(
+      `${this.baseUrl}/registros_actualizar`,
+      formData
+    );
   }
 
   eliminarLocalComercial(id: number): Observable<unknown> {

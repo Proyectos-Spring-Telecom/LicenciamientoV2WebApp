@@ -12,6 +12,7 @@
   --estatus-info: #f9c300;
   --estatus-rechazo: #eb1919;
   --estatus-correctos: #52bb56;
+  --estatus-baja: #c84ec8;
 
   --cli-bg: rgba(8, 12, 24, 0.88);
   --cli-border: rgba(255, 255, 255, 0.14);
@@ -21,7 +22,7 @@
   --cli-radius: 20px;
 
   position: relative;
-  width: min(580px, calc(100vw - 48px));
+  width: min(680px, calc(100vw - 48px));
   z-index: 28;
 
   &--collapsed {
@@ -267,7 +268,7 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 7px;
   width: 100%;
 }
@@ -360,6 +361,10 @@
 
 .mon-loc-filter__estatus-chip--datos-correctos {
   --chip-color: var(--estatus-correctos);
+}
+
+.mon-loc-filter__estatus-chip--baja {
+  --chip-color: var(--estatus-baja);
 }
 
 .mon-loc-filter__estatus-chip--active {

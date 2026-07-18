@@ -27,7 +27,7 @@
 
     <section class="rep-filters mt-3" aria-label="Filtros de locales comerciales">
       <div class="rep-filters__grid">
-        <div class="rep-filters__g5">
+        <div class="rep-filters__g3">
           <label class="rep-filters__field" for="local-fecha-inicial">
             <span class="rep-filters__label">Fecha inicial</span>
             <input
@@ -40,7 +40,7 @@
             />
           </label>
         </div>
-        <div class="rep-filters__g5">
+        <div class="rep-filters__g3">
           <label class="rep-filters__field" for="local-fecha-final">
             <span class="rep-filters__label">Fecha final</span>
             <input
@@ -51,6 +51,21 @@
               [(ngModel)]="fechaFinal"
               required
             />
+          </label>
+        </div>
+        <div class="rep-filters__g2">
+          <label class="rep-filters__field" for="local-filtro-estatus">
+            <span class="rep-filters__label">Estatus</span>
+            <select
+              id="local-filtro-estatus"
+              class="rep-filters__select"
+              name="filtroEstatus"
+              [(ngModel)]="filtroEstatus"
+              (ngModelChange)="onFiltroEstatusChange()">
+              <option *ngFor="let op of opcionesFiltroEstatus" [ngValue]="op.id">
+                {{ op.nombre }}
+              </option>
+            </select>
           </label>
         </div>
         <div class="rep-filters__g2 rep-filters__btn-wrap">

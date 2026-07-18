@@ -6,7 +6,7 @@
     border-radius: 10px;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
     overflow: hidden;
-    background: var(--bs-card-bg, #1e293b);
+    background: #1e293b;
 
     &__header {
       background: transparent;
@@ -79,6 +79,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 250px;
 }
 
 .colores {

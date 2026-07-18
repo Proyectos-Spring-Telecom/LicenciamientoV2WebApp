@@ -1,3 +1,8 @@
 :host {
   display: block;
 }
+
+:host[hidden],
+.local-perm-field[hidden] {
+  display: none !important;
+}

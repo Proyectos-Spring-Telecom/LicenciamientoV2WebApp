@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
+import { NavigationStart, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 export interface PreRegistroCorresponsableState {
+  Id?: number | null;
   NombreCompleto: string;
   NoRegLicenciaConstruccion: string;
   CedulaProfesional: string;
@@ -35,7 +38,7 @@ export interface PreRegistroScalarState {
   LcFecha: string;
   LcNumeroExpediente: string;
   LcNumeroControl: string;
-  LcSeguimientoObra: string | number | boolean;
+  LcSeguimientoObra: string;
   LcConstanciaAlineamiento: string | number | boolean;
   LcLicenciaUsoSuelo: string | number | boolean;
   LcPlanoAutorizado: string | number | boolean;
@@ -72,7 +75,23 @@ export interface PreRegistroFilesState {
   LcFirmaResponsableRecepcionDocumento?: File | null;
 }
 
-const STORAGE_KEY = 'lc.preRegistro';
+/** Borrador del formulario de locales (Sapac…Protección) al navegar entre apartados. */
+export interface LocalesFormDraftState {
+  formValue: Record<string, unknown>;
+  documentosExistentes: Record<string, string>;
+  activeTab?: number;
+}
+
+interface LocalesPersistedBundle {
+  scope: string;
+  scalar: PreRegistroScalarState | null;
+  formDraft: LocalesFormDraftState | null;
+}
+
+const STORAGE_PREFIX = 'lc.locales.borrador.';
+const STORAGE_ACTIVO = 'lc.locales.borrador.activo';
+const RUTA_FLUJO =
+  /\/local-comercial\/(pre-alta-local-comercial|pre-actualizar-local-comercial|alta-local-comercial|actualizar-local-comercial)(\/|$|\?)/;
 
 @Injectable({
   providedIn: 'root',
@@ -80,48 +99,279 @@ const STORAGE_KEY = 'lc.preRegistro';
 export class PreRegistroStateService {
   private files: PreRegistroFilesState = {};
   private scalar: PreRegistroScalarState | null = null;
+  private formDraft: LocalesFormDraftState | null = null;
+  /** `nuevo` | `edit.{id}` */
+  private scopeActivo: string | null = null;
+
+  constructor(router: Router) {
+    try {
+      this.scopeActivo = localStorage.getItem(STORAGE_ACTIVO);
+    } catch {
+      this.scopeActivo = null;
+    }
+
+    // Si salen del flujo agregar/editar → limpiar sí o sí (evita cruzar registro 1 → 2)
+    router.events
+      .pipe(filter((e): e is NavigationStart => e instanceof NavigationStart))
+      .subscribe((e) => {
+        if (!this.scopeActivo && !this.scalar && !this.formDraft) {
+          return;
+        }
+        if (!RUTA_FLUJO.test(e.url)) {
+          this.clear();
+        }
+      });
+  }
+
+  /**
+   * Inicia un flujo limpio desde la lista.
+   * - Alta: beginFlow('nuevo')
+   * - Editar: beginFlow(id)
+   * Borra cualquier borrador previo (otro id o alta) para no mezclar datos.
+   */
+  beginFlow(scope: 'nuevo' | number): void {
+    const siguiente = scope === 'nuevo' ? 'nuevo' : `edit.${Number(scope)}`;
+    this.clear();
+    this.scopeActivo = siguiente;
+    this.persistActivo();
+  }
+
+  /** ¿El borrador activo corresponde a este alta/edición? */
+  isScope(scope: 'nuevo' | number): boolean {
+    const esperado = scope === 'nuevo' ? 'nuevo' : `edit.${Number(scope)}`;
+    if (this.scopeActivo) {
+      return this.scopeActivo === esperado;
+    }
+    try {
+      return localStorage.getItem(STORAGE_ACTIVO) === esperado;
+    } catch {
+      return false;
+    }
+  }
 
   setState(scalar: PreRegistroScalarState, files: PreRegistroFilesState = {}): void {
+    this.ensureScope();
     this.scalar = { ...scalar, preRegistro: true };
     this.files = { ...files };
-    try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(this.scalar));
-    } catch {
-      // ignore quota / private mode
+    this.persistBundle();
+  }
+
+  /** Actualiza archivos en memoria sin tocar el scalar. */
+  patchFiles(partial: PreRegistroFilesState): void {
+    this.ensureScope();
+    this.files = { ...this.files, ...partial };
+  }
+
+  /** Actualiza scalar sin tocar archivos. */
+  patchScalar(partial: Partial<PreRegistroScalarState>): void {
+    const actual = this.peekScalar();
+    if (!actual) {
+      return;
     }
+    this.setState({ ...actual, ...partial, preRegistro: true }, this.files);
   }
 
   peekScalar(): PreRegistroScalarState | null {
     if (this.scalar) {
       return this.scalar;
     }
-    try {
-      const raw = sessionStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        return null;
-      }
-      const parsed = JSON.parse(raw);
-      if (!parsed?.preRegistro) {
-        return null;
-      }
-      this.scalar = parsed as PreRegistroScalarState;
+    const bundle = this.readBundle();
+    if (bundle?.scalar?.preRegistro) {
+      this.scalar = bundle.scalar;
+      this.formDraft = bundle.formDraft;
       return this.scalar;
-    } catch {
-      return null;
     }
+    return null;
   }
 
   peekFiles(): PreRegistroFilesState {
     return { ...this.files };
   }
 
+  setFormDraft(draft: LocalesFormDraftState): void {
+    this.ensureScope();
+    // En memoria se conservan File; a localStorage solo va lo serializable
+    this.formDraft = {
+      formValue: this.clonarPreservandoArchivos(draft.formValue || {}) as Record<string, unknown>,
+      documentosExistentes: { ...(draft.documentosExistentes || {}) },
+      activeTab: draft.activeTab,
+    };
+    this.persistBundle();
+  }
+
+  peekFormDraft(): LocalesFormDraftState | null {
+    if (!this.formDraft) {
+      const bundle = this.readBundle();
+      if (bundle?.formDraft) {
+        this.formDraft = bundle.formDraft;
+        if (!this.scalar && bundle.scalar) {
+          this.scalar = bundle.scalar;
+        }
+      }
+    }
+    return this.formDraft
+      ? {
+          formValue: this.clonarPreservandoArchivos(this.formDraft.formValue || {}) as Record<
+            string,
+            unknown
+          >,
+          documentosExistentes: { ...this.formDraft.documentosExistentes },
+          activeTab: this.formDraft.activeTab,
+        }
+      : null;
+  }
+
+  clearFormDraft(): void {
+    this.formDraft = null;
+    this.persistBundle();
+  }
+
+  /** Limpia memoria + localStorage del flujo actual (y cualquier resto). */
   clear(): void {
     this.scalar = null;
     this.files = {};
+    this.formDraft = null;
+    this.scopeActivo = null;
+    this.removeAllStorage();
+  }
+
+  private ensureScope(): void {
+    if (this.scopeActivo) {
+      return;
+    }
     try {
-      sessionStorage.removeItem(STORAGE_KEY);
+      this.scopeActivo = localStorage.getItem(STORAGE_ACTIVO) || 'nuevo';
+    } catch {
+      this.scopeActivo = 'nuevo';
+    }
+    this.persistActivo();
+  }
+
+  private storageKey(scope = this.scopeActivo): string | null {
+    return scope ? `${STORAGE_PREFIX}${scope}` : null;
+  }
+
+  private persistActivo(): void {
+    try {
+      if (this.scopeActivo) {
+        localStorage.setItem(STORAGE_ACTIVO, this.scopeActivo);
+      } else {
+        localStorage.removeItem(STORAGE_ACTIVO);
+      }
     } catch {
       // ignore
     }
+  }
+
+  private persistBundle(): void {
+    const key = this.storageKey();
+    if (!key) {
+      return;
+    }
+    const bundle: LocalesPersistedBundle = {
+      scope: this.scopeActivo!,
+      scalar: this.scalar,
+      formDraft: this.formDraft
+        ? {
+            formValue: this.sanitizarFormValue(this.formDraft.formValue),
+            documentosExistentes: this.sanitizarDocumentos(this.formDraft.documentosExistentes || {}),
+            activeTab: this.formDraft.activeTab,
+          }
+        : null,
+    };
+    try {
+      localStorage.setItem(key, JSON.stringify(bundle));
+      this.persistActivo();
+    } catch {
+      // quota / private mode
+    }
+  }
+
+  private readBundle(): LocalesPersistedBundle | null {
+    this.ensureScope();
+    const key = this.storageKey();
+    if (!key) {
+      return null;
+    }
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) {
+        return null;
+      }
+      const parsed = JSON.parse(raw) as LocalesPersistedBundle;
+      if (!parsed || parsed.scope !== this.scopeActivo) {
+        return null;
+      }
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  private removeAllStorage(): void {
+    try {
+      localStorage.removeItem(STORAGE_ACTIVO);
+      const aBorrar: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(STORAGE_PREFIX)) {
+          aBorrar.push(k);
+        }
+      }
+      aBorrar.forEach((k) => localStorage.removeItem(k));
+      // legado sessionStorage
+      sessionStorage.removeItem('lc.preRegistro');
+    } catch {
+      // ignore
+    }
+  }
+
+  /** Quita File / blob del draft para poder guardarlo en localStorage sin errores. */
+  private sanitizarFormValue(value: Record<string, unknown>): Record<string, unknown> {
+    try {
+      return JSON.parse(
+        JSON.stringify(value, (_key, val) => {
+          if (typeof File !== 'undefined' && val instanceof File) {
+            return '';
+          }
+          if (typeof Blob !== 'undefined' && val instanceof Blob) {
+            return '';
+          }
+          return val;
+        })
+      );
+    } catch {
+      return {};
+    }
+  }
+
+  /** Clona el formValue conservando instancias File en memoria. */
+  private clonarPreservandoArchivos(valor: unknown): unknown {
+    if (typeof File !== 'undefined' && valor instanceof File) {
+      return valor;
+    }
+    if (Array.isArray(valor)) {
+      return valor.map((item) => this.clonarPreservandoArchivos(item));
+    }
+    if (valor && typeof valor === 'object' && !(valor instanceof Date)) {
+      const out: Record<string, unknown> = {};
+      Object.entries(valor as Record<string, unknown>).forEach(([k, v]) => {
+        out[k] = this.clonarPreservandoArchivos(v);
+      });
+      return out;
+    }
+    return valor;
+  }
+
+  private sanitizarDocumentos(docs: Record<string, string>): Record<string, string> {
+    const out: Record<string, string> = {};
+    Object.entries(docs || {}).forEach(([k, url]) => {
+      const u = String(url || '').trim();
+      if (!u || u.startsWith('blob:')) {
+        return;
+      }
+      out[k] = u;
+    });
+    return out;
   }
 }

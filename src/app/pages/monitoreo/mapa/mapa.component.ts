@@ -31,6 +31,7 @@ const MARKER_ICONS: Record<string, string> = {
   InformacionFaltante: 'assets/images/logos/marker_warning.png',
   Rechazo: 'assets/images/logos/marker_danger.png',
   'Rechazo o Sin respuesta': 'assets/images/logos/marker_danger.png',
+  Baja: 'assets/images/logos/marker_down.png',
 };
 
 const MAP_STYLES_SIN_ESTABLECIMIENTOS: google.maps.MapTypeStyle[] = [

@@ -17,6 +17,7 @@
   --estatus-info: #f9c300;
   --estatus-rechazo: #eb1919;
   --estatus-correctos: #52bb56;
+  --estatus-baja: #c84ec8;
 
   height: 100%;
   background: var(--monitor-bg);
@@ -219,6 +220,10 @@
 
   &[data-estatus='datos-correctos'] {
     --card-accent: var(--estatus-correctos);
+  }
+
+  &[data-estatus='baja'] {
+    --card-accent: var(--estatus-baja);
   }
 
   &:hover {

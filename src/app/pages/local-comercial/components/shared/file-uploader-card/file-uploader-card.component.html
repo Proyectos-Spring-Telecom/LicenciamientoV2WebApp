@@ -28,7 +28,7 @@
             Seleccionar archivo
           </button>
           <button
-            *ngIf="urlRemota() as url"
+            *ngIf="tieneArchivoEnBadge() && urlVistaPrevia()"
             type="button"
             class="uploader__badge uploader__badge--file"
             [ngClass]="badgeFileColorClass()"
@@ -37,10 +37,8 @@
             {{ etiquetaBadge() }}
           </button>
           <span
-            *ngIf="!urlRemota()"
+            *ngIf="!tieneArchivoEnBadge() || !urlVistaPrevia()"
             class="uploader__badge"
-            [class.uploader__badge--file]="tieneArchivoEnBadge()"
-            [ngClass]="tieneArchivoEnBadge() ? badgeFileColorClass() : null"
             [title]="etiquetaBadge()">
             {{ etiquetaBadge() }}
           </span>
