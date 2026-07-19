@@ -50,6 +50,7 @@ export class MonitoreoService {
 
   private mapToLocalComercial(item: MonitoreoLocal): LocalComercial {
     const estatus = Number(item?.estatus ?? 0);
+    const predioObra = Number(item?.predioObra) === 1 ? 1 : 0;
 
     return {
       id: Number(item?.id ?? 0),
@@ -60,11 +61,25 @@ export class MonitoreoService {
       rfc: this.texto(item?.rfc),
       estatus,
       nombreEstatus: NOMBRE_ESTATUS[estatus] ?? '',
+      predioObra,
+      predioObraLabel: predioObra === 1 ? 'En obra' : 'Sin obra',
       grupo: this.resolverGrupo(item),
       nombreCapturista: this.resolverCapturista(item),
-      urlLicencia: null,
+      urlLicencia: this.resolverFotoPrincipal(item),
       fechaHora: this.fechaValida(item?.fechaHoraLicencia) ?? this.fechaValida(item?.fechaCreacion),
     };
+  }
+
+  /** Preferencia: fachada (6) → estacionamiento (7) → bodega (8) → primera foto. */
+  private resolverFotoPrincipal(item: MonitoreoLocal): string | null {
+    const fotos = Array.isArray(item?.fotos) ? item.fotos : [];
+    if (!fotos.length) {
+      return null;
+    }
+    const porTipo = (tipo: number) =>
+      fotos.find((f) => Number(f?.idTipoFoto) === tipo && this.texto(f?.ruta));
+    const elegida = porTipo(6) || porTipo(7) || porTipo(8) || fotos.find((f) => this.texto(f?.ruta));
+    return elegida ? this.texto(elegida.ruta) : null;
   }
 
   private resolverGrupo(item: MonitoreoLocal): string {

@@ -14,6 +14,12 @@ import {
   MonitoreoLocalEstatusFilterCounts,
 } from './monitoreo-local-estatus-filter.data';
 import {
+  MONITOREO_LOCAL_PREDIO_FILTER_DEFAULT,
+  MONITOREO_LOCAL_PREDIO_FILTER_OPTIONS,
+  MonitoreoLocalPredioFilter,
+  MonitoreoLocalPredioFilterCounts,
+} from './monitoreo-local-predio-filter.data';
+import {
   monLocFilterReopenAnim,
   monLocFilterShellAnim,
 } from './monitoreo-local-filter.anim';
@@ -27,7 +33,10 @@ import {
   animations: [monLocFilterReopenAnim, monLocFilterShellAnim],
 })
 export class MonitoreoLocalFilterComponent {
+  /** Total para chip "Todos" de estatus (respeta filtro de predio). */
   @Input() totalCount = 0;
+  /** Total para chip "Todos" de predio (respeta filtro de estatus). */
+  @Input() predioTotalCount = 0;
   @Input() selectedEstatus: MonitoreoLocalEstatusFilter = MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT;
   @Input() estatusCounts: MonitoreoLocalEstatusFilterCounts = {
     pendiente: 0,
@@ -36,11 +45,19 @@ export class MonitoreoLocalFilterComponent {
     'datos-correctos': 0,
     baja: 0,
   };
+  @Input() selectedPredio: MonitoreoLocalPredioFilter = MONITOREO_LOCAL_PREDIO_FILTER_DEFAULT;
+  @Input() predioCounts: MonitoreoLocalPredioFilterCounts = {
+    'en-obra': 0,
+    'sin-obra': 0,
+  };
 
   @Output() selectedEstatusChange = new EventEmitter<MonitoreoLocalEstatusFilter>();
   @Output() estatusChange = new EventEmitter<MonitoreoLocalEstatusFilter>();
+  @Output() selectedPredioChange = new EventEmitter<MonitoreoLocalPredioFilter>();
+  @Output() predioChange = new EventEmitter<MonitoreoLocalPredioFilter>();
 
   readonly estatusOptions = MONITOREO_LOCAL_ESTATUS_FILTER_OPTIONS;
+  readonly predioOptions = MONITOREO_LOCAL_PREDIO_FILTER_OPTIONS;
 
   collapsed = true;
   pulseActive = false;
@@ -71,11 +88,28 @@ export class MonitoreoLocalFilterComponent {
     this.estatusChange.emit(estatus);
   }
 
+  selectPredio(predio: MonitoreoLocalPredioFilter): void {
+    if (predio === this.selectedPredio) {
+      return;
+    }
+
+    this.playTransition();
+    this.selectedPredioChange.emit(predio);
+    this.predioChange.emit(predio);
+  }
+
   estatusChipCount(optionId: MonitoreoLocalEstatusFilter): number {
     if (optionId === 'todo') {
       return this.totalCount;
     }
     return this.estatusCounts[optionId];
+  }
+
+  predioChipCount(optionId: MonitoreoLocalPredioFilter): number {
+    if (optionId === 'todo') {
+      return this.predioTotalCount || this.totalCount;
+    }
+    return this.predioCounts[optionId];
   }
 
   private playTransition(): void {

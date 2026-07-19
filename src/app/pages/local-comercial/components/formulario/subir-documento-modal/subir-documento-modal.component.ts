@@ -88,6 +88,11 @@ export class SubirDocumentoModalComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (!this.esArchivoPermitido(file)) {
+      input.value = '';
+      return;
+    }
+
     this.archivoSeleccionado = file;
     this.nombreArchivo = file.name;
     this.sinArchivoRegistrado = false;
@@ -128,12 +133,15 @@ export class SubirDocumentoModalComponent implements OnInit, OnDestroy {
   }
 
   private esImagen(file: File): boolean {
-    if (file.type.startsWith('image/')) {
+    const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+    if (['png', 'jpg', 'jpeg'].includes(extension)) {
       return true;
     }
+    return file.type === 'image/png' || file.type === 'image/jpeg';
+  }
 
-    const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
-    return ['jpg', 'jpeg', 'jfif', 'pjpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(extension);
+  private esArchivoPermitido(file: File): boolean {
+    return this.esImagen(file) || this.esPdf(file.name) || file.type === 'application/pdf';
   }
 
   private esPdf(valor: string): boolean {

@@ -321,13 +321,20 @@ export function createRegistrosFormGroup(fb: FormBuilder): FormGroup {
           CedulaProfesional: [''],
         }),
       ]),
-      constanciaAlineamientoyNumero: [[]],
-      LicenciaUsoyPlano: [[]],
-      ConstanciaPropietario: [[]],
-      Factibilidad: [[]],
-      RecibosImpuestoPredial: [[]],
-      JuegoDePlanosArquitectonicos: [[]],
-      otros: [[]],
+      /** Archivos LC: máx. 1 por campo (nombres POST /registros). */
+      constanciaAlineamiento: [''],
+      constanciaNumero: [''],
+      /** File con mismo nombre API que el flag tinyint (se envían por separado). */
+      fileLicenciaUsoSuelo: [''],
+      filePlanoAutorizado: [''],
+      fileLicenciaFraccionamiento: [''],
+      ConstanciaPropietario: [''],
+      Factibilidad: [''],
+      RecibosImpuestoPredial: [''],
+      JuegoDePlanosArquitectonicos1: [''],
+      JuegoDePlanosArquitectonicos2: [''],
+      JuegoDePlanosArquitectonicos3: [''],
+      otros: [''],
       FirmaPropietario: [''],
       FirmaDRO: [''],
       FirmaCorresponsable: [''],
@@ -337,21 +344,23 @@ export function createRegistrosFormGroup(fb: FormBuilder): FormGroup {
 }
 
 /**
- * Arma multipart/form-data POST /registros (contrato backend):
- * - No JSON anidado; campos planos con notación de puntos
+ * Arma multipart/form-data POST /registros:
+ * - FormData plano con notación de puntos
  * - Obligatorios: Latitud, Longitud, TipoRegistro, PredioObra (0|1 válidos)
- * - PredioObra=0 → Sapac / Catastro / Licencias / ProteccionCivil (+ fotos máx. 1)
- * - PredioObra=1 → LicenciaConstruccion (+ corresponsables[i], firmas, docs múltiples)
- * - No envía IdCapturista, IdGrupo, Estatus ni Registro (raíz)
- * - Archivos: JPG / JPEG / PNG / PDF; múltiples = mismo field name repetido
+ * - PredioObra=0 → Sapac / Catastro / Licencias / ProteccionCivil (+ fotos 1–9)
+ * - PredioObra=1 → LicenciaConstruccion (+ corresponsables sin Id, archivos LC máx. 1)
+ * - Transversales con PredioObra=1: Licencias.fachada|estacionamiento|bodega
+ * - No envía IdCapturista, IdGrupo, Estatus ni Registro
+ * - Archivos: JPG / JPEG / PNG / PDF
  */
 export function buildLocalComercialFormData(
   form: FormGroup,
   valorDocumento: ValorDocumentoFn,
   options: BuildLocalComercialFormDataOptions = {},
-  valorDocumentoMultiple: ValorDocumentoMultipleFn = () => []
+  _valorDocumentoMultiple: ValorDocumentoMultipleFn = () => []
 ): FormData {
-  const { usarValorVacioPorDefecto: empty = true } = options;
+  // POST: omitir null/undefined (appendIfPresent); 0 se conserva
+  const { usarValorVacioPorDefecto: empty = false } = options;
   const v = (path: string) => form.get(path)?.value;
   const formData = new FormData();
   const predioObra = mapPredioObra(v('PredioObra'));
@@ -370,15 +379,17 @@ export function buildLocalComercialFormData(
   appendCampo(formData, 'NoInterior', v('NoInterior'), empty);
   appendCampo(formData, 'NoExterior', v('NoExterior'), empty);
   // CP como string para conservar ceros a la izquierda
-  appendCampo(formData, 'CP', v('CP') == null || v('CP') === '' ? '' : String(v('CP')), empty);
+  appendCampo(formData, 'CP', v('CP') == null || v('CP') === '' ? null : String(v('CP')), empty);
 
   if (esObra) {
-    appendLicenciaConstruccion(formData, form, v, empty, valorDocumento, valorDocumentoMultiple, false);
+    appendLicenciaConstruccion(formData, form, v, empty, valorDocumento, false);
+    // Transversales 6/7/8 también con PredioObra=1
+    appendCatalogoFotograficoLicencias(formData, valorDocumento);
   } else {
     appendSapacCatastroLicenciasProteccion(formData, v, empty, valorDocumento, false);
+    // Fotos 1–9 (incluye fachada/estacionamiento/bodega)
+    appendCatalogoFotograficoLicencias(formData, valorDocumento);
   }
-  // Siempre: catálogo fotográfico del pre-registro (también con PredioObra=1)
-  appendCatalogoFotograficoLicencias(formData, valorDocumento);
 
   return formData;
 }
@@ -395,7 +406,7 @@ export function buildLocalComercialActualizarFormData(
   idRegistro: number,
   form: FormGroup,
   valorDocumento: ValorDocumentoFn,
-  valorDocumentoMultiple: ValorDocumentoMultipleFn = () => []
+  _valorDocumentoMultiple: ValorDocumentoMultipleFn = () => []
 ): FormData {
   const id = Number(idRegistro);
   if (!Number.isFinite(id) || id < 1) {
@@ -431,19 +442,12 @@ export function buildLocalComercialActualizarFormData(
   );
 
   if (esObra) {
-    appendLicenciaConstruccion(
-      formData,
-      form,
-      v,
-      empty,
-      valorDocumento,
-      valorDocumentoMultiple,
-      parcial
-    );
+    appendLicenciaConstruccion(formData, form, v, empty, valorDocumento, parcial);
+    appendCatalogoFotograficoLicencias(formData, valorDocumento);
   } else {
     appendSapacCatastroLicenciasProteccion(formData, v, empty, valorDocumento, parcial);
+    appendCatalogoFotograficoLicencias(formData, valorDocumento);
   }
-  appendCatalogoFotograficoLicencias(formData, valorDocumento);
 
   return formData;
 }
@@ -697,7 +701,6 @@ function appendLicenciaConstruccion(
   v: (path: string) => unknown,
   empty: boolean,
   valorDocumento: ValorDocumentoFn,
-  valorDocumentoMultiple: ValorDocumentoMultipleFn,
   parcial = false
 ): void {
   const lc = 'LicenciaConstruccion';
@@ -747,55 +750,89 @@ function appendLicenciaConstruccion(
   appendCampo(formData, `${lc}.NumeroExpediente`, v(`${lc}.NumeroExpediente`), empty, parcial);
   appendCampo(formData, `${lc}.NumeroControl`, v(`${lc}.NumeroControl`), empty, parcial);
   appendCampo(formData, `${lc}.SeguimientoObra`, v(`${lc}.SeguimientoObra`), empty, parcial);
+
+  // Flags 0|1 siempre (Untitled-3). Homónimos con archivo: si hay File, solo el File (no texto).
+  const fileLicUso = valorDocumento(`${lc}.fileLicenciaUsoSuelo`);
+  const filePlano = valorDocumento(`${lc}.filePlanoAutorizado`);
+  const fileFrac = valorDocumento(`${lc}.fileLicenciaFraccionamiento`);
   appendCampo(
     formData,
     `${lc}.ConstanciaAlineamiento`,
-    asFlag01(v(`${lc}.ConstanciaAlineamiento`)),
+    asFlag01(v(`${lc}.ConstanciaAlineamiento`)) === '1' ? '1' : '0',
     empty,
     parcial
   );
-  appendCampo(formData, `${lc}.LicenciaUsoSuelo`, asFlag01(v(`${lc}.LicenciaUsoSuelo`)), empty, parcial);
-  appendCampo(formData, `${lc}.PlanoAutorizado`, asFlag01(v(`${lc}.PlanoAutorizado`)), empty, parcial);
+  if (!esArchivoEnviable(fileLicUso)) {
+    appendCampo(
+      formData,
+      `${lc}.LicenciaUsoSuelo`,
+      asFlag01(v(`${lc}.LicenciaUsoSuelo`)) === '1' ? '1' : '0',
+      empty,
+      parcial
+    );
+  }
+  if (!esArchivoEnviable(filePlano)) {
+    appendCampo(
+      formData,
+      `${lc}.PlanoAutorizado`,
+      asFlag01(v(`${lc}.PlanoAutorizado`)) === '1' ? '1' : '0',
+      empty,
+      parcial
+    );
+  }
+  if (!esArchivoEnviable(fileFrac)) {
+    appendCampo(
+      formData,
+      `${lc}.LicenciaFraccionamiento`,
+      asFlag01(v(`${lc}.LicenciaFraccionamiento`)) === '1' ? '1' : '0',
+      empty,
+      parcial
+    );
+  }
   appendCampo(
     formData,
-    `${lc}.LicenciaFraccionamiento`,
-    asFlag01(v(`${lc}.LicenciaFraccionamiento`)),
+    `${lc}.Escrituras`,
+    asFlag01(v(`${lc}.Escrituras`)) === '1' ? '1' : '0',
     empty,
     parcial
   );
-  appendCampo(formData, `${lc}.Escrituras`, asFlag01(v(`${lc}.Escrituras`)), empty, parcial);
   appendCampo(
     formData,
     `${lc}.FactibilidadAguaPotable`,
-    asFlag01(v(`${lc}.FactibilidadAguaPotable`)),
+    asFlag01(v(`${lc}.FactibilidadAguaPotable`)) === '1' ? '1' : '0',
     empty,
     parcial
   );
   appendCampo(
     formData,
     `${lc}.RecibosPagoPredial`,
-    asFlag01(v(`${lc}.RecibosPagoPredial`)),
+    asFlag01(v(`${lc}.RecibosPagoPredial`)) === '1' ? '1' : '0',
     empty,
     parcial
   );
   appendCampo(
     formData,
     `${lc}.RecibosMunicipales`,
-    asFlag01(v(`${lc}.RecibosMunicipales`)),
+    asFlag01(v(`${lc}.RecibosMunicipales`)) === '1' ? '1' : '0',
     empty,
     parcial
   );
   appendCampo(
     formData,
     `${lc}.PlanoArquitectonicos`,
-    asFlag01(v(`${lc}.PlanoArquitectonicos`)),
+    asFlag01(v(`${lc}.PlanoArquitectonicos`)) === '1' ? '1' : '0',
     empty,
     parcial
   );
-  // Flag integer distinto de los archivos `LicenciaConstruccion.otros`
-  appendCampo(formData, `${lc}.Otros`, asFlag01(v(`${lc}.Otros`)), empty, parcial);
+  appendCampo(
+    formData,
+    `${lc}.Otros`,
+    asFlag01(v(`${lc}.Otros`)) === '1' ? '1' : '0',
+    empty,
+    parcial
+  );
 
-  // Corresponsables[i].* — PATCH puede enviar Id para actualizar; sin IdLicenciaConstruccion
+  // Corresponsables[i].* — POST: sin Id. PATCH: puede enviar Id. Nunca IdLicenciaConstruccion.
   const corresponsables = form.get(`${lc}.Corresponsables`) as FormArray | null;
   const items = (corresponsables?.controls ?? []).filter((c) => corresponsableConDatos(c));
   items.forEach((item, i) => {
@@ -826,40 +863,35 @@ function appendLicenciaConstruccion(
     );
   });
 
-  // Documentos múltiples — nombres exactos del contrato (y minúscula)
-  appendDocumentosMultiples(
-    formData,
-    `${lc}.constanciaAlineamientoyNumero`,
-    valorDocumentoMultiple(`${lc}.constanciaAlineamientoyNumero`)
-  );
-  appendDocumentosMultiples(
-    formData,
-    `${lc}.LicenciaUsoyPlano`,
-    valorDocumentoMultiple(`${lc}.LicenciaUsoyPlano`)
-  );
-  appendDocumentosMultiples(
-    formData,
-    `${lc}.ConstanciaPropietario`,
-    valorDocumentoMultiple(`${lc}.ConstanciaPropietario`)
-  );
-  appendDocumentosMultiples(
-    formData,
-    `${lc}.Factibilidad`,
-    valorDocumentoMultiple(`${lc}.Factibilidad`)
-  );
-  appendDocumentosMultiples(
+  // Archivos LC: máx. 1 por campo
+  appendDocumento(formData, `${lc}.constanciaAlineamiento`, valorDocumento(`${lc}.constanciaAlineamiento`));
+  appendDocumento(formData, `${lc}.constanciaNumero`, valorDocumento(`${lc}.constanciaNumero`));
+  appendDocumento(formData, `${lc}.LicenciaUsoSuelo`, fileLicUso);
+  appendDocumento(formData, `${lc}.PlanoAutorizado`, filePlano);
+  appendDocumento(formData, `${lc}.LicenciaFraccionamiento`, fileFrac);
+  appendDocumento(formData, `${lc}.ConstanciaPropietario`, valorDocumento(`${lc}.ConstanciaPropietario`));
+  appendDocumento(formData, `${lc}.Factibilidad`, valorDocumento(`${lc}.Factibilidad`));
+  appendDocumento(
     formData,
     `${lc}.RecibosImpuestoPredial`,
-    valorDocumentoMultiple(`${lc}.RecibosImpuestoPredial`)
+    valorDocumento(`${lc}.RecibosImpuestoPredial`)
   );
-  appendDocumentosMultiples(
+  appendDocumento(
     formData,
-    `${lc}.JuegoDePlanosArquitectonicos`,
-    valorDocumentoMultiple(`${lc}.JuegoDePlanosArquitectonicos`)
+    `${lc}.JuegoDePlanosArquitectonicos1`,
+    valorDocumento(`${lc}.JuegoDePlanosArquitectonicos1`)
   );
-  appendDocumentosMultiples(formData, `${lc}.otros`, valorDocumentoMultiple(`${lc}.otros`));
-
-  // Firmas máx. 1
+  appendDocumento(
+    formData,
+    `${lc}.JuegoDePlanosArquitectonicos2`,
+    valorDocumento(`${lc}.JuegoDePlanosArquitectonicos2`)
+  );
+  appendDocumento(
+    formData,
+    `${lc}.JuegoDePlanosArquitectonicos3`,
+    valorDocumento(`${lc}.JuegoDePlanosArquitectonicos3`)
+  );
+  appendDocumento(formData, `${lc}.otros`, valorDocumento(`${lc}.otros`));
   appendDocumento(formData, `${lc}.FirmaPropietario`, valorDocumento(`${lc}.FirmaPropietario`));
   appendDocumento(formData, `${lc}.FirmaDRO`, valorDocumento(`${lc}.FirmaDRO`));
   appendDocumento(formData, `${lc}.FirmaCorresponsable`, valorDocumento(`${lc}.FirmaCorresponsable`));

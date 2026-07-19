@@ -14,6 +14,13 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 
+export interface SymbologyItem {
+  icon: string;
+  name: string;
+  colorClass: string;
+  hint: string;
+}
+
 @Component({
   selector: 'app-toolbar-notifications',
   standalone: true,
@@ -23,7 +30,8 @@ import { MatButtonModule } from '@angular/material/button';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToolbarNotificationsComponent implements OnInit, OnDestroy {
-  notifications: Array<{ icon: string; name: string; color: string; hint: string }> = [];
+  estatusItems: SymbologyItem[] = [];
+  predioItems: SymbologyItem[] = [];
   isOpen = false;
   showOnMapa = false;
   private routerEventsSub: Subscription;
@@ -50,30 +58,46 @@ export class ToolbarNotificationsComponent implements OnInit, OnDestroy {
         }
         this.cdr.markForCheck();
       });
-    this.notifications = [
+
+    this.estatusItems = [
       {
-        icon: 'no_sim',
+        icon: 'block',
         name: 'Rechazo o sin respuesta',
-        color: 'button',
-        hint: '',
+        colorClass: 'sym-item--rechazo',
+        hint: 'El trámite fue rechazado o no hubo respuesta',
       },
       {
-        icon: 'history',
+        icon: 'hourglass_top',
         name: 'Revisión',
-        color: 'button_revision',
-        hint: '',
+        colorClass: 'sym-item--revision',
+        hint: 'El local está en proceso de revisión',
       },
       {
-        icon: 'new_releases',
-        name: 'Información Faltante',
-        color: 'button_faltante',
-        hint: '',
+        icon: 'warning_amber',
+        name: 'Información faltante',
+        colorClass: 'sym-item--faltante',
+        hint: 'Faltan datos o documentos por completar',
       },
       {
-        icon: 'thumb_up',
-        name: 'Datos Correctos',
-        color: 'button_correcto',
-        hint: '',
+        icon: 'verified',
+        name: 'Datos correctos',
+        colorClass: 'sym-item--correcto',
+        hint: 'La información del establecimiento es correcta',
+      },
+    ];
+
+    this.predioItems = [
+      {
+        icon: 'construction',
+        name: 'En obra',
+        colorClass: 'sym-item--obra',
+        hint: 'Predio en construcción',
+      },
+      {
+        icon: 'storefront',
+        name: 'Sin obra',
+        colorClass: 'sym-item--sin-obra',
+        hint: 'Establecimiento sin obra',
       },
     ];
   }
@@ -84,10 +108,6 @@ export class ToolbarNotificationsComponent implements OnInit, OnDestroy {
 
   toggleDropdown(): void {
     this.isOpen = !this.isOpen;
-  }
-
-  onClickOutside(): void {
-    this.isOpen = false;
   }
 
   @HostListener('document:click', ['$event'])

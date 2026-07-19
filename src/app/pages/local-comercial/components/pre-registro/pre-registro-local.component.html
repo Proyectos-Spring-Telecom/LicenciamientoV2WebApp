@@ -98,8 +98,9 @@
               <div class="input-group input-group-lg perm-ig">
                 <span class="input-group-text fw-bold"><mat-icon>map</mat-icon></span>
                 <div class="form-floating flex-grow-1">
-                  <input id="preEstado" class="form-control" placeholder="Estado"
-                    [(ngModel)]="estado" />
+                  <input id="preEstado" class="form-control" placeholder="Estado" name="preEstado"
+                    [(ngModel)]="estado"
+                    [readonly]="!direccionManualPorErrorSepomex" />
                   <label for="preEstado">Estado</label>
                 </div>
               </div>
@@ -109,8 +110,9 @@
               <div class="input-group input-group-lg perm-ig">
                 <span class="input-group-text fw-bold"><mat-icon>signpost</mat-icon></span>
                 <div class="form-floating flex-grow-1">
-                  <input id="preMunicipio" class="form-control" placeholder="Municipio"
-                    [(ngModel)]="municipio" />
+                  <input id="preMunicipio" class="form-control" placeholder="Municipio" name="preMunicipio"
+                    [(ngModel)]="municipio"
+                    [readonly]="!direccionManualPorErrorSepomex" />
                   <label for="preMunicipio">Municipio</label>
                 </div>
               </div>
@@ -119,12 +121,20 @@
               <label class="form-label perm-label" for="preColonia">Colonia</label>
               <div class="input-group input-group-lg perm-ig">
                 <span class="input-group-text fw-bold"><mat-icon>location_on</mat-icon></span>
-                <div class="form-floating flex-grow-1 perm-select-floating">
-                  <select id="preColonia" class="form-select" [(ngModel)]="colonia">
-                    <option value="">Seleccionar...</option>
-                    <option *ngFor="let col of coloniasSepomex" [ngValue]="col.nombre">{{ col.nombre }}</option>
-                  </select>
+                <!-- Sepomex OK: select. Sepomex error: input texto (mismo ngModel → mismo body). -->
+                <div class="form-floating flex-grow-1" *ngIf="direccionManualPorErrorSepomex; else coloniaSelectTpl">
+                  <input id="preColonia" class="form-control" placeholder="Colonia" name="preColonia"
+                    [(ngModel)]="colonia" />
+                  <label for="preColonia">Colonia</label>
                 </div>
+                <ng-template #coloniaSelectTpl>
+                  <div class="form-floating flex-grow-1 perm-select-floating">
+                    <select id="preColonia" class="form-select" name="preColonia" [(ngModel)]="colonia">
+                      <option value="">Seleccionar...</option>
+                      <option *ngFor="let col of coloniasSepomex" [ngValue]="col.nombre">{{ col.nombre }}</option>
+                    </select>
+                  </div>
+                </ng-template>
               </div>
             </div>
             <div class="col-12 col-sm-6 col-xl-3">
@@ -474,7 +484,7 @@
               <div class="input-group input-group-lg perm-ig">
                 <span class="input-group-text fw-bold"><mat-icon>event</mat-icon></span>
                 <div class="form-floating flex-grow-1">
-                  <input id="preFechaLc" class="form-control" type="datetime-local"
+                  <input id="preFechaLc" class="form-control perm-date-input" type="date"
                     [(ngModel)]="fechaLicenciaConstruccion" name="preFechaLc" />
                   <label for="preFechaLc">Fecha</label>
                 </div>
@@ -596,53 +606,81 @@
           <div class="row g-3 local-form-uploaders">
             <div class="col-12 col-md-4">
               <app-file-uploader-card
-                label="Constancia alineamiento y número"
-                accept="image/*,.pdf,application/pdf"
+                label="Constancia de alineamiento"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
                 uploadTitle="Sube imagen o PDF"
                 icon="description"
-                badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
                 colorVariant="primary"
                 [remoteUrl]="documentosExistentes['constanciaAlineamiento']"
                 (fileSelected)="onDocumentoSeleccionado('constanciaAlineamiento', $event)"
                 (fileRejected)="onDocumentoRechazado('constanciaAlineamiento')"
-                (remoteFileClick)="verDocumentoExistente({ titulo: 'Constancia alineamiento y número', controlName: 'constanciaAlineamiento' }, $event)">
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Constancia de alineamiento', controlName: 'constanciaAlineamiento' }, $event)">
               </app-file-uploader-card>
             </div>
             <div class="col-12 col-md-4">
               <app-file-uploader-card
-                label="Licencia de uso y plano"
-                accept="image/*,.pdf,application/pdf"
+                label="Constancia de número oficial"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="pin"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="primary"
+                [remoteUrl]="documentosExistentes['constanciaNumero']"
+                (fileSelected)="onDocumentoSeleccionado('constanciaNumero', $event)"
+                (fileRejected)="onDocumentoRechazado('constanciaNumero')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Constancia de número oficial', controlName: 'constanciaNumero' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Licencia de uso de suelo"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
                 uploadTitle="Sube imagen o PDF"
                 icon="description"
-                badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
                 colorVariant="success"
                 [remoteUrl]="documentosExistentes['permisoSuelo']"
                 (fileSelected)="onDocumentoSeleccionado('permisoSuelo', $event)"
                 (fileRejected)="onDocumentoRechazado('permisoSuelo')"
-                (remoteFileClick)="verDocumentoExistente({ titulo: 'Licencia de uso y plano', controlName: 'permisoSuelo' }, $event)">
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Licencia de uso de suelo', controlName: 'permisoSuelo' }, $event)">
               </app-file-uploader-card>
             </div>
             <div class="col-12 col-md-4">
               <app-file-uploader-card
-                label="Juego de planos arquitectónicos"
-                accept="image/*,.pdf,application/pdf"
+                label="Plano autorizado"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
                 uploadTitle="Sube imagen o PDF"
-                icon="architecture"
-                badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
-                colorVariant="warning"
-                [remoteUrl]="documentosExistentes['planos']"
-                (fileSelected)="onDocumentoSeleccionado('planos', $event)"
-                (fileRejected)="onDocumentoRechazado('planos')"
-                (remoteFileClick)="verDocumentoExistente({ titulo: 'Juego de planos arquitectónicos', controlName: 'planos' }, $event)">
+                icon="verified"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="primary"
+                [remoteUrl]="documentosExistentes['planoAutorizado']"
+                (fileSelected)="onDocumentoSeleccionado('planoAutorizado', $event)"
+                (fileRejected)="onDocumentoRechazado('planoAutorizado')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Plano autorizado', controlName: 'planoAutorizado' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Licencia de fraccionamiento"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="apartment"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="success"
+                [remoteUrl]="documentosExistentes['licenciaFraccionamiento']"
+                (fileSelected)="onDocumentoSeleccionado('licenciaFraccionamiento', $event)"
+                (fileRejected)="onDocumentoRechazado('licenciaFraccionamiento')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Licencia de fraccionamiento', controlName: 'licenciaFraccionamiento' }, $event)">
               </app-file-uploader-card>
             </div>
             <div class="col-12 col-md-4">
               <app-file-uploader-card
                 label="Constancia propietario"
-                accept="image/*,.pdf,application/pdf"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
                 uploadTitle="Sube imagen o PDF"
                 icon="person"
-                badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
                 colorVariant="primary"
                 [remoteUrl]="documentosExistentes['constanciaPropietario']"
                 (fileSelected)="onDocumentoSeleccionado('constanciaPropietario', $event)"
@@ -653,10 +691,10 @@
             <div class="col-12 col-md-4">
               <app-file-uploader-card
                 label="Factibilidad"
-                accept="image/*,.pdf,application/pdf"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
                 uploadTitle="Sube imagen o PDF"
                 icon="water_drop"
-                badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
                 colorVariant="success"
                 [remoteUrl]="documentosExistentes['factibilidad']"
                 (fileSelected)="onDocumentoSeleccionado('factibilidad', $event)"
@@ -667,10 +705,10 @@
             <div class="col-12 col-md-4">
               <app-file-uploader-card
                 label="Recibos impuesto predial"
-                accept="image/*,.pdf,application/pdf"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
                 uploadTitle="Sube imagen o PDF"
                 icon="receipt"
-                badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
                 colorVariant="danger"
                 [remoteUrl]="documentosExistentes['recibosPredial']"
                 (fileSelected)="onDocumentoSeleccionado('recibosPredial', $event)"
@@ -680,39 +718,67 @@
             </div>
             <div class="col-12 col-md-4">
               <app-file-uploader-card
-                label="Plano autorizado"
-                accept="image/*,.pdf,application/pdf"
+                label="Juego de planos arquitectónicos 1"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
                 uploadTitle="Sube imagen o PDF"
-                icon="verified"
-                badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
-                colorVariant="primary"
-                [remoteUrl]="documentosExistentes['planoAutorizado']"
-                (fileSelected)="onDocumentoSeleccionado('planoAutorizado', $event)"
-                (fileRejected)="onDocumentoRechazado('planoAutorizado')"
-                (remoteFileClick)="verDocumentoExistente({ titulo: 'Plano autorizado', controlName: 'planoAutorizado' }, $event)">
+                icon="architecture"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="warning"
+                [remoteUrl]="documentosExistentes['planos1']"
+                (fileSelected)="onDocumentoSeleccionado('planos1', $event)"
+                (fileRejected)="onDocumentoRechazado('planos1')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Juego de planos arquitectónicos 1', controlName: 'planos1' }, $event)">
               </app-file-uploader-card>
             </div>
             <div class="col-12 col-md-4">
               <app-file-uploader-card
-                label="Licencia fraccionamiento"
-                accept="image/*,.pdf,application/pdf"
+                label="Juego de planos arquitectónicos 2"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
                 uploadTitle="Sube imagen o PDF"
-                icon="apartment"
-                badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
-                colorVariant="success"
-                [remoteUrl]="documentosExistentes['licenciaFraccionamiento']"
-                (fileSelected)="onDocumentoSeleccionado('licenciaFraccionamiento', $event)"
-                (fileRejected)="onDocumentoRechazado('licenciaFraccionamiento')"
-                (remoteFileClick)="verDocumentoExistente({ titulo: 'Licencia fraccionamiento', controlName: 'licenciaFraccionamiento' }, $event)">
+                icon="architecture"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="warning"
+                [remoteUrl]="documentosExistentes['planos2']"
+                (fileSelected)="onDocumentoSeleccionado('planos2', $event)"
+                (fileRejected)="onDocumentoRechazado('planos2')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Juego de planos arquitectónicos 2', controlName: 'planos2' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Juego de planos arquitectónicos 3"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="architecture"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="warning"
+                [remoteUrl]="documentosExistentes['planos3']"
+                (fileSelected)="onDocumentoSeleccionado('planos3', $event)"
+                (fileRejected)="onDocumentoRechazado('planos3')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Juego de planos arquitectónicos 3', controlName: 'planos3' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Otros"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="photo_camera"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="warning"
+                [remoteUrl]="documentosExistentes['otrosDocs']"
+                (fileSelected)="onDocumentoSeleccionado('otrosDocs', $event)"
+                (fileRejected)="onDocumentoRechazado('otrosDocs')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Otros', controlName: 'otrosDocs' }, $event)">
               </app-file-uploader-card>
             </div>
             <div class="col-12 col-md-4">
               <app-file-uploader-card
                 label="Escrituras"
-                accept="image/*,.pdf,application/pdf"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
                 uploadTitle="Sube imagen o PDF"
                 icon="menu_book"
-                badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
                 colorVariant="warning"
                 [remoteUrl]="documentosExistentes['escrituras']"
                 (fileSelected)="onDocumentoSeleccionado('escrituras', $event)"
@@ -723,59 +789,16 @@
             <div class="col-12 col-md-4">
               <app-file-uploader-card
                 label="Recibos municipales"
-                accept="image/*,.pdf,application/pdf"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
                 uploadTitle="Sube imagen o PDF"
                 icon="receipt_long"
-                badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
                 colorVariant="danger"
                 [remoteUrl]="documentosExistentes['recibosMunicipales']"
                 (fileSelected)="onDocumentoSeleccionado('recibosMunicipales', $event)"
                 (fileRejected)="onDocumentoRechazado('recibosMunicipales')"
                 (remoteFileClick)="verDocumentoExistente({ titulo: 'Recibos municipales', controlName: 'recibosMunicipales' }, $event)">
               </app-file-uploader-card>
-            </div>
-            <div class="col-12 col-md-4">
-              <div class="pre-reg-fotos-main">
-                <app-file-uploader-card
-                  label="Otros / Fotos del Predio"
-                  accept="image/*,.pdf,application/pdf"
-                  uploadTitle="Sube imagen o PDF"
-                  icon="photo_camera"
-                  badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
-                  colorVariant="warning"
-                  [remoteUrl]="documentosExistentes['fotosPredio_1']"
-                  (fileSelected)="onDocumentoSeleccionado('fotosPredio_1', $event)"
-                  (fileRejected)="onDocumentoRechazado('fotosPredio_1')"
-                  (remoteFileClick)="verDocumentoExistente({ titulo: 'Otros / Fotos del Predio', controlName: 'fotosPredio_1' }, $event)">
-                </app-file-uploader-card>
-                <button type="button" class="pre-reg-fotos-stack__add" (click)="agregarFotoPredio()">
-                  <mat-icon>add</mat-icon>
-                  Agregar
-                </button>
-              </div>
-            </div>
-            <div class="col-12 col-md-4" *ngFor="let foto of fotosPredioExtras; let i = index" @correspCard>
-              <div class="pre-reg-fotos-stack__item">
-                <app-file-uploader-card
-                  [label]="'Fotos del Predio ' + (i + 2)"
-                  accept="image/*,.pdf,application/pdf"
-                  uploadTitle="Sube imagen o PDF"
-                  icon="photo_camera"
-                  badgeDefault="PNG · JPG · WEBP · PDF · Máx. 3 MB"
-                  colorVariant="warning"
-                  [remoteUrl]="documentosExistentes['fotosPredio_' + foto.id]"
-                  (fileSelected)="onDocumentoSeleccionado('fotosPredio_' + foto.id, $event)"
-                  (fileRejected)="onDocumentoRechazado('fotosPredio_' + foto.id)"
-                  (remoteFileClick)="verDocumentoExistente({ titulo: 'Fotos del Predio ' + (i + 2), controlName: 'fotosPredio_' + foto.id }, $event)">
-                </app-file-uploader-card>
-                <button
-                  type="button"
-                  class="pre-reg-fotos-stack__remove"
-                  (click)="quitarFotoPredio(foto.id)"
-                  title="Quitar esta foto">
-                  <mat-icon>close</mat-icon>
-                </button>
-              </div>
             </div>
           </div>
         </div>

@@ -22,10 +22,10 @@
         <div class="card-header detalle-info-card__header">
           <div class="detalle-info-card__heading">
             <div class="card-title detalle-nombre-comercial-heading" style="font-size: 26px;">
-              <span class="detalle-nombre-comercial-label">Nombre Comercial:</span>
-              <span class="detalle-nombre-comercial-valor" *ngIf="tieneValor(nombreComercial)">&nbsp;{{nombreComercial}}</span>
-              <span class="detalle-nombre-comercial-valor" *ngIf="!tieneValor(nombreComercial)">
-                Sin Nombre Comercial
+              <span class="detalle-nombre-comercial-label">{{ etiquetaTituloDetalle }}</span>
+              <span class="detalle-nombre-comercial-valor" *ngIf="tieneValor(tituloDetallePrincipal)">&nbsp;{{tituloDetallePrincipal}}</span>
+              <span class="detalle-nombre-comercial-valor" *ngIf="!tieneValor(tituloDetallePrincipal)">
+                {{ esPredioEnObra ? 'Sin propietario' : 'Sin Nombre Comercial' }}
               </span>
             </div>
             <div class="card-subtitle detalle-estatus-wrap">
@@ -37,6 +37,14 @@
                 <i class="fa" [ngClass]="estatusIconClass" aria-hidden="true"></i>
                 <span class="detalle-estatus-badge__label">Estatus:</span>
                 <span class="detalle-estatus-badge__text">{{ estatusLabel }}</span>
+              </div>
+              <div
+                *ngIf="esPredioEnObra"
+                class="detalle-predio-badge"
+                role="status"
+                aria-label="Predio en obra">
+                <i class="fa fa-wrench" aria-hidden="true"></i>
+                <span>En obra</span>
               </div>
             </div>
           </div>
@@ -108,8 +116,183 @@
       </div>
     <br>
 
-      <!-- C) Sapac -->
+      <!-- C) Licencia de Construcción (predioObra = 1) -->
+      <ng-container *ngIf="esPredioEnObra">
       <div class="card detalle-info-card advanced-forms route-animations-elements">
+        <div class="card-header detalle-seccion-header">
+          <div class="detalle-seccion-heading detalle-seccion-heading--obra">
+            <div class="detalle-seccion-heading__title"><i class="fa fa-building" aria-hidden="true"></i><span>Proyecto</span></div>
+            <div class="detalle-seccion-heading__sub">Licencia de construcci&oacute;n — datos del proyecto</div>
+          </div>
+        </div>
+        <mat-divider class="detalle-info-card-divisor"></mat-divider>
+        <div class="detalle-info-card-cuerpo">
+          <div class="detalle-campos-fila">
+            <div class="detalle-campos-grid">
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-file-text-o"></i> &nbsp;&nbsp;
+                <div class="informacion">Tipo de solicitud:</div>
+                <div class="respuesta" *ngIf="tieneValor(tipoSolicitudLcTexto)">{{ tipoSolicitudLcTexto }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(tipoSolicitudLcTexto)">Sin Informaci&oacute;n </div>
+              </div>
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-align-left"></i> &nbsp;&nbsp;
+                <div class="informacion">Descripci&oacute;n del proyecto:</div>
+                <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.DescripcionProyecto)">{{ licenciaConstruccion?.DescripcionProyecto }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.DescripcionProyecto)">Sin Informaci&oacute;n </div>
+              </div>
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-cogs"></i> &nbsp;&nbsp;
+                <div class="informacion">Sistema constructivo:</div>
+                <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.DescripcionSistemaConstructivo)">{{ licenciaConstruccion?.DescripcionSistemaConstructivo }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.DescripcionSistemaConstructivo)">Sin Informaci&oacute;n </div>
+              </div>
+            </div>
+          </div><br>
+          <div class="detalle-campos-fila">
+            <div class="detalle-campos-grid">
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-arrows-h"></i> &nbsp;&nbsp;
+                <div class="informacion">Superficie del terreno:</div>
+                <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.SuperficieTerrenoM2)">{{ formatearMetrosCuadrados(licenciaConstruccion?.SuperficieTerrenoM2) }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.SuperficieTerrenoM2)">Sin Informaci&oacute;n </div>
+              </div>
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-area-chart"></i> &nbsp;&nbsp;
+                <div class="informacion">Superficie de la obra:</div>
+                <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.SuperficieTerrenoObraM2)">{{ formatearMetrosCuadrados(licenciaConstruccion?.SuperficieTerrenoObraM2) }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.SuperficieTerrenoObraM2)">Sin Informaci&oacute;n </div>
+              </div>
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-calendar"></i> &nbsp;&nbsp;
+                <div class="informacion">Fecha:</div>
+                <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.Fecha)">{{ licenciaConstruccion?.Fecha | date: 'yyyy-MM-dd - h:mm a' }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.Fecha)">Sin Informaci&oacute;n </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br>
+
+      <div class="card detalle-info-card advanced-forms route-animations-elements">
+        <div class="card-header detalle-seccion-header">
+          <div class="detalle-seccion-heading detalle-seccion-heading--obra-prop">
+            <div class="detalle-seccion-heading__title"><i class="fa fa-user" aria-hidden="true"></i><span>Propietario y DRO</span></div>
+            <div class="detalle-seccion-heading__sub">Datos del propietario y director responsable de obra</div>
+          </div>
+        </div>
+        <mat-divider class="detalle-info-card-divisor"></mat-divider>
+        <div class="detalle-info-card-cuerpo">
+          <div class="detalle-campos-fila">
+            <div class="detalle-campos-grid">
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-user"></i> &nbsp;&nbsp;
+                <div class="informacion">Propietario:</div>
+                <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.NombrePropietario)">{{ licenciaConstruccion?.NombrePropietario }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.NombrePropietario)">Sin Informaci&oacute;n </div>
+              </div>
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-credit-card"></i> &nbsp;&nbsp;
+                <div class="informacion">RFC:</div>
+                <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.RFC)">{{ licenciaConstruccion?.RFC }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.RFC)">Sin Informaci&oacute;n </div>
+              </div>
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-map-marker"></i> &nbsp;&nbsp;
+                <div class="informacion">Domicilio de notificaci&oacute;n:</div>
+                <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.DomicilioNotificacion)">{{ licenciaConstruccion?.DomicilioNotificacion }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.DomicilioNotificacion)">Sin Informaci&oacute;n </div>
+              </div>
+            </div>
+          </div><br>
+          <div class="detalle-campos-fila">
+            <div class="detalle-campos-grid">
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-id-badge"></i> &nbsp;&nbsp;
+                <div class="informacion">Nombre DRO:</div>
+                <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.NombreDRO)">{{ licenciaConstruccion?.NombreDRO }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.NombreDRO)">Sin Informaci&oacute;n </div>
+              </div>
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-barcode"></i> &nbsp;&nbsp;
+                <div class="informacion">No. Reg. Licencia Construcci&oacute;n:</div>
+                <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.NoRegLicenciaConstruccion)">{{ licenciaConstruccion?.NoRegLicenciaConstruccion }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.NoRegLicenciaConstruccion)">Sin Informaci&oacute;n </div>
+              </div>
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-id-card"></i> &nbsp;&nbsp;
+                <div class="informacion">C&eacute;dula profesional:</div>
+                <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.CedulaProfesional)">{{ licenciaConstruccion?.CedulaProfesional }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.CedulaProfesional)">Sin Informaci&oacute;n </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br>
+
+      <div class="card detalle-info-card advanced-forms route-animations-elements">
+        <div class="card-header detalle-seccion-header">
+          <div class="detalle-seccion-heading detalle-seccion-heading--obra-exp">
+            <div class="detalle-seccion-heading__title"><i class="fa fa-folder-open" aria-hidden="true"></i><span>Expediente</span></div>
+            <div class="detalle-seccion-heading__sub">N&uacute;meros de control y corresponsables</div>
+          </div>
+        </div>
+        <mat-divider class="detalle-info-card-divisor"></mat-divider>
+        <div class="detalle-info-card-cuerpo">
+          <div class="detalle-campos-fila">
+            <div class="detalle-campos-grid">
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-folder"></i> &nbsp;&nbsp;
+                <div class="informacion">N&uacute;mero de expediente:</div>
+                <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.NumeroExpediente)">{{ licenciaConstruccion?.NumeroExpediente }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.NumeroExpediente)">Sin Informaci&oacute;n </div>
+              </div>
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-tag"></i> &nbsp;&nbsp;
+                <div class="informacion">N&uacute;mero de control:</div>
+                <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.NumeroControl)">{{ licenciaConstruccion?.NumeroControl }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.NumeroControl)">Sin Informaci&oacute;n </div>
+              </div>
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-binoculars"></i> &nbsp;&nbsp;
+                <div class="informacion">Seguimiento de obra:</div>
+                <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.SeguimientoObra)">{{ licenciaConstruccion?.SeguimientoObra }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.SeguimientoObra)">Sin Informaci&oacute;n </div>
+              </div>
+            </div>
+          </div>
+          <br *ngIf="licenciaConstruccion?.Corresponsables?.length">
+          <div class="detalle-campos-fila" *ngFor="let corr of licenciaConstruccion?.Corresponsables; let idx = index">
+            <div class="detalle-campos-grid">
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-users"></i> &nbsp;&nbsp;
+                <div class="informacion">Corresponsable {{ idx + 1 }}:</div>
+                <div class="respuesta" *ngIf="tieneValor(corr?.NombreCompleto)">{{ corr?.NombreCompleto }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(corr?.NombreCompleto)">Sin Informaci&oacute;n </div>
+              </div>
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-barcode"></i> &nbsp;&nbsp;
+                <div class="informacion">No. Reg. Licencia:</div>
+                <div class="respuesta" *ngIf="tieneValor(corr?.NoRegLicenciaConstruccion)">{{ corr?.NoRegLicenciaConstruccion }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(corr?.NoRegLicenciaConstruccion)">Sin Informaci&oacute;n </div>
+              </div>
+              <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-id-card"></i> &nbsp;&nbsp;
+                <div class="informacion">C&eacute;dula profesional:</div>
+                <div class="respuesta" *ngIf="tieneValor(corr?.CedulaProfesional)">{{ corr?.CedulaProfesional }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(corr?.CedulaProfesional)">Sin Informaci&oacute;n </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br>
+      </ng-container>
+
+      <!-- C) Sapac -->
+      <div *ngIf="!esPredioEnObra" class="card detalle-info-card advanced-forms route-animations-elements">
         <div class="card-header detalle-seccion-header">
           <div class="detalle-seccion-heading detalle-seccion-heading--sapac">
             <div class="detalle-seccion-heading__title"><i class="fa fa-tint" aria-hidden="true"></i><span>Sapac</span></div>
@@ -236,10 +419,10 @@
         </div><br>
         </div>
       </div>
-    <br>
+    <br *ngIf="!esPredioEnObra">
 
       <!-- D) Catastral -->
-      <div class="card detalle-info-card advanced-forms route-animations-elements">
+      <div *ngIf="!esPredioEnObra" class="card detalle-info-card advanced-forms route-animations-elements">
         <div class="card-header detalle-seccion-header">
           <div class="detalle-seccion-heading detalle-seccion-heading--catastral">
             <div class="detalle-seccion-heading__title"><i class="fa fa-home" aria-hidden="true"></i><span>Catastral</span></div>
@@ -278,10 +461,10 @@
         </div>
         </div>
       </div>
-    <br>
+    <br *ngIf="!esPredioEnObra">
 
       <!-- E) Licencia -->
-      <div class="card detalle-info-card advanced-forms route-animations-elements">
+      <div *ngIf="!esPredioEnObra" class="card detalle-info-card advanced-forms route-animations-elements">
         <div class="card-header detalle-seccion-header">
           <div class="detalle-seccion-heading detalle-seccion-heading--licencia">
             <div class="detalle-seccion-heading__title"><i class="fa fa-certificate" aria-hidden="true"></i><span>Licencia</span></div>
@@ -472,10 +655,10 @@
         </div><br>
         </div>
       </div>
-    <br>
+    <br *ngIf="!esPredioEnObra">
 
       <!-- F) Protecci&oacute;n Civil -->
-      <div class="card detalle-info-card advanced-forms route-animations-elements">
+      <div *ngIf="!esPredioEnObra" class="card detalle-info-card advanced-forms route-animations-elements">
         <div class="card-header detalle-seccion-header">
           <div class="detalle-seccion-heading detalle-seccion-heading--pc">
             <div class="detalle-seccion-heading__title"><i class="fa fa-shield" aria-hidden="true"></i><span>Protecci&oacute;n Civil</span></div>
@@ -537,11 +720,11 @@
         </div><br>
         </div>
       </div>
-    <br>
+    <br *ngIf="!esPredioEnObra">
 
-      <!-- G) Licencia imagen + Ubicaci&oacute;n -->
+      <!-- G) Licencia imagen / Docs LC + Ubicaci&oacute;n -->
         <div class="row g-3">
-          <div class="col-12 col-lg-6">
+          <div class="col-12 col-lg-6" *ngIf="!esPredioEnObra">
             <div class="card advanced-forms route-animations-elements h-100">
             <div class="card-header detalle-media-header">
               <div class="card-title detalle-seccion-titulo">
@@ -553,6 +736,75 @@
               <div class="licencia-imagen-wrap">
                 <img *ngIf="!showImage" class="licencia-imagen" [src]="imgValidate" alt="Licencia" (error)="onImageError($event)">
               </div>
+            </div>
+          </div>
+          </div>
+          <div class="col-12 col-lg-6" *ngIf="esPredioEnObra">
+            <div class="card advanced-forms route-animations-elements h-100">
+            <div class="card-header detalle-media-header">
+              <div class="card-title detalle-seccion-titulo">
+                <i class="fa fa-file-archive-o" aria-hidden="true"></i><span>Licencia de construcci&oacute;n</span>
+              </div>
+            </div>
+            <mat-divider></mat-divider>
+            <div class="card-body detalle-media-body galeria-card-content">
+              <ng-container *ngIf="documentosLc.length; else sinDocsLc">
+              <div class="galeria-header">
+                <div class="galeria-tipo" [@galeriaMeta]="iLc">
+                  <span class="galeria-tipo__icon" aria-hidden="true">
+                    <i class="fa fa-file-image-o"></i>
+                  </span>
+                  <div class="galeria-tipo__copy">
+                    <span class="galeria-tipo__label">Tipo de documento</span>
+                    <strong class="galeria-tipo__value">{{ tipoDocumentoLcActual }}</strong>
+                  </div>
+                </div>
+                <span class="galeria-counter-pill">{{ iLc + 1 }} / {{ documentosLc.length }}</span>
+              </div>
+
+              <div class="galeria-stage">
+                <ng-container *ngFor="let slide of [galeriaSlideLc]; trackBy: trackGaleriaSlide">
+                  <div class="galeria-stage__frame" [@galeriaPhoto]="galeriaDireccionLc">
+                    <img
+                      [src]="slide.url"
+                      class="galeria-imagen"
+                      [alt]="slide.tipo"
+                      (error)="onImageError($event)">
+                    <div class="galeria-stage__placeholder" *ngIf="esDocumentoLcActualPlaceholder()">
+                      <i class="fa fa-picture-o"></i>
+                      <span>Sin imagen disponible</span>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+
+              <div class="galeria-dots" *ngIf="!ocultaBtnsLc">
+                <button
+                  type="button"
+                  class="galeria-dots__item"
+                  *ngFor="let doc of documentosLc; let idx = index"
+                  [class.is-active]="idx === iLc"
+                  [attr.aria-label]="'Ver ' + (doc.titulo || 'documento ' + (idx + 1))"
+                  [attr.title]="doc.titulo || 'Documento ' + (idx + 1)"
+                  (click)="irADocumentoLc(idx)">
+                </button>
+              </div>
+
+              <div *ngIf="!ocultaBtnsLc" class="galeria-nav">
+                <button type="button" class="galeria-nav__btn" (click)="prevLc()" aria-label="Documento anterior">
+                  <i class="fa fa-chevron-left"></i>
+                </button>
+                <strong class="galeria-nav__counter">{{ iLc + 1 }} / {{ documentosLc.length }}</strong>
+                <button type="button" class="galeria-nav__btn" (click)="nextLc()" aria-label="Documento siguiente">
+                  <i class="fa fa-chevron-right"></i>
+                </button>
+              </div>
+              </ng-container>
+              <ng-template #sinDocsLc>
+                <div class="not-street text-center detalle-map">
+                  <p class="street"><i class="fa fa-folder-open"></i>&nbsp;&nbsp;Sin archivos de licencia de construcci&oacute;n</p>
+                </div>
+              </ng-template>
             </div>
           </div>
           </div>

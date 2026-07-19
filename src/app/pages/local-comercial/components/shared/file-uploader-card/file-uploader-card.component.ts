@@ -17,9 +17,12 @@ import {
   styleUrls: ['./file-uploader-card.component.scss']
 })
 export class FileUploaderCardComponent implements OnChanges, OnDestroy {
-  /** Todas las cards de licencias aceptan imagen y/o PDF. */
-  static readonly ACCEPT_IMAGEN_PDF = 'image/*,.pdf,application/pdf';
-  static readonly BADGE_IMAGEN_PDF = 'PNG · JPG · WEBP · PDF · Máx. 3 MB';
+  /** Imágenes solo PNG/JPG/JPEG + PDF. */
+  static readonly ACCEPT_IMAGEN_PDF =
+    'image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf';
+  static readonly BADGE_IMAGEN_PDF = 'PNG · JPG · JPEG · PDF · Máx. 3 MB';
+  private static readonly EXT_IMAGEN = new Set(['png', 'jpg', 'jpeg']);
+  private static readonly MIME_IMAGEN = new Set(['image/png', 'image/jpeg']);
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -153,7 +156,7 @@ export class FileUploaderCardComponent implements OnChanges, OnDestroy {
     if (extension === 'pdf') {
       return false;
     }
-    if (['jpg', 'jpeg', 'jfif', 'pjpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(extension)) {
+    if (FileUploaderCardComponent.EXT_IMAGEN.has(extension)) {
       return true;
     }
     // blob: o URL sin extensión → imagen (fotos del catálogo)
@@ -161,14 +164,14 @@ export class FileUploaderCardComponent implements OnChanges, OnDestroy {
   }
 
   private isAllowed(file: File): boolean {
-    if (file.type.startsWith('image/')) {
-      return true;
-    }
     const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
-    if (['jpg', 'jpeg', 'jfif', 'pjpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(extension)) {
+    if (FileUploaderCardComponent.EXT_IMAGEN.has(extension)) {
       return true;
     }
-    return file.type === 'application/pdf' || extension === 'pdf';
+    if (FileUploaderCardComponent.MIME_IMAGEN.has(file.type)) {
+      return true;
+    }
+    return this.allowPdf && (file.type === 'application/pdf' || extension === 'pdf');
   }
 
   private extraerNombreDesdeUrl(url: string): string {

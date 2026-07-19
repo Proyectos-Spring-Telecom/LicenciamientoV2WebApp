@@ -5,7 +5,13 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { routeAnimation } from 'src/app/pipe/module-open.animation';
 import { LayoutScrollService } from 'src/app/services/layout-scroll.service';
-import { DOCUMENTOS_LICENCIAMIENTO, DocumentoLocalConfig, mapFotosToUrls, resolverValorDocumentoFormData } from '../../utils/documentos-local.config';
+import {
+  DOCUMENTOS_LICENCIAMIENTO,
+  DocumentoLocalConfig,
+  mapFotosToUrls,
+  resolverValorDocumentoFormData,
+  toDateInputValue,
+} from '../../utils/documentos-local.config';
 import {
   PreRegistroFilesState,
   PreRegistroStateService,
@@ -77,12 +83,17 @@ const DOC_CONTROL_TO_FILE_KEY: Record<string, keyof PreRegistroFilesState> = {
   'Licencias.fachada': 'FachadaEstablecimiento',
   'Licencias.bodega': 'Bodega',
   'Licencias.estacionamiento': 'EstacionamientoIMG',
-  planos: 'LcJuegoDePlanosArquitectonicos',
-  permisoSuelo: 'LcLicenciaUsoyPlano',
-  constanciaAlineamiento: 'LcConstanciaAlineamientoyNumero',
+  constanciaAlineamiento: 'LcConstanciaAlineamientoFile',
+  constanciaNumero: 'LcConstanciaNumero',
+  permisoSuelo: 'LcLicenciaUsoSueloFile',
+  planoAutorizado: 'LcPlanoAutorizadoFile',
+  licenciaFraccionamiento: 'LcLicenciaFraccionamientoFile',
   constanciaPropietario: 'LcConstanciaPropietario',
   factibilidad: 'LcFactibilidad',
   recibosPredial: 'LcRecibosImpuestoPredial',
+  planos1: 'LcJuegoDePlanosArquitectonicos1',
+  planos2: 'LcJuegoDePlanosArquitectonicos2',
+  planos3: 'LcJuegoDePlanosArquitectonicos3',
   otrosDocs: 'LcOtrosDocs',
 };
 
@@ -257,6 +268,11 @@ export class PreRegistroLocalComponent implements OnInit {
   public municipio = '';
   public colonia = '';
   public coloniasSepomex: SepomexColonia[] = [];
+  /**
+   * true solo si Sepomex respondió error: Estado/Municipio/Colonia pasan a texto libre.
+   * Los valores se siguen enviando igual (EntidadFederativa, Municipio, Colonia).
+   */
+  public direccionManualPorErrorSepomex = false;
   public calleNumero = '';
   public noInterior = '';
   public noExterior = '';
@@ -284,18 +300,11 @@ export class PreRegistroLocalComponent implements OnInit {
   );
   public documentosExistentes: Record<string, string> = {};
   private readonly archivosSeleccionados: PreRegistroFilesState = {};
-  private readonly fotosPredioPorControl: Record<string, File> = {};
-  /** Docs LC sin key de archivo en contrato: van a `otros` y activan flags integer. */
-  private readonly docsChecklistExtra: Record<string, File[]> = {
-    planoAutorizado: [],
-    licenciaFraccionamiento: [],
-    escrituras: [],
-    recibosMunicipales: [],
+  /** Solo flags integer (sin IdTipoFoto propio en POST). */
+  private readonly docsChecklistFlags: Record<string, File | null> = {
+    escrituras: null,
+    recibosMunicipales: null,
   };
-
-  /** Cards extra de Fotos del Predio (row debajo de las 3 columnas) */
-  public fotosPredioExtras: { id: number }[] = [];
-  private nextFotoPredioId = 2;
 
   /** Lista ya confirmada (vista tipo card) */
   public corresponsables: CorresponsableItem[] = [];
@@ -376,6 +385,7 @@ export class PreRegistroLocalComponent implements OnInit {
     }
     this.sepomexService.obtenerPorCp(cp).subscribe({
       next: (res: SepomexCodigoPostal) => {
+        this.direccionManualPorErrorSepomex = false;
         this.estado = res?.estado?.nombre ?? '';
         this.municipio = res?.municipio?.nombre ?? '';
         this.coloniasSepomex = Array.isArray(res?.colonias) ? res.colonias : [];
@@ -392,10 +402,16 @@ export class PreRegistroLocalComponent implements OnInit {
         }
       },
       error: (err) => {
-        this.coloniasSepomex = [];
+        this.activarDireccionManualPorErrorSepomex();
         mostrarSwalCodigoPostalNoEncontrado(err, cp);
       },
     });
+  }
+
+  /** Solo UI: libera Estado/Municipio/Colonia como texto. No cambia el body. */
+  private activarDireccionManualPorErrorSepomex(): void {
+    this.direccionManualPorErrorSepomex = true;
+    this.coloniasSepomex = [];
   }
 
   private restaurarDesdeRegreso(): boolean {
@@ -471,35 +487,22 @@ export class PreRegistroLocalComponent implements OnInit {
 
     Object.assign(this.archivosSeleccionados, files);
 
-    const otrosDocs = files.LcOtrosDocs;
-    if (Array.isArray(otrosDocs) && otrosDocs.length) {
-      const extras: { id: number }[] = [];
-      let nextId = 2;
-      otrosDocs.forEach((file, index) => {
-        if (!(file instanceof File)) {
-          return;
-        }
-        const control = index === 0 ? 'fotosPredio_1' : `fotosPredio_${nextId}`;
-        if (index > 0) {
-          extras.push({ id: nextId });
-          nextId += 1;
-        }
-        this.fotosPredioPorControl[control] = file;
-      });
-      this.fotosPredioExtras = extras;
-      this.nextFotoPredioId = nextId;
-    }
-
     const mapaPreview: Array<[keyof PreRegistroFilesState, string]> = [
       ['FachadaEstablecimiento', 'Licencias.fachada'],
       ['Bodega', 'Licencias.bodega'],
       ['EstacionamientoIMG', 'Licencias.estacionamiento'],
-      ['LcConstanciaAlineamientoyNumero', 'constanciaAlineamiento'],
-      ['LcLicenciaUsoyPlano', 'permisoSuelo'],
-      ['LcJuegoDePlanosArquitectonicos', 'planos'],
+      ['LcConstanciaAlineamientoFile', 'constanciaAlineamiento'],
+      ['LcConstanciaNumero', 'constanciaNumero'],
+      ['LcLicenciaUsoSueloFile', 'permisoSuelo'],
+      ['LcPlanoAutorizadoFile', 'planoAutorizado'],
+      ['LcLicenciaFraccionamientoFile', 'licenciaFraccionamiento'],
+      ['LcJuegoDePlanosArquitectonicos1', 'planos1'],
+      ['LcJuegoDePlanosArquitectonicos2', 'planos2'],
+      ['LcJuegoDePlanosArquitectonicos3', 'planos3'],
       ['LcConstanciaPropietario', 'constanciaPropietario'],
       ['LcFactibilidad', 'factibilidad'],
       ['LcRecibosImpuestoPredial', 'recibosPredial'],
+      ['LcOtrosDocs', 'otrosDocs'],
     ];
 
     const docs: Record<string, string> = { ...this.documentosExistentes };
@@ -507,12 +510,7 @@ export class PreRegistroLocalComponent implements OnInit {
       const valor = files[key];
       if (valor instanceof File) {
         docs[control] = URL.createObjectURL(valor);
-      } else if (Array.isArray(valor) && valor[0] instanceof File) {
-        docs[control] = URL.createObjectURL(valor[0]);
       }
-    });
-    Object.entries(this.fotosPredioPorControl).forEach(([control, file]) => {
-      docs[control] = URL.createObjectURL(file);
     });
     this.documentosExistentes = docs;
   }
@@ -538,22 +536,18 @@ export class PreRegistroLocalComponent implements OnInit {
     });
   }
 
-  /** Crea slots extras de "Otros / Fotos" cuando el GET trae varias URLs en otros. */
+  /** Hidrata preview de `otros` (máx. 1) desde GET. */
   private hidratarFotosPredioDesdeDocumentos(docs: Record<string, string>): void {
-    const ids = Object.keys(docs)
-      .map((key) => {
-        const m = /^fotosPredio_(\d+)$/.exec(key);
-        return m ? Number(m[1]) : null;
-      })
-      .filter((n): n is number => n != null && Number.isFinite(n) && n >= 2)
-      .sort((a, b) => a - b);
-
-    if (!ids.length) {
-      return;
+    const otros =
+      docs['LicenciaConstruccion.otros'] ||
+      docs['otrosDocs'] ||
+      docs['fotosPredio_1'];
+    if (otros) {
+      this.documentosExistentes = {
+        ...this.documentosExistentes,
+        otrosDocs: otros,
+      };
     }
-
-    this.fotosPredioExtras = ids.map((id) => ({ id }));
-    this.nextFotoPredioId = Math.max(...ids, 1) + 1;
   }
 
   private hidratarFirmasRemotasDesdeDocumentos(docs: Record<string, string>): void {
@@ -628,7 +622,8 @@ export class PreRegistroLocalComponent implements OnInit {
       this.directorCedula = String(lc['CedulaProfesional'] ?? this.directorCedula);
       this.numeroExpediente = String(lc['NumeroExpediente'] ?? this.numeroExpediente);
       this.numeroControl = String(lc['NumeroControl'] ?? this.numeroControl);
-      this.fechaLicenciaConstruccion = String(lc['Fecha'] ?? this.fechaLicenciaConstruccion);
+      this.fechaLicenciaConstruccion =
+        toDateInputValue(lc['Fecha']) || this.fechaLicenciaConstruccion;
       this.seguimientoObra = String(lc['SeguimientoObra'] ?? this.seguimientoObra);
 
       const cors = Array.isArray(lc['Corresponsables']) ? (lc['Corresponsables'] as any[]) : [];
@@ -651,6 +646,7 @@ export class PreRegistroLocalComponent implements OnInit {
     if (this.codigoPostal.length === 5) {
       this.sepomexService.obtenerPorCp(this.codigoPostal).subscribe({
         next: (res: SepomexCodigoPostal) => {
+          this.direccionManualPorErrorSepomex = false;
           this.estado = this.estado || (res?.estado?.nombre ?? '');
           this.municipio = this.municipio || (res?.municipio?.nombre ?? '');
           this.coloniasSepomex = Array.isArray(res?.colonias) ? res.colonias : [];
@@ -663,11 +659,7 @@ export class PreRegistroLocalComponent implements OnInit {
           this.persistirEstadoPreRegistro();
         },
         error: () => {
-          if (this.colonia) {
-            this.coloniasSepomex = [
-              { idAsentamiento: '', nombre: this.colonia, tipoAsentamiento: '' },
-            ];
-          }
+          this.activarDireccionManualPorErrorSepomex();
         },
       });
     } else if (this.colonia) {
@@ -708,15 +700,16 @@ export class PreRegistroLocalComponent implements OnInit {
     this.directorCedula = data.LcCedulaProfesional ?? this.directorCedula;
     this.numeroExpediente = data.LcNumeroExpediente ?? this.numeroExpediente;
     this.numeroControl = data.LcNumeroControl ?? this.numeroControl;
-    this.fechaLicenciaConstruccion = String(data.LcFecha ?? this.fechaLicenciaConstruccion);
-    this.seguimientoObra = String(data.LcSeguimientoObra ?? '');
+    this.fechaLicenciaConstruccion =
+      toDateInputValue(data.LcFecha) || this.fechaLicenciaConstruccion;
+    this.seguimientoObra = String(data.LcSeguimientoObra ?? this.seguimientoObra);
     this.direccionSeleccionada = data.direccion || this.direccionSeleccionada;
     this.lat = data.lat ?? this.lat;
     this.lng = data.lng ?? this.lng;
 
-    if (this.codigoPostal.length === 5 && !this.coloniasSepomex.length) {
-      this.buscarCodigoPostal(true);
-    } else if (this.colonia && !this.coloniasSepomex.some((c) => c.nombre === this.colonia)) {
+    // No llamar Sepomex aquí: solo al buscar CP manualmente o al hidratar edición.
+    // Al cambiar de paso/regresar basta con conservar colonia en el select.
+    if (this.colonia && !this.coloniasSepomex.some((c) => c.nombre === this.colonia)) {
       this.coloniasSepomex = [
         { idAsentamiento: '', nombre: this.colonia, tipoAsentamiento: '' },
         ...this.coloniasSepomex,
@@ -782,6 +775,7 @@ export class PreRegistroLocalComponent implements OnInit {
       this.abrirModalUbicacion();
       return;
     }
+    // Solo persistir: los valores ya están en el componente; no rehidratar ni tocar CP/Sepomex
     this.persistirEstadoPreRegistro();
     if (this.predioEnObra) {
       this.pendienteScrollInicio = true;
@@ -857,19 +851,19 @@ export class PreRegistroLocalComponent implements OnInit {
   }
 
   private enviarRegistroPredioObra(): void {
+    // Asegura Files del catálogo (fachada/bodega/estacionamiento) + LC en memoria antes del FormData
+    this.sincronizarArchivosEnEstado();
+    this.persistirEstadoPreRegistro();
     const form = this.construirFormularioEnvioObra();
     const formData = this.idRegistro
       ? buildLocalComercialActualizarFormData(
           this.idRegistro,
           form,
           (path) => this.valorDocumentoEnvio(form, path),
-          (path) => this.valorDocumentoMultipleEnvio(form, path),
         )
       : buildLocalComercialFormData(
           form,
           (path) => this.valorDocumentoEnvio(form, path),
-          {},
-          (path) => this.valorDocumentoMultipleEnvio(form, path),
         );
 
     mostrarCargandoLocalComercial(
@@ -936,7 +930,11 @@ export class PreRegistroLocalComponent implements OnInit {
         NombreDRO: data?.LcNombreDRO ?? '',
         NoRegLicenciaConstruccion: data?.LcNoRegLicenciaConstruccion ?? '',
         CedulaProfesional: data?.LcCedulaProfesional ?? '',
-        Fecha: data?.LcFecha ?? '',
+        Fecha:
+          toDateInputValue(this.fechaLicenciaConstruccion || data?.LcFecha) ||
+          this.fechaLicenciaConstruccion ||
+          data?.LcFecha ||
+          '',
         NumeroExpediente: data?.LcNumeroExpediente ?? '',
         NumeroControl: data?.LcNumeroControl ?? '',
         SeguimientoObra: data?.LcSeguimientoObra ?? '',
@@ -983,27 +981,24 @@ export class PreRegistroLocalComponent implements OnInit {
       }
     }
 
-    const setArray = (path: string, lista: File[] | undefined) => {
-      const archivos = (Array.isArray(lista) ? lista : []).filter(
-        (f): f is File => f instanceof File && !!f.name,
-      );
-      if (archivos.length) {
-        form.get(path)?.setValue(archivos);
-      }
-    };
     const setFile = (path: string, file: File | null | undefined) => {
       if (file instanceof File && file.name) {
         form.get(path)?.setValue(file);
       }
     };
 
-    setArray('LicenciaConstruccion.constanciaAlineamientoyNumero', files.LcConstanciaAlineamientoyNumero);
-    setArray('LicenciaConstruccion.LicenciaUsoyPlano', files.LcLicenciaUsoyPlano);
-    setArray('LicenciaConstruccion.ConstanciaPropietario', files.LcConstanciaPropietario);
-    setArray('LicenciaConstruccion.Factibilidad', files.LcFactibilidad);
-    setArray('LicenciaConstruccion.RecibosImpuestoPredial', files.LcRecibosImpuestoPredial);
-    setArray('LicenciaConstruccion.JuegoDePlanosArquitectonicos', files.LcJuegoDePlanosArquitectonicos);
-    setArray('LicenciaConstruccion.otros', files.LcOtrosDocs);
+    setFile('LicenciaConstruccion.constanciaAlineamiento', files.LcConstanciaAlineamientoFile);
+    setFile('LicenciaConstruccion.constanciaNumero', files.LcConstanciaNumero);
+    setFile('LicenciaConstruccion.fileLicenciaUsoSuelo', files.LcLicenciaUsoSueloFile);
+    setFile('LicenciaConstruccion.filePlanoAutorizado', files.LcPlanoAutorizadoFile);
+    setFile('LicenciaConstruccion.fileLicenciaFraccionamiento', files.LcLicenciaFraccionamientoFile);
+    setFile('LicenciaConstruccion.ConstanciaPropietario', files.LcConstanciaPropietario);
+    setFile('LicenciaConstruccion.Factibilidad', files.LcFactibilidad);
+    setFile('LicenciaConstruccion.RecibosImpuestoPredial', files.LcRecibosImpuestoPredial);
+    setFile('LicenciaConstruccion.JuegoDePlanosArquitectonicos1', files.LcJuegoDePlanosArquitectonicos1);
+    setFile('LicenciaConstruccion.JuegoDePlanosArquitectonicos2', files.LcJuegoDePlanosArquitectonicos2);
+    setFile('LicenciaConstruccion.JuegoDePlanosArquitectonicos3', files.LcJuegoDePlanosArquitectonicos3);
+    setFile('LicenciaConstruccion.otros', files.LcOtrosDocs);
     setFile('LicenciaConstruccion.FirmaPropietario', files.LcFirmaPropietario);
     setFile('LicenciaConstruccion.FirmaDRO', files.LcFirmaDRO);
     setFile('LicenciaConstruccion.FirmaCorresponsable', files.LcFirmaCorresponsable);
@@ -1011,13 +1006,17 @@ export class PreRegistroLocalComponent implements OnInit {
       'LicenciaConstruccion.FirmaResponsableRecepcionDocumento',
       files.LcFirmaResponsableRecepcionDocumento,
     );
-    // Catálogo fotográfico (paso 1 del pre-registro)
-    setFile('Licencias.fachada', files.FachadaEstablecimiento ?? this.archivosSeleccionados.FachadaEstablecimiento);
-    setFile('Licencias.bodega', files.Bodega ?? this.archivosSeleccionados.Bodega);
-    setFile(
-      'Licencias.estacionamiento',
-      files.EstacionamientoIMG ?? this.archivosSeleccionados.EstacionamientoIMG,
-    );
+    // Transversales (también con PredioObra=1) — nombres exactos Untitled / swagger
+    const fachada =
+      files.FachadaEstablecimiento ??
+      this.archivosSeleccionados.FachadaEstablecimiento ??
+      null;
+    const bodega = files.Bodega ?? this.archivosSeleccionados.Bodega ?? null;
+    const estacionamiento =
+      files.EstacionamientoIMG ?? this.archivosSeleccionados.EstacionamientoIMG ?? null;
+    setFile('Licencias.fachada', fachada);
+    setFile('Licencias.bodega', bodega);
+    setFile('Licencias.estacionamiento', estacionamiento);
 
     return form;
   }
@@ -1031,46 +1030,27 @@ export class PreRegistroLocalComponent implements OnInit {
     if (desdePre instanceof File) {
       return desdePre;
     }
-    if (Array.isArray(desdePre) && desdePre[0] instanceof File) {
-      return desdePre[0];
-    }
     return delForm;
   }
 
-  private valorDocumentoMultipleEnvio(form: FormGroup, controlName: string): Array<File | string> {
-    const valor = form.get(controlName)?.value;
-    if (Array.isArray(valor)) {
-      const archivos = valor.filter((item): item is File => item instanceof File && !!item.name);
-      if (archivos.length) {
-        return archivos;
-      }
-    }
-    if (valor instanceof File && valor.name) {
-      return [valor];
-    }
-    const desdePre = this.archivoPreRegistroPorControl(controlName);
-    if (Array.isArray(desdePre)) {
-      return desdePre.filter((item): item is File => item instanceof File && !!item.name);
-    }
-    if (desdePre instanceof File && desdePre.name) {
-      return [desdePre];
-    }
-    return [];
-  }
-
-  private archivoPreRegistroPorControl(controlName: string): File | File[] | null {
+  private archivoPreRegistroPorControl(controlName: string): File | null {
     const files = this.preRegistroState.peekFiles();
-    const mapa: Record<string, File | File[] | null | undefined> = {
+    const mapa: Record<string, File | null | undefined> = {
       'Licencias.fachada': files.FachadaEstablecimiento ?? this.archivosSeleccionados.FachadaEstablecimiento,
       'Licencias.bodega': files.Bodega ?? this.archivosSeleccionados.Bodega,
       'Licencias.estacionamiento':
         files.EstacionamientoIMG ?? this.archivosSeleccionados.EstacionamientoIMG,
-      'LicenciaConstruccion.constanciaAlineamientoyNumero': files.LcConstanciaAlineamientoyNumero,
-      'LicenciaConstruccion.LicenciaUsoyPlano': files.LcLicenciaUsoyPlano,
+      'LicenciaConstruccion.constanciaAlineamiento': files.LcConstanciaAlineamientoFile,
+      'LicenciaConstruccion.constanciaNumero': files.LcConstanciaNumero,
+      'LicenciaConstruccion.fileLicenciaUsoSuelo': files.LcLicenciaUsoSueloFile,
+      'LicenciaConstruccion.filePlanoAutorizado': files.LcPlanoAutorizadoFile,
+      'LicenciaConstruccion.fileLicenciaFraccionamiento': files.LcLicenciaFraccionamientoFile,
       'LicenciaConstruccion.ConstanciaPropietario': files.LcConstanciaPropietario,
       'LicenciaConstruccion.Factibilidad': files.LcFactibilidad,
       'LicenciaConstruccion.RecibosImpuestoPredial': files.LcRecibosImpuestoPredial,
-      'LicenciaConstruccion.JuegoDePlanosArquitectonicos': files.LcJuegoDePlanosArquitectonicos,
+      'LicenciaConstruccion.JuegoDePlanosArquitectonicos1': files.LcJuegoDePlanosArquitectonicos1,
+      'LicenciaConstruccion.JuegoDePlanosArquitectonicos2': files.LcJuegoDePlanosArquitectonicos2,
+      'LicenciaConstruccion.JuegoDePlanosArquitectonicos3': files.LcJuegoDePlanosArquitectonicos3,
       'LicenciaConstruccion.otros': files.LcOtrosDocs,
       'LicenciaConstruccion.FirmaPropietario': files.LcFirmaPropietario,
       'LicenciaConstruccion.FirmaDRO': files.LcFirmaDRO,
@@ -1078,7 +1058,7 @@ export class PreRegistroLocalComponent implements OnInit {
       'LicenciaConstruccion.FirmaResponsableRecepcionDocumento':
         files.LcFirmaResponsableRecepcionDocumento,
     };
-    return (mapa[controlName] as File | File[] | null | undefined) ?? null;
+    return mapa[controlName] ?? null;
   }
 
   abrirFormCorresponsable(): void {
@@ -1121,43 +1101,9 @@ export class PreRegistroLocalComponent implements OnInit {
     this.draftCedulaCorresponsable = '';
   }
 
-  agregarFotoPredio(): void {
-    this.fotosPredioExtras = [
-      ...this.fotosPredioExtras,
-      { id: this.nextFotoPredioId++ },
-    ];
-  }
-
-  quitarFotoPredio(id: number): void {
-    delete this.fotosPredioPorControl[`fotosPredio_${id}`];
-    this.fotosPredioExtras = this.fotosPredioExtras.filter((f) => f.id !== id);
-    const docs = { ...this.documentosExistentes };
-    delete docs[`fotosPredio_${id}`];
-    this.documentosExistentes = docs;
-  }
-
-  private obtenerFotosPredioParaEnvio(): File[] {
-    const ids = [
-      'fotosPredio_1',
-      ...this.fotosPredioExtras.map((f) => `fotosPredio_${f.id}`),
-    ];
-    return ids
-      .map((key) => this.fotosPredioPorControl[key])
-      .filter((f): f is File => f instanceof File && !!f.name);
-  }
-
   onDocumentoSeleccionado(controlName: string, file: File): void {
-    if (controlName.startsWith('fotosPredio_')) {
-      this.fotosPredioPorControl[controlName] = file;
-      this.documentosExistentes = {
-        ...this.documentosExistentes,
-        [controlName]: URL.createObjectURL(file),
-      };
-      return;
-    }
-
-    if (controlName in this.docsChecklistExtra) {
-      this.docsChecklistExtra[controlName] = [...(this.docsChecklistExtra[controlName] ?? []), file];
+    if (controlName in this.docsChecklistFlags) {
+      this.docsChecklistFlags[controlName] = file;
       this.documentosExistentes = {
         ...this.documentosExistentes,
         [controlName]: URL.createObjectURL(file),
@@ -1170,20 +1116,7 @@ export class PreRegistroLocalComponent implements OnInit {
       return;
     }
 
-    if (
-      key === 'LcJuegoDePlanosArquitectonicos' ||
-      key === 'LcLicenciaUsoyPlano' ||
-      key === 'LcConstanciaAlineamientoyNumero' ||
-      key === 'LcConstanciaPropietario' ||
-      key === 'LcFactibilidad' ||
-      key === 'LcRecibosImpuestoPredial' ||
-      key === 'LcOtrosDocs'
-    ) {
-      const actuales = this.archivosSeleccionados[key] ?? [];
-      this.archivosSeleccionados[key] = [...actuales, file];
-    } else {
-      (this.archivosSeleccionados as Record<string, File | null>)[key] = file;
-    }
+    (this.archivosSeleccionados as Record<string, File | null>)[key] = file;
 
     this.documentosExistentes = {
       ...this.documentosExistentes,
@@ -1198,7 +1131,10 @@ export class PreRegistroLocalComponent implements OnInit {
   }
 
   onDocumentoRechazado(_controlName: string): void {
-    // UI feedback handled by uploader card
+    mostrarSwalError({
+      title: 'Archivo no válido',
+      text: 'Solo se permiten imágenes PNG, JPG o JPEG, o PDF (máx. 3 MB).',
+    });
   }
 
   verDocumentoExistente(
@@ -1330,10 +1266,16 @@ export class PreRegistroLocalComponent implements OnInit {
       return;
     }
 
+    // CSS manda el tamaño visual (100% del contenedor); el bitmap usa DPR
+    canvas.style.width = '100%';
+    canvas.style.height = '160px';
+    canvas.style.maxWidth = '100%';
+    canvas.style.boxSizing = 'border-box';
+
     const ratio = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
-    const width = Math.round(rect.width);
-    const height = Math.round(rect.height || 160);
+    const width = Math.max(1, Math.round(rect.width));
+    const height = Math.max(1, Math.round(rect.height || 160));
 
     if (width < 8) {
       this.firmaPads[key] = {
@@ -1346,16 +1288,63 @@ export class PreRegistroLocalComponent implements OnInit {
       return;
     }
 
+    const prev = this.firmaPads[key];
+    const sameSize =
+      !!prev &&
+      prev.canvas === canvas &&
+      canvas.width === width * ratio &&
+      canvas.height === height * ratio;
+
+    // Evita borrar el trazo al re-inicializar al volver al paso de obra
+    if (sameSize && this.firmasConTrazo[key]) {
+      this.firmaPads[key] = {
+        canvas,
+        ctx,
+        drawing: false,
+        lastX: 0,
+        lastY: 0,
+      };
+      return;
+    }
+
+    let backup: ImageData | null = null;
+    if (this.firmasConTrazo[key] && canvas.width > 0 && canvas.height > 0) {
+      try {
+        backup = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      } catch {
+        backup = null;
+      }
+    }
+
     canvas.width = width * ratio;
     canvas.height = height * ratio;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
 
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.lineWidth = 2.2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.strokeStyle = '#ffffff';
+
+    if (backup) {
+      try {
+        const tmp = document.createElement('canvas');
+        tmp.width = backup.width;
+        tmp.height = backup.height;
+        const tmpCtx = tmp.getContext('2d');
+        tmpCtx?.putImageData(backup, 0, 0);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        ctx.lineWidth = 2.2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#ffffff';
+      } catch {
+        // si falla el restore, el usuario puede volver a firmar
+      }
+    } else {
+      this.restaurarFirmaDesdeArchivo(key, canvas, ctx, ratio);
+    }
 
     this.firmaPads[key] = {
       canvas,
@@ -1364,6 +1353,47 @@ export class PreRegistroLocalComponent implements OnInit {
       lastX: 0,
       lastY: 0,
     };
+  }
+
+  /** Restaura firma guardada en state/archivos al reabrir el paso de obra. */
+  private restaurarFirmaDesdeArchivo(
+    key: FirmaKey,
+    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D,
+    ratio: number
+  ): void {
+    const mapa: Record<FirmaKey, keyof PreRegistroFilesState> = {
+      propietario: 'LcFirmaPropietario',
+      director: 'LcFirmaDRO',
+      corresponsable: 'LcFirmaCorresponsable',
+      recepcion: 'LcFirmaResponsableRecepcionDocumento',
+    };
+    const file =
+      this.archivosSeleccionados[mapa[key]] ||
+      this.preRegistroState.peekFiles()[mapa[key]];
+    if (!(file instanceof File)) {
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        ctx.lineWidth = 2.2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#ffffff';
+        this.firmasConTrazo[key] = true;
+        this.firmasEditadas[key] = true;
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    };
+    img.onerror = () => URL.revokeObjectURL(url);
+    img.src = url;
   }
 
   private firmaPoint(canvas: HTMLCanvasElement, event: PointerEvent): { x: number; y: number } {
@@ -1398,21 +1428,21 @@ export class PreRegistroLocalComponent implements OnInit {
 
   private persistirEstadoPreRegistro(): void {
     const firmas = this.exportarFirmasComoArchivos();
-    const extras = Object.values(this.docsChecklistExtra).flat().filter(
-      (f): f is File => f instanceof File && !!f.name,
-    );
+    const prevFiles = this.preRegistroState.peekFiles();
+    // No pisar firmas previas con null al cambiar de paso sin redibujar
     const files: PreRegistroFilesState = {
+      ...prevFiles,
       ...this.archivosSeleccionados,
-      LcOtrosDocs: [...this.obtenerFotosPredioParaEnvio(), ...extras],
-      LcFirmaPropietario: firmas.propietario,
-      LcFirmaDRO: firmas.director,
-      LcFirmaCorresponsable: firmas.corresponsable,
-      LcFirmaResponsableRecepcionDocumento: firmas.recepcion,
+      ...(firmas.propietario ? { LcFirmaPropietario: firmas.propietario } : {}),
+      ...(firmas.director ? { LcFirmaDRO: firmas.director } : {}),
+      ...(firmas.corresponsable ? { LcFirmaCorresponsable: firmas.corresponsable } : {}),
+      ...(firmas.recepcion
+        ? { LcFirmaResponsableRecepcionDocumento: firmas.recepcion }
+        : {}),
     };
 
-    const tiene = (lista: File[] | undefined) =>
-      Array.isArray(lista) && lista.some((f) => f instanceof File && !!f.name);
-    const tieneExtra = (key: string) => tiene(this.docsChecklistExtra[key]);
+    const tieneFile = (f: File | null | undefined) => f instanceof File && !!f.name;
+    const tieneFlag = (key: string) => tieneFile(this.docsChecklistFlags[key]);
 
     this.preRegistroState.setState(
       {
@@ -1441,21 +1471,27 @@ export class PreRegistroLocalComponent implements OnInit {
         LcNombreDRO: this.directorNombre,
         LcNoRegLicenciaConstruccion: this.directorLicencia,
         LcCedulaProfesional: this.directorCedula || this.directorLicencia,
-        LcFecha: this.fechaLicenciaConstruccion,
+        LcFecha: toDateInputValue(this.fechaLicenciaConstruccion) || this.fechaLicenciaConstruccion,
         LcNumeroExpediente: this.numeroExpediente,
         LcNumeroControl: this.numeroControl,
         LcSeguimientoObra: this.seguimientoObra,
-        LcConstanciaAlineamiento: tiene(this.archivosSeleccionados.LcConstanciaAlineamientoyNumero) ? 1 : 0,
-        LcLicenciaUsoSuelo: tiene(this.archivosSeleccionados.LcLicenciaUsoyPlano) ? 1 : 0,
-        LcPlanoAutorizado: tieneExtra('planoAutorizado') ? 1 : 0,
-        LcLicenciaFraccionamiento: tieneExtra('licenciaFraccionamiento') ? 1 : 0,
-        LcEscrituras: tieneExtra('escrituras') ? 1 : 0,
-        LcFactibilidadAguaPotable: tiene(this.archivosSeleccionados.LcFactibilidad) ? 1 : 0,
-        LcRecibosPagoPredial: tiene(this.archivosSeleccionados.LcRecibosImpuestoPredial) ? 1 : 0,
-        LcRecibosMunicipales: tieneExtra('recibosMunicipales') ? 1 : 0,
-        LcPlanoArquitectonicos: tiene(this.archivosSeleccionados.LcJuegoDePlanosArquitectonicos) ? 1 : 0,
-        LcOtros: files.LcOtrosDocs && files.LcOtrosDocs.length ? 1 : 0,
+        LcConstanciaAlineamiento: tieneFile(files.LcConstanciaAlineamientoFile) || tieneFile(files.LcConstanciaNumero) ? 1 : 0,
+        LcLicenciaUsoSuelo: tieneFile(files.LcLicenciaUsoSueloFile) ? 1 : 0,
+        LcPlanoAutorizado: tieneFile(files.LcPlanoAutorizadoFile) ? 1 : 0,
+        LcLicenciaFraccionamiento: tieneFile(files.LcLicenciaFraccionamientoFile) ? 1 : 0,
+        LcEscrituras: tieneFlag('escrituras') ? 1 : 0,
+        LcFactibilidadAguaPotable: tieneFile(files.LcFactibilidad) ? 1 : 0,
+        LcRecibosPagoPredial: tieneFile(files.LcRecibosImpuestoPredial) ? 1 : 0,
+        LcRecibosMunicipales: tieneFlag('recibosMunicipales') ? 1 : 0,
+        LcPlanoArquitectonicos:
+          tieneFile(files.LcJuegoDePlanosArquitectonicos1) ||
+          tieneFile(files.LcJuegoDePlanosArquitectonicos2) ||
+          tieneFile(files.LcJuegoDePlanosArquitectonicos3)
+            ? 1
+            : 0,
+        LcOtros: tieneFile(files.LcOtrosDocs) ? 1 : 0,
         LcCorresponsables: this.corresponsables.map((c) => ({
+          // POST no envía Id; se conserva para PATCH
           Id: c.idApi ?? null,
           NombreCompleto: c.nombre,
           NoRegLicenciaConstruccion: c.noRegLicenciaConstruccion,

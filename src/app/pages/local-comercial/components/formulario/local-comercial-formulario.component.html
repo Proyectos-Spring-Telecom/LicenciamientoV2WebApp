@@ -281,10 +281,10 @@
                       <label for="clave">Clave Catastral</label>
                     </div>
                   </app-local-perm-field>
-                  <app-local-perm-field label="Metros Cuadrados M&sup2;" icon="straighten" fieldId="m2" colClass="col-12 col-sm-6 col-md-3">
+                  <app-local-perm-field label="Metros Cuadrados M²" icon="straighten" fieldId="m2" colClass="col-12 col-sm-6 col-md-3">
                     <div class="form-floating flex-grow-1">
-                      <input type="text" formControlName="M2" class="form-control" id="m2" placeholder="Metros Cuadrados M&sup2;">
-                      <label for="m2">Metros Cuadrados M&sup2;</label>
+                      <input type="text" formControlName="M2" class="form-control" id="m2" placeholder="Metros Cuadrados M²">
+                      <label for="m2">Metros Cuadrados M²</label>
                     </div>
                   </app-local-perm-field>
                   <app-local-perm-field label="Superficie" icon="landscape" fieldId="superficie" colClass="col-12 col-sm-6 col-md-3">
@@ -668,9 +668,9 @@
                   </div>
                 </div>
                 <div class="result local-form-row-gap" formGroupName="ProteccionCivil">
-                  <div class="local-proteccion-empresa-row row g-3 mb-3">
+                  <div class="local-proteccion-empresa-row row g-3 g-md-4">
                     <div class="proteccion-empresa-field fury-flex-form-field col-12 col-md-4">
-                      <span>
+                      <span class="proteccion-empresa-title">
                         <i class="fa fa-store"></i>&nbsp;&iquest;La gesti&oacute;n la realiza una Empresa?
                       </span>
                       <label class="toggle-switch">
@@ -682,14 +682,16 @@
                       </label>
                     </div>
                     <app-local-perm-field *ngIf="checkedBox()" @proteccionEmpresaFields
-                      label="Raz&oacute;n Social" icon="work" fieldId="razonSocialProteccionCivil">
+                      label="Raz&oacute;n Social" icon="work" fieldId="razonSocialProteccionCivil"
+                      colClass="col-12 col-md-4">
                       <div class="form-floating flex-grow-1">
                         <input formControlName="RazonSocial" class="form-control" id="razonSocialProteccionCivil" placeholder="Raz&oacute;n Social">
                         <label for="razonSocialProteccionCivil">Raz&oacute;n Social</label>
                       </div>
                     </app-local-perm-field>
                     <app-local-perm-field *ngIf="checkedBox()" @proteccionEmpresaFields
-                      label="RFC" icon="account_circle" fieldId="rfcProteccionCivil">
+                      label="RFC" icon="account_circle" fieldId="rfcProteccionCivil"
+                      colClass="col-12 col-md-4">
                       <div class="form-floating flex-grow-1">
                         <input formControlName="RFC" class="form-control" id="rfcProteccionCivil" placeholder="RFC" maxlength="13"
                           (keypress)="blockNonAlphanumericKey($event)" (input)="onRfcInput($event, 'ProteccionCivil.RFC')">

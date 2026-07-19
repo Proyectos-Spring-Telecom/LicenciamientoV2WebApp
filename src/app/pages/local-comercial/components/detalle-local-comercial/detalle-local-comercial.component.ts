@@ -3,7 +3,16 @@ import { routeAnimation } from 'src/app/pipe/module-open.animation';
 import { Router, ActivatedRoute } from '@angular/router';
 import { LocalComercialService } from './../../services/local-comercial.service';
 import { Component, OnInit, inject, ElementRef, ViewChild, enableProdMode, Inject, } from '@angular/core';
-import { DetalleLocal, direccion, direccionSapac, contacto, representante, proteccionCivil } from '../../models/detalle-local-comercial';
+import {
+  DetalleLocal,
+  DocumentoDetalleItem,
+  LicenciaConstruccionDetalle,
+  direccion,
+  direccionSapac,
+  contacto,
+  representante,
+  proteccionCivil,
+} from '../../models/detalle-local-comercial';
 // import { DatePipe } from '@angular/common';
 import Swal from 'sweetalert2';
 import { User } from 'src/app/entities/User';
@@ -88,6 +97,7 @@ export class DetalleLocalComercialComponent implements OnInit {
   public mensajeAgrupar: string = 'Arrastre un encabezado de columna aquí para agrupara por esa columna';
   public isDisabled: boolean = true;
   public imagenCarrusel = 'assets/default.png';
+  public imagenCarruselLc = 'assets/default.png';
   public loading: boolean = false;
   public informacion: DetalleLocal;
   public imei: string;
@@ -95,7 +105,10 @@ export class DetalleLocalComercialComponent implements OnInit {
   public galeria: any;
   public nombre: string = 'Dato';
   public i: number = 0;
+  public iLc: number = 0;
   public galeriaDireccion: 'init' | 'next' | 'prev' = 'init';
+  public galeriaDireccionLc: 'init' | 'next' | 'prev' = 'init';
+  public ocultaBtnsLc = false;
   public interval = null;
   public loadingMessage: string = 'Cargando...';
 	loadingVisible = false;
@@ -146,6 +159,9 @@ export class DetalleLocalComercialComponent implements OnInit {
       representante: {} as representante,
       proteccionCivil: { esEmpresa: false, tienePrograma: false } as proteccionCivil,
       fotos: [],
+      predioObra: 0,
+      licenciaConstruccion: null,
+      documentosLicenciaConstruccion: [],
       NombreProteccionCivil: null,
       ApellidoPaternoProteccionCivil: null,
       ApellidoMaternoProteccionCivil: null,
@@ -170,7 +186,49 @@ export class DetalleLocalComercialComponent implements OnInit {
       representante: { ...base.representante, ...(res.representante || {}) },
       proteccionCivil: { ...base.proteccionCivil, ...(res.proteccionCivil || {}) },
       fotos: Array.isArray(res.fotos) ? res.fotos : [],
+      predioObra: Number(res.predioObra) === 1 ? 1 : 0,
+      licenciaConstruccion: res.licenciaConstruccion ?? null,
+      documentosLicenciaConstruccion: Array.isArray(res.documentosLicenciaConstruccion)
+        ? res.documentosLicenciaConstruccion
+        : [],
     };
+  }
+
+  get esPredioEnObra(): boolean {
+    return Number(this.informacion?.predioObra) === 1;
+  }
+
+  get licenciaConstruccion(): LicenciaConstruccionDetalle | null {
+    return this.informacion?.licenciaConstruccion ?? null;
+  }
+
+  get documentosLc(): DocumentoDetalleItem[] {
+    return this.informacion?.documentosLicenciaConstruccion ?? [];
+  }
+
+  get etiquetaTituloDetalle(): string {
+    return this.esPredioEnObra ? 'Propietario:' : 'Nombre Comercial:';
+  }
+
+  get tituloDetallePrincipal(): string {
+    if (this.esPredioEnObra) {
+      const propietario = this.licenciaConstruccion?.NombrePropietario?.trim();
+      if (propietario) {
+        return propietario;
+      }
+    }
+    return (this.nombreComercial || this.informacion?.nombreComercial || '').trim();
+  }
+
+  get tipoSolicitudLcTexto(): string {
+    const tipo = Number(this.licenciaConstruccion?.TipoSolicitudLicencia);
+    const map: Record<number, string> = {
+      1: 'Obra nueva',
+      2: 'Licencia sencilla',
+      3: 'Regularización y/o aprobación, cambio de uso',
+      4: 'Otros, canalización vía pública, etc',
+    };
+    return map[tipo] || '';
   }
 
   /** NO BORRAR — Alerta de cargando del detalle. */
@@ -775,6 +833,7 @@ export class DetalleLocalComercialComponent implements OnInit {
       this.imagenEstacionamiento = fotos.find((x) => x.idTipoFoto == 7);
       this.imagenBodega = fotos.find((x) => x.idTipoFoto == 8);
       this.imagenVistoBueno = fotos.find((x) => x.idTipoFoto == 9);
+      this.i = 0;
       this.galeriaDireccion = 'init';
       this.actualizarImagenCarrusel();
       this.ocultaBtns = fotos.length < 2;
@@ -786,6 +845,12 @@ export class DetalleLocalComercialComponent implements OnInit {
       this.ocultaBtns = true;
       this.loading = false;
     }
+
+    const docsLc = this.documentosLc;
+    this.iLc = 0;
+    this.galeriaDireccionLc = 'init';
+    this.ocultaBtnsLc = docsLc.length < 2;
+    this.actualizarImagenCarruselLc();
 
     this.nombreSapacCompleto = this.concatenarNombre(
       this.informacion.nombreSapac,
@@ -1112,6 +1177,19 @@ export class DetalleLocalComercialComponent implements OnInit {
     return this.obtenerTipoFoto(this.informacion?.fotos?.[this.i]);
   }
 
+  get galeriaSlideLc(): { url: string; tipo: string; index: number } {
+    const doc = this.documentosLc[this.iLc];
+    return {
+      url: this.imagenCarruselLc,
+      tipo: doc?.titulo || 'Documento',
+      index: this.iLc,
+    };
+  }
+
+  get tipoDocumentoLcActual(): string {
+    return this.documentosLc[this.iLc]?.titulo || 'Sin documento';
+  }
+
   trackGaleriaSlide(_index: number, slide: { index: number }): number {
     return slide.index;
   }
@@ -1120,6 +1198,48 @@ export class DetalleLocalComercialComponent implements OnInit {
     const foto = this.informacion?.fotos?.[this.i];
     this.imagenCarrusel = this.resolveFotoRuta(foto?.ruta);
     this.loading = false;
+  }
+
+  private actualizarImagenCarruselLc(): void {
+    const doc = this.documentosLc[this.iLc];
+    this.imagenCarruselLc = this.resolveFotoRuta(doc?.ruta);
+  }
+
+  prevLc(): void {
+    const total = this.documentosLc.length;
+    if (total < 2) {
+      return;
+    }
+    this.galeriaDireccionLc = 'prev';
+    this.iLc = this.iLc === 0 ? total - 1 : this.iLc - 1;
+    this.actualizarImagenCarruselLc();
+  }
+
+  nextLc(): void {
+    const total = this.documentosLc.length;
+    if (total < 2) {
+      return;
+    }
+    this.galeriaDireccionLc = 'next';
+    this.iLc = this.iLc === total - 1 ? 0 : this.iLc + 1;
+    this.actualizarImagenCarruselLc();
+  }
+
+  irADocumentoLc(index: number): void {
+    if (index < 0 || index >= this.documentosLc.length) {
+      return;
+    }
+    this.galeriaDireccionLc = index > this.iLc ? 'next' : index < this.iLc ? 'prev' : 'init';
+    this.iLc = index;
+    this.actualizarImagenCarruselLc();
+  }
+
+  esDocumentoLcActualPlaceholder(): boolean {
+    const doc = this.documentosLc[this.iLc];
+    if (!doc) {
+      return true;
+    }
+    return this.resolveFotoRuta(doc.ruta) === this.defaultImage;
   }
 
   private obtenerTipoFoto(foto?: { tipoFoto?: string; idTipoFoto?: number }): string {

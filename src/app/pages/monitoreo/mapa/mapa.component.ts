@@ -14,13 +14,22 @@ import {
   MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT,
   MonitoreoLocalEstatusFilter,
 } from '../local-filter/monitoreo-local-estatus-filter.data';
+import {
+  esPredioEnObra,
+  localMatchesPredioFilter,
+  MONITOREO_LOCAL_PREDIO_FILTER_DEFAULT,
+  MonitoreoLocalPredioFilter,
+} from '../local-filter/monitoreo-local-predio-filter.data';
 import { MonitoreoService } from '../services/monitoreo.service';
+import { buildMarkerObraSvgDataUrl } from './monitoreo-marker-icons';
 
 const DEFAULT_IMAGE = 'assets/default.png';
 
 const MARKER_ASPECT_RATIO = 739 / 1067;
 const MARKER_DISPLAY_HEIGHT = 40;
 const MARKER_DISPLAY_WIDTH = Math.round(MARKER_DISPLAY_HEIGHT * MARKER_ASPECT_RATIO);
+const MARKER_OBRA_HEIGHT = 52;
+const MARKER_OBRA_WIDTH = 40;
 
 const MARKER_ICONS: Record<string, string> = {
   'Datos Correctos': 'assets/images/logos/marker_success.png',
@@ -71,6 +80,7 @@ export class MapaComponent implements OnInit, OnDestroy {
   @Output() localesReady = new EventEmitter<LocalComercial[]>();
   @Output() localFocused = new EventEmitter<number>();
   @Output() estatusFilterReset = new EventEmitter<MonitoreoLocalEstatusFilter>();
+  @Output() predioFilterReset = new EventEmitter<MonitoreoLocalPredioFilter>();
 
   public panorama: google.maps.StreetViewPanorama;
   public sv: google.maps.StreetViewService;
@@ -80,6 +90,7 @@ export class MapaComponent implements OnInit, OnDestroy {
   public mensajeModulo = 'Monitoreo';
 
   selectedEstatusFilter: MonitoreoLocalEstatusFilter = MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT;
+  selectedPredioFilter: MonitoreoLocalPredioFilter = MONITOREO_LOCAL_PREDIO_FILTER_DEFAULT;
 
   private map: google.maps.Map;
   private activeMarkerIndex: number | null = null;
@@ -100,6 +111,12 @@ export class MapaComponent implements OnInit, OnDestroy {
     this.applyMarkerVisibility();
   }
 
+  /** Aplica filtro de predio en obra sobre los marcadores del mapa. */
+  applyPredioFilter(predio: MonitoreoLocalPredioFilter): void {
+    this.selectedPredioFilter = predio;
+    this.applyMarkerVisibility();
+  }
+
   /** Centra el mapa en el local y abre su info window (sync con panel izquierdo). */
   focusLocal(localId: number): void {
     const index = this.markerEntries.findIndex((entry) => entry.local.id === localId);
@@ -111,7 +128,9 @@ export class MapaComponent implements OnInit, OnDestroy {
     const visible = this.getVisibleLocales().some((local) => local.id === localId);
     if (!visible) {
       this.selectedEstatusFilter = MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT;
+      this.selectedPredioFilter = MONITOREO_LOCAL_PREDIO_FILTER_DEFAULT;
       this.estatusFilterReset.emit(this.selectedEstatusFilter);
+      this.predioFilterReset.emit(this.selectedPredioFilter);
       this.applyMarkerVisibility();
     }
 
@@ -142,8 +161,10 @@ export class MapaComponent implements OnInit, OnDestroy {
   }
 
   private getVisibleLocales(): LocalComercial[] {
-    return (this.listaLocales || []).filter((local) =>
-      localMatchesEstatusFilter(local.nombreEstatus, this.selectedEstatusFilter),
+    return (this.listaLocales || []).filter(
+      (local) =>
+        localMatchesEstatusFilter(local.nombreEstatus, this.selectedEstatusFilter) &&
+        localMatchesPredioFilter(local.predioObra, this.selectedPredioFilter),
     );
   }
 
@@ -278,6 +299,11 @@ export class MapaComponent implements OnInit, OnDestroy {
     const urlImagen = this.escapeHtml(this.resolveFotoRuta(local.urlLicencia));
     const nombreComercial = this.escapeHtml(this.textoTooltip(local.nombreComercial));
     const nombreEstatus = this.escapeHtml(this.textoTooltip(local.nombreEstatus));
+    const predioEnObra = esPredioEnObra(local.predioObra);
+    const predioLabel = this.escapeHtml(predioEnObra ? 'En obra' : 'Sin obra');
+    const predioClass = predioEnObra
+      ? 'mon-veh-tooltip__head-label--obra'
+      : 'mon-veh-tooltip__head-label--sin-obra';
     const grupo = this.escapeHtml(
       this.tieneValor(local.grupo) ? this.formatoGrupo(local.grupo) : 'Sin información',
     );
@@ -298,7 +324,10 @@ export class MapaComponent implements OnInit, OnDestroy {
       '</svg></button>' +
       '<div class="mon-veh-tooltip__glow" aria-hidden="true"></div>' +
       '<header class="mon-veh-tooltip__head mon-veh-tooltip__head--center">' +
+      '<div class="mon-veh-tooltip__head-badges">' +
       `<span class="mon-veh-tooltip__head-label" style="background-color:${estatusColor}">${nombreEstatus}</span>` +
+      `<span class="mon-veh-tooltip__head-label ${predioClass}">${predioLabel}</span>` +
+      '</div>' +
       `<h3 class="mon-veh-tooltip__head-title">${nombreComercial}</h3>` +
       '</header>' +
       `<div class="mon-veh-tooltip__photo"><img src="${urlImagen}" alt="Licencia" onerror="this.onerror=null;this.src='${DEFAULT_IMAGE}'" /></div>` +
@@ -320,7 +349,14 @@ export class MapaComponent implements OnInit, OnDestroy {
     );
   }
 
-  private getMarkerIcon(nombreEstatus: string): google.maps.Icon {
+  private getMarkerIcon(nombreEstatus: string, enObra = false): google.maps.Icon {
+    if (enObra) {
+      return {
+        url: buildMarkerObraSvgDataUrl(nombreEstatus),
+        scaledSize: new google.maps.Size(MARKER_OBRA_WIDTH, MARKER_OBRA_HEIGHT),
+        anchor: new google.maps.Point(MARKER_OBRA_WIDTH / 2, MARKER_OBRA_HEIGHT - 2),
+      };
+    }
     const url = MARKER_ICONS[nombreEstatus] || 'assets/images/logos/marker_spring.webp';
     return {
       url,
@@ -483,10 +519,13 @@ export class MapaComponent implements OnInit, OnDestroy {
           .filter((local) => local.lat != null && local.lng != null)
           .map((local, i) => {
             const contentString = this.buildInfoWindowContent(local, i);
+            const enObra = esPredioEnObra(local.predioObra);
             const marker = new google.maps.Marker({
               position: { lat: local.lat, lng: local.lng },
-              icon: this.getMarkerIcon(local.nombreEstatus),
+              icon: this.getMarkerIcon(local.nombreEstatus, enObra),
+              title: `${local.nombreComercial || 'Local'}${enObra ? ' · En obra' : ' · Sin obra'}`,
               animation: google.maps.Animation.DROP,
+              zIndex: enObra ? 20 : 10,
             });
             const infowindow = new google.maps.InfoWindow({ content: contentString });
             this.infoWindows[i] = infowindow;

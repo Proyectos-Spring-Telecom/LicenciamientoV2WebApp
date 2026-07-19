@@ -15,8 +15,8 @@ export interface DocumentoLocalConfig {
 }
 
 const DOCUMENTO_DEFAULTS = {
-  accept: 'image/*,.pdf,application/pdf',
-  badgeDefault: 'PNG · JPG · WEBP · PDF · Máx. 3 MB',
+  accept: 'image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf',
+  badgeDefault: 'PNG · JPG · JPEG · PDF · Máx. 3 MB',
   uploadTitle: 'Sube imagen o PDF',
 };
 
@@ -125,39 +125,61 @@ export function tieneCoordenadasValidas(lat: unknown, lng: unknown): boolean {
 }
 
 
-export function formatApiDateTime(value: unknown): string {
+/** Extrae yyyy-MM-dd del texto sin usar Date (evita desfase por zona horaria). */
+function extraerFechaCalendario(value: unknown): { y: number; m: number; d: number } | null {
   if (value == null || value === '') {
-    return '';
+    return null;
   }
+  if (value instanceof Date) {
+    if (isNaN(value.getTime())) {
+      return null;
+    }
+    return {
+      y: value.getFullYear(),
+      m: value.getMonth() + 1,
+      d: value.getDate(),
+    };
+  }
+  const raw = String(value).trim();
+  // "2027-07-19", "2027-07-19T00:00:00", "2027-07-19 02:24:28"
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw);
+  if (!match) {
+    const date = new Date(raw);
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+    return {
+      y: date.getFullYear(),
+      m: date.getMonth() + 1,
+      d: date.getDate(),
+    };
+  }
+  const y = Number(match[1]);
+  const m = Number(match[2]);
+  const d = Number(match[3]);
+  if (!y || m < 1 || m > 12 || d < 1 || d > 31) {
+    return null;
+  }
+  return { y, m, d };
+}
 
-  const selectedDate = value instanceof Date ? value : new Date(String(value));
-  if (isNaN(selectedDate.getTime())) {
+export function formatApiDateTime(value: unknown): string {
+  const parts = extraerFechaCalendario(value);
+  if (!parts) {
     return '';
   }
 
   const now = new Date();
-  const combined = new Date(
-    selectedDate.getFullYear(),
-    selectedDate.getMonth(),
-    selectedDate.getDate(),
-    now.getHours(),
-    now.getMinutes(),
-    now.getSeconds()
-  );
-
   const pad = (n: number) => String(n).padStart(2, '0');
-  return `${combined.getFullYear()}-${pad(combined.getMonth() + 1)}-${pad(combined.getDate())} ${pad(combined.getHours())}:${pad(combined.getMinutes())}:${pad(combined.getSeconds())}`;
+  return `${parts.y}-${pad(parts.m)}-${pad(parts.d)} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 }
 
 /** Valor yyyy-MM-dd para input type="date" al cargar desde API. */
 export function toDateInputValue(value: unknown): string {
-  if (value == null || value === '') {
-    return '';
-  }
-  const date = value instanceof Date ? value : new Date(String(value));
-  if (isNaN(date.getTime())) {
+  const parts = extraerFechaCalendario(value);
+  if (!parts) {
     return '';
   }
   const pad = (n: number) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return `${parts.y}-${pad(parts.m)}-${pad(parts.d)}`;
 }

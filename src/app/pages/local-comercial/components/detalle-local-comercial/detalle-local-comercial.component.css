@@ -322,11 +322,33 @@
 }
 
 #detalle .detalle-estatus-wrap {
-  display: block;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
   margin-top: 10px;
   white-space: normal;
   font-size: inherit;
   color: inherit;
+}
+
+#detalle .detalle-predio-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: #ffffff;
+  background: rgba(245, 158, 11, 0.42);
+  border: 1px solid rgba(252, 211, 77, 0.9);
+  box-shadow:
+    rgba(255, 255, 255, 0.2) 0 1px 2px inset,
+    0 4px 14px rgba(0, 0, 0, 0.22);
 }
 
 #detalle .detalle-estatus-badge {
@@ -590,6 +612,18 @@
   color: #d5238b;
 }
 
+#detalle .detalle-seccion-heading--obra .detalle-seccion-heading__title {
+  color: #f59e0b;
+}
+
+#detalle .detalle-seccion-heading--obra-prop .detalle-seccion-heading__title {
+  color: #fb923c;
+}
+
+#detalle .detalle-seccion-heading--obra-exp .detalle-seccion-heading__title {
+  color: #eab308;
+}
+
 #detalle .detalle-titulo-proteccion-civil {
   color: #d5238b !important;
 }
@@ -708,6 +742,21 @@
 #detalle .card:has(.detalle-seccion-heading--pc) {
   --detalle-accent: #d5238b;
   --detalle-accent-soft: rgba(213, 35, 139, 0.22);
+}
+
+#detalle .card:has(.detalle-seccion-heading--obra) {
+  --detalle-accent: #f59e0b;
+  --detalle-accent-soft: rgba(245, 158, 11, 0.22);
+}
+
+#detalle .card:has(.detalle-seccion-heading--obra-prop) {
+  --detalle-accent: #fb923c;
+  --detalle-accent-soft: rgba(251, 146, 60, 0.22);
+}
+
+#detalle .card:has(.detalle-seccion-heading--obra-exp) {
+  --detalle-accent: #eab308;
+  --detalle-accent-soft: rgba(234, 179, 8, 0.22);
 }
 
 #detalle .card.detalle-info-card > .card-header,

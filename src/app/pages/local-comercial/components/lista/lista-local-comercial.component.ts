@@ -231,10 +231,15 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
     );
     const fechaExpedicion = this.resolverFechaExpedicion(item);
 
+    const predioObraRaw = this.pickField(item, 'predioObra', 'PredioObra');
+    const predioObra = Number(predioObraRaw) === 1 ? 1 : 0;
+
     return {
       id: Number(this.pickField(item, 'id', 'Id') ?? 0),
       rfc: this.pickField(item, 'rfc', 'RFC', 'Rfc'),
       nombreComercial: this.pickField(item, 'nombreComercial', 'NombreComercial'),
+      predioObra,
+      predioObraLabel: predioObra === 1 ? 'En obra' : 'Sin obra',
       giro: this.pickField(item, 'giro', 'Giro', 'nombreGiro', 'NombreGiro'),
       nombreCapturista: this.resolverNombreCapturista(item),
       nombreEstatus: this.resolverNombreEstatus(estatus, nombreEstatusApi),
@@ -260,11 +265,14 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
         Number(item.estatus),
         item.nombreEstatus
       );
+      const predioObra = Number((item as any).predioObra) === 1 ? 1 : 0;
       return {
         ...item,
         urlLicencia: this.resolveFotoRuta(item.urlLicencia),
         rfc: this.formatGridText(item.rfc),
         nombreComercial: this.formatGridText(item.nombreComercial),
+        predioObra,
+        predioObraLabel: predioObra === 1 ? 'En obra' : 'Sin obra',
         giro: this.formatGridText(item.giro),
         nombreCapturista: this.formatGridText(item.nombreCapturista),
         grupo: this.formatGridText(item.grupo),

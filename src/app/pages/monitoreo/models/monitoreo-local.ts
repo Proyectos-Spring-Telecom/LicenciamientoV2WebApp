@@ -40,4 +40,11 @@ export interface MonitoreoLocal {
   apellidoMaternoCapturista: string | null;
   nombreCompletoCapturista: string | null;
   idGrupoCapturistaVisita: number | null;
+  fotos?: Array<{
+    id?: number;
+    idRegistro?: number;
+    ruta?: string | null;
+    fechaHora?: string | null;
+    idTipoFoto?: number | null;
+  }> | null;
 }

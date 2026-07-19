@@ -62,13 +62,19 @@ export interface PreRegistroFilesState {
   EstacionamientoIMG?: File | null;
   Bodega?: File | null;
   VistoBueno?: File | null;
-  LcConstanciaAlineamientoyNumero?: File[];
-  LcLicenciaUsoyPlano?: File[];
-  LcConstanciaPropietario?: File[];
-  LcFactibilidad?: File[];
-  LcRecibosImpuestoPredial?: File[];
-  LcJuegoDePlanosArquitectonicos?: File[];
-  LcOtrosDocs?: File[];
+  /** Archivos LC: máx. 1 por campo (POST /registros). */
+  LcConstanciaAlineamientoFile?: File | null;
+  LcConstanciaNumero?: File | null;
+  LcLicenciaUsoSueloFile?: File | null;
+  LcPlanoAutorizadoFile?: File | null;
+  LcLicenciaFraccionamientoFile?: File | null;
+  LcConstanciaPropietario?: File | null;
+  LcFactibilidad?: File | null;
+  LcRecibosImpuestoPredial?: File | null;
+  LcJuegoDePlanosArquitectonicos1?: File | null;
+  LcJuegoDePlanosArquitectonicos2?: File | null;
+  LcJuegoDePlanosArquitectonicos3?: File | null;
+  LcOtrosDocs?: File | null;
   LcFirmaPropietario?: File | null;
   LcFirmaDRO?: File | null;
   LcFirmaCorresponsable?: File | null;
@@ -191,9 +197,26 @@ export class PreRegistroStateService {
   setFormDraft(draft: LocalesFormDraftState): void {
     this.ensureScope();
     // En memoria se conservan File; a localStorage solo va lo serializable
+    const siguiente = this.clonarPreservandoArchivos(draft.formValue || {}) as Record<
+      string,
+      unknown
+    >;
+    // Si un control llega como '' pero antes había File, conservar el File
+    if (this.formDraft?.formValue) {
+      this.conservarArchivosPrevios(siguiente, this.formDraft.formValue);
+    }
+    const docs = { ...(draft.documentosExistentes || {}) };
+    // No borrar previews blob/http previas si el nuevo draft las omite
+    if (this.formDraft?.documentosExistentes) {
+      Object.entries(this.formDraft.documentosExistentes).forEach(([k, url]) => {
+        if (!docs[k] && url) {
+          docs[k] = url;
+        }
+      });
+    }
     this.formDraft = {
-      formValue: this.clonarPreservandoArchivos(draft.formValue || {}) as Record<string, unknown>,
-      documentosExistentes: { ...(draft.documentosExistentes || {}) },
+      formValue: siguiente,
+      documentosExistentes: docs,
       activeTab: draft.activeTab,
     };
     this.persistBundle();
@@ -361,6 +384,29 @@ export class PreRegistroStateService {
       return out;
     }
     return valor;
+  }
+
+  /** Si el nuevo valor vació un File, restaura el File previo en memoria. */
+  private conservarArchivosPrevios(destino: unknown, origen: unknown): void {
+    if (!destino || !origen || typeof destino !== 'object' || typeof origen !== 'object') {
+      return;
+    }
+    if (Array.isArray(destino) && Array.isArray(origen)) {
+      destino.forEach((item, i) => this.conservarArchivosPrevios(item, origen[i]));
+      return;
+    }
+    Object.entries(origen as Record<string, unknown>).forEach(([k, prev]) => {
+      const actual = (destino as Record<string, unknown>)[k];
+      if (typeof File !== 'undefined' && prev instanceof File) {
+        if (actual === '' || actual == null || actual === undefined) {
+          (destino as Record<string, unknown>)[k] = prev;
+        }
+        return;
+      }
+      if (actual && prev && typeof actual === 'object' && typeof prev === 'object') {
+        this.conservarArchivosPrevios(actual, prev);
+      }
+    });
   }
 
   private sanitizarDocumentos(docs: Record<string, string>): Record<string, string> {

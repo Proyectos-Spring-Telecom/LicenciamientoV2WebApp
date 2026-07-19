@@ -54,7 +54,10 @@ import {
   sanitizeRfcValue,
 } from '../../utils/local-form-input.util';
 import { LayoutScrollService } from 'src/app/services/layout-scroll.service';
-import { PreRegistroStateService } from '../../services/pre-registro-state.service';
+import {
+  PreRegistroFilesState,
+  PreRegistroStateService,
+} from '../../services/pre-registro-state.service';
 
 
 @Component({
@@ -226,7 +229,7 @@ export class LocalComercialFormularioComponent implements OnInit {
       this.reservarAlturaTabPanels();
       this.activeTab = index;
       this.activeTabPanelMinHeight = 0;
-      this.reaplicarValoresBorrador();
+      // El FormGroup ya conserva los valores; no re-parchar (evita borrar Files/textos)
     }
   }
 
@@ -252,7 +255,6 @@ export class LocalComercialFormularioComponent implements OnInit {
       this.shouldScrollAfterTabNav = true;
       this.activeTab++;
       this.activeTabPanelMinHeight = 0;
-      this.reaplicarValoresBorrador();
       this.scrollFormToTop();
     }
   }
@@ -264,7 +266,6 @@ export class LocalComercialFormularioComponent implements OnInit {
       this.shouldScrollAfterTabNav = true;
       this.activeTab--;
       this.activeTabPanelMinHeight = 0;
-      this.reaplicarValoresBorrador();
       this.scrollFormToTop();
     }
   }
@@ -366,7 +367,7 @@ export class LocalComercialFormularioComponent implements OnInit {
         NombreDRO: data.LcNombreDRO ?? '',
         NoRegLicenciaConstruccion: data.LcNoRegLicenciaConstruccion ?? '',
         CedulaProfesional: data.LcCedulaProfesional ?? '',
-        Fecha: data.LcFecha ?? '',
+        Fecha: toDateInputValue(data.LcFecha) || data.LcFecha || '',
         NumeroExpediente: data.LcNumeroExpediente ?? '',
         NumeroControl: data.LcNumeroControl ?? '',
         SeguimientoObra: data.LcSeguimientoObra ?? '',
@@ -397,20 +398,6 @@ export class LocalComercialFormularioComponent implements OnInit {
     }
     const files = this.preRegistroState.peekFiles();
 
-    const setArray = (path: string, lista: File[] | undefined) => {
-      const archivos = (Array.isArray(lista) ? lista : []).filter(
-        (f): f is File => f instanceof File && !!f.name
-      );
-      if (!archivos.length) {
-        return;
-      }
-      this.localForm.get(path)?.setValue(archivos);
-      this.documentosExistentes = {
-        ...this.documentosExistentes,
-        [path]: URL.createObjectURL(archivos[0]),
-      };
-    };
-
     const setFile = (path: string, file: File | null | undefined) => {
       if (!(file instanceof File) || !file.name) {
         return;
@@ -422,19 +409,18 @@ export class LocalComercialFormularioComponent implements OnInit {
       };
     };
 
-    setArray(
-      'LicenciaConstruccion.constanciaAlineamientoyNumero',
-      files.LcConstanciaAlineamientoyNumero
-    );
-    setArray('LicenciaConstruccion.LicenciaUsoyPlano', files.LcLicenciaUsoyPlano);
-    setArray('LicenciaConstruccion.ConstanciaPropietario', files.LcConstanciaPropietario);
-    setArray('LicenciaConstruccion.Factibilidad', files.LcFactibilidad);
-    setArray('LicenciaConstruccion.RecibosImpuestoPredial', files.LcRecibosImpuestoPredial);
-    setArray(
-      'LicenciaConstruccion.JuegoDePlanosArquitectonicos',
-      files.LcJuegoDePlanosArquitectonicos
-    );
-    setArray('LicenciaConstruccion.otros', files.LcOtrosDocs);
+    setFile('LicenciaConstruccion.constanciaAlineamiento', files.LcConstanciaAlineamientoFile);
+    setFile('LicenciaConstruccion.constanciaNumero', files.LcConstanciaNumero);
+    setFile('LicenciaConstruccion.fileLicenciaUsoSuelo', files.LcLicenciaUsoSueloFile);
+    setFile('LicenciaConstruccion.filePlanoAutorizado', files.LcPlanoAutorizadoFile);
+    setFile('LicenciaConstruccion.fileLicenciaFraccionamiento', files.LcLicenciaFraccionamientoFile);
+    setFile('LicenciaConstruccion.ConstanciaPropietario', files.LcConstanciaPropietario);
+    setFile('LicenciaConstruccion.Factibilidad', files.LcFactibilidad);
+    setFile('LicenciaConstruccion.RecibosImpuestoPredial', files.LcRecibosImpuestoPredial);
+    setFile('LicenciaConstruccion.JuegoDePlanosArquitectonicos1', files.LcJuegoDePlanosArquitectonicos1);
+    setFile('LicenciaConstruccion.JuegoDePlanosArquitectonicos2', files.LcJuegoDePlanosArquitectonicos2);
+    setFile('LicenciaConstruccion.JuegoDePlanosArquitectonicos3', files.LcJuegoDePlanosArquitectonicos3);
+    setFile('LicenciaConstruccion.otros', files.LcOtrosDocs);
     setFile('LicenciaConstruccion.FirmaPropietario', files.LcFirmaPropietario);
     setFile('LicenciaConstruccion.FirmaDRO', files.LcFirmaDRO);
     setFile('LicenciaConstruccion.FirmaCorresponsable', files.LcFirmaCorresponsable);
@@ -563,11 +549,56 @@ export class LocalComercialFormularioComponent implements OnInit {
     if (!this.localForm) {
       return;
     }
+    this.sincronizarArchivosFormularioEnEstado();
     this.preRegistroState.setFormDraft({
       formValue: this.localForm.getRawValue(),
       documentosExistentes: { ...this.documentosExistentes },
       activeTab: this.activeTab,
     });
+  }
+
+  /** Conserva Files del formulario en memoria del state (localStorage no puede). */
+  private sincronizarArchivosFormularioEnEstado(): void {
+    if (!this.localForm) {
+      return;
+    }
+    const take = (path: string): File | null => {
+      const v = this.localForm.get(path)?.value;
+      return v instanceof File && v.name ? v : null;
+    };
+    const patch: PreRegistroFilesState = {};
+    const map: Array<[string, keyof PreRegistroFilesState]> = [
+      ['Sapac.reciboSapac', 'ReciboSapac'],
+      ['Sapac.caratulamedidor', 'CaratulaMedidor'],
+      ['Sapac.cuadromedidor', 'CuadroMedidor'],
+      ['Catastro.reciboPredial', 'ReciboPredial'],
+      ['Licencias.licenciaFuncionamiento', 'LicenciaFuncionamiento'],
+      ['Licencias.fachada', 'FachadaEstablecimiento'],
+      ['Licencias.estacionamiento', 'EstacionamientoIMG'],
+      ['Licencias.bodega', 'Bodega'],
+      ['ProteccionCivil.vistoBueno', 'VistoBueno'],
+      ['LicenciaConstruccion.constanciaAlineamiento', 'LcConstanciaAlineamientoFile'],
+      ['LicenciaConstruccion.constanciaNumero', 'LcConstanciaNumero'],
+      ['LicenciaConstruccion.fileLicenciaUsoSuelo', 'LcLicenciaUsoSueloFile'],
+      ['LicenciaConstruccion.filePlanoAutorizado', 'LcPlanoAutorizadoFile'],
+      ['LicenciaConstruccion.fileLicenciaFraccionamiento', 'LcLicenciaFraccionamientoFile'],
+      ['LicenciaConstruccion.ConstanciaPropietario', 'LcConstanciaPropietario'],
+      ['LicenciaConstruccion.Factibilidad', 'LcFactibilidad'],
+      ['LicenciaConstruccion.RecibosImpuestoPredial', 'LcRecibosImpuestoPredial'],
+      ['LicenciaConstruccion.JuegoDePlanosArquitectonicos1', 'LcJuegoDePlanosArquitectonicos1'],
+      ['LicenciaConstruccion.JuegoDePlanosArquitectonicos2', 'LcJuegoDePlanosArquitectonicos2'],
+      ['LicenciaConstruccion.JuegoDePlanosArquitectonicos3', 'LcJuegoDePlanosArquitectonicos3'],
+      ['LicenciaConstruccion.otros', 'LcOtrosDocs'],
+    ];
+    map.forEach(([path, key]) => {
+      const file = take(path);
+      if (file) {
+        patch[key] = file;
+      }
+    });
+    if (Object.keys(patch).length) {
+      this.preRegistroState.patchFiles(patch);
+    }
   }
 
   private aplicarBorradorFormulario(): void {
@@ -669,11 +700,28 @@ export class LocalComercialFormularioComponent implements OnInit {
     this.localComercialService.obtenerRegistroPorId(idRegistro).subscribe({
       next: (response) => {
         const result = unwrapRegistroResponse(response);
-        const patch = mapRegistroToFormPatch(result);
-        this.documentosExistentes = {
+        const docsApi = {
           ...mapFotosToUrls(result?.fotos ?? []),
           ...mapDocumentosFromRegistro(result),
         };
+
+        // Si el usuario ya editó (GET lento), no pisar lo capturado
+        if (this.localForm?.dirty) {
+          this.documentosExistentes = {
+            ...docsApi,
+            ...this.documentosExistentes,
+          };
+          this.aplicarBorradorFormulario();
+          this.reaplicarArchivosDesdePreRegistro();
+          this.refrescarFlagsUiDesdeFormulario();
+          setTimeout(() => {
+            this.cargandoDireccionEdicion = false;
+          }, 300);
+          return;
+        }
+
+        const patch = mapRegistroToFormPatch(result);
+        this.documentosExistentes = { ...docsApi };
 
         const lc = (patch['LicenciaConstruccion'] || {}) as Record<string, unknown>;
         const corresponsables = Array.isArray(lc['Corresponsables'])
@@ -699,17 +747,7 @@ export class LocalComercialFormularioComponent implements OnInit {
         this.aplicarDatosPreRegistroAlFormulario();
         this.aplicarBorradorFormulario();
         this.reaplicarArchivosDesdePreRegistro();
-
-        const tipoPersona = Number(this.localForm.get('Licencias.TipoPersona')?.value);
-        this.fisica = tipoPersona === 1 || tipoPersona === 0;
-
-        const tienePrograma = this.localForm.get('ProteccionCivil.TienePrograma')?.value;
-        this.tieneprograma =
-          tienePrograma === true || tienePrograma === 1 || tienePrograma === '1' ? 'Sí' : 'No';
-
-        const estacionamiento = this.localForm.get('Licencias.Estacionamiento')?.value;
-        this.tieneestacionamiento =
-          estacionamiento === true || estacionamiento === 1 || estacionamiento === '1' ? 'Sí' : 'No';
+        this.refrescarFlagsUiDesdeFormulario();
 
         setTimeout(() => {
           this.cargandoDireccionEdicion = false;
@@ -719,6 +757,19 @@ export class LocalComercialFormularioComponent implements OnInit {
         this.cargandoDireccionEdicion = false;
       },
     });
+  }
+
+  private refrescarFlagsUiDesdeFormulario(): void {
+    const tipoPersona = Number(this.localForm.get('Licencias.TipoPersona')?.value);
+    this.fisica = tipoPersona === 1 || tipoPersona === 0;
+
+    const tienePrograma = this.localForm.get('ProteccionCivil.TienePrograma')?.value;
+    this.tieneprograma =
+      tienePrograma === true || tienePrograma === 1 || tienePrograma === '1' ? 'Sí' : 'No';
+
+    const estacionamiento = this.localForm.get('Licencias.Estacionamiento')?.value;
+    this.tieneestacionamiento =
+      estacionamiento === true || estacionamiento === 1 || estacionamiento === '1' ? 'Sí' : 'No';
   }
 
   changeValue(checked) {
@@ -872,12 +923,14 @@ export class LocalComercialFormularioComponent implements OnInit {
       ...this.documentosExistentes,
       [controlName]: URL.createObjectURL(archivo),
     };
+    this.sincronizarArchivosFormularioEnEstado();
+    this.guardarBorradorFormulario();
   }
 
   onDocumentoRechazado(_controlName: string): void {
     mostrarSwalError({
       title: 'Archivo no válido',
-      text: 'Seleccione una imagen o PDF compatible.',
+      text: 'Solo se permiten imágenes PNG, JPG o JPEG, o PDF (máx. 3 MB).',
     });
   }
 
@@ -957,12 +1010,17 @@ export class LocalComercialFormularioComponent implements OnInit {
       'Licencias.estacionamiento': files.EstacionamientoIMG,
       'Licencias.bodega': files.Bodega,
       'ProteccionCivil.vistoBueno': files.VistoBueno,
-      'LicenciaConstruccion.constanciaAlineamientoyNumero': files.LcConstanciaAlineamientoyNumero,
-      'LicenciaConstruccion.LicenciaUsoyPlano': files.LcLicenciaUsoyPlano,
+      'LicenciaConstruccion.constanciaAlineamiento': files.LcConstanciaAlineamientoFile,
+      'LicenciaConstruccion.constanciaNumero': files.LcConstanciaNumero,
+      'LicenciaConstruccion.fileLicenciaUsoSuelo': files.LcLicenciaUsoSueloFile,
+      'LicenciaConstruccion.filePlanoAutorizado': files.LcPlanoAutorizadoFile,
+      'LicenciaConstruccion.fileLicenciaFraccionamiento': files.LcLicenciaFraccionamientoFile,
       'LicenciaConstruccion.ConstanciaPropietario': files.LcConstanciaPropietario,
       'LicenciaConstruccion.Factibilidad': files.LcFactibilidad,
       'LicenciaConstruccion.RecibosImpuestoPredial': files.LcRecibosImpuestoPredial,
-      'LicenciaConstruccion.JuegoDePlanosArquitectonicos': files.LcJuegoDePlanosArquitectonicos,
+      'LicenciaConstruccion.JuegoDePlanosArquitectonicos1': files.LcJuegoDePlanosArquitectonicos1,
+      'LicenciaConstruccion.JuegoDePlanosArquitectonicos2': files.LcJuegoDePlanosArquitectonicos2,
+      'LicenciaConstruccion.JuegoDePlanosArquitectonicos3': files.LcJuegoDePlanosArquitectonicos3,
       'LicenciaConstruccion.otros': files.LcOtrosDocs,
       'LicenciaConstruccion.FirmaPropietario': files.LcFirmaPropietario,
       'LicenciaConstruccion.FirmaDRO': files.LcFirmaDRO,

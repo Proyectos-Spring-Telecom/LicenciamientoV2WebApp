@@ -77,23 +77,27 @@ export function mostrarSwalError(options: {
   });
 }
 
-/** NO BORRAR — Código postal no encontrado (Sepomex 404). */
+/** NO BORRAR — Error Sepomex: alerta amigable; el error real va a consola. */
 export function mostrarSwalCodigoPostalNoEncontrado(
-  error?: { error?: { message?: string }; message?: string } | null,
+  error?: unknown,
   cp?: string
 ): void {
-  const mensajeApi =
-    error?.error?.message ||
-    error?.message ||
-    (cp
-      ? `No se encontraron registros para el código postal ${cp}`
-      : 'No se encontraron registros para el código postal');
+  console.error('[Sepomex] Error al consultar código postal', cp ?? '', error);
 
+  const cpTxt = cp ? ` (${cp})` : '';
   Swal.fire({
     ...SWAL_SISTEMA,
-    title: 'Código postal no encontrado',
-    html: `<p style="text-align:center;margin:0;">${mensajeApi}</p>`,
-    icon: 'warning',
+    title: 'No se pudo consultar el código postal',
+    html: `
+      <p style="text-align:center;margin:0 0 10px;line-height:1.45;">
+        No encontramos datos automáticos para el código postal${cpTxt}.
+      </p>
+      <p style="text-align:center;margin:0;line-height:1.45;">
+        Puedes escribir <strong>Estado</strong>, <strong>Municipio</strong> y
+        <strong>Colonia</strong> de forma manual.
+      </p>
+    `,
+    icon: 'info',
     confirmButtonColor: '#3085d6',
     confirmButtonText: 'Entendido',
   });
