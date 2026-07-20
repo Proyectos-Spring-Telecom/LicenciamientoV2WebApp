@@ -687,6 +687,11 @@
   color: #ffffff;
 }
 
+#detalle .detalle-street-host {
+  width: 100%;
+  min-height: 615px;
+}
+
 #detalle .detalle-street {
   width: 100%;
   height: 615px;

@@ -18,17 +18,11 @@ export class AgregarPermisoComponent implements OnInit {
   public loading: boolean = false;
   public listaModulos: any[] = [];
   public permisoForm: FormGroup;
-  public idPermiso: number | null = null;
+  public idPermiso: number;
   public title = 'Agregar Permiso';
-  /** Nombre del módulo en edición (viene de idModulo2). */
-  public nombreModuloActual = '';
   public listaClientes: any[] = [];
   selectedFileName: string = '';
   previewUrl: string | ArrayBuffer | null = null;
-
-  get esEdicion(): boolean {
-    return this.idPermiso != null && Number.isFinite(this.idPermiso);
-  }
 
   constructor(
     private fb: FormBuilder,
@@ -40,95 +34,70 @@ export class AgregarPermisoComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
+    this.obtenerModulo();
     this.activatedRouted.params.subscribe((params) => {
-      this.idPermiso = params['idPermiso'] != null ? Number(params['idPermiso']) : null;
+      this.idPermiso = params['idPermiso'];
       if (this.idPermiso) {
         this.title = 'Actualizar Permiso';
-        this.submitButton = 'Actualizar';
+        this.obtenerPermiso();
+      } else {
+        this.asignarSiguienteNombre();
       }
-      this.obtenerModulo(() => {
-        if (this.idPermiso) {
-          this.obtenerPermiso();
-        }
-      });
+    });
+  }
+
+  /** Obtiene el mayor nombrePermiso y asigna el siguiente al campo nombre. */
+  asignarSiguienteNombre() {
+    this.permiService.obtenerPermisos(1, 100).subscribe((response: any) => {
+      const permisos = response?.data || [];
+      const maxNombre = permisos.reduce((max: number, p: any) => {
+        const n = Number(p.nombrePermiso ?? p.nombre ?? 0);
+        return Number.isFinite(n) && n > max ? n : max;
+      }, 0);
+      this.permisoForm.patchValue({ nombre: String(maxNombre + 1) });
     });
   }
 
   public info: any;
-  obtenerModulo(done?: () => void) {
-    this.moduSer.obtenerModulos().subscribe({
-      next: (response) => {
-        let raw: any[] = [];
-        if (Array.isArray(response?.data)) {
-          raw = response.data;
-        } else if (Array.isArray(response)) {
-          raw = response;
-        }
-
-        this.listaModulos = raw
-          .map((m: any) => ({
-            id: Number(m?.Id ?? m?.id ?? m?.idModulo),
-            nombre: String(m?.NombreModulo ?? m?.Nombre ?? m?.nombre ?? '').trim(),
-          }))
-          .filter((m) => Number.isFinite(m.id));
-
-        done?.();
-      },
-      error: () => done?.(),
+  obtenerModulo() {
+    this.moduSer.obtenerModulos().subscribe((response: any) => {
+      const raw = Array.isArray(response)
+        ? response
+        : Array.isArray(response?.data)
+          ? response.data
+          : [];
+      this.listaModulos = raw.map((m: any) => ({
+        ...m,
+        id: Number(m.id ?? m.idModulo),
+        nombre: m.nombre ?? m.nombreModulo,
+      }));
     });
   }
 
   obtenerPermiso() {
-    if (this.idPermiso == null) {
-      return;
-    }
-
-    this.permiService.obtenerPermiso(this.idPermiso).subscribe((response: any) => {
-      const data = response?.data ?? {};
-      const idModuloNum =
-        data.idModulo != null
-          ? Number(data.idModulo)
-          : data.idModulo2?.id != null
-            ? Number(data.idModulo2.id)
+    this.permiService
+      .obtenerPermiso(this.idPermiso)
+      .subscribe((response: any) => {
+        const idModuloNum =
+          response.data?.idModulo != null
+            ? Number(response.data.idModulo)
+            : response.data?.idModulo2?.id != null
+            ? Number(response.data.idModulo2.id)
             : null;
 
-      const nombreModulo = String(
-        data.idModulo2?.nombre ?? data.nombreModulo ?? ''
-      ).trim();
-
-      this.idPermiso = Number(data.id ?? this.idPermiso);
-      this.nombreModuloActual = nombreModulo;
-
-      if (
-        idModuloNum != null &&
-        Number.isFinite(idModuloNum) &&
-        !this.listaModulos.some((m) => m.id === idModuloNum)
-      ) {
-        this.listaModulos = [
-          { id: idModuloNum, nombre: nombreModulo || `Módulo ${idModuloNum}` },
-          ...this.listaModulos,
-        ];
-      }
-
-      this.permisoForm.patchValue({
-        nombre: data.nombre ?? '',
-        descripcion: data.descripcion ?? '',
-        idModulo: idModuloNum,
-        estatus: data.estatus ?? 1,
+        this.permisoForm.patchValue({
+          nombre: response.data.nombre,
+          descripcion: response.data.descripcion,
+          idModulo: idModuloNum,
+        });
       });
-
-      // En actualización solo se envía descripcion; nombre y módulo quedan de solo lectura.
-      this.permisoForm.get('nombre')?.disable({ emitEvent: false });
-      this.permisoForm.get('idModulo')?.disable({ emitEvent: false });
-    });
   }
 
   initForm() {
     this.permisoForm = this.fb.group({
       idModulo: [null, Validators.required],
       nombre: ['', Validators.required],
-      descripcion: ['', Validators.required],
-      estatus: [1]
+      descripcion: ['', Validators.required]
     });
   }
 
@@ -194,10 +163,11 @@ export class AgregarPermisoComponent implements OnInit {
       return;
     }
     const payload = {
-      nombre: String(this.permisoForm.value.nombre ?? '').trim(),
-      descripcion: String(this.permisoForm.value.descripcion ?? '').trim(),
+      ...this.permisoForm.value,
+      nombre: String(this.permisoForm.value.nombre),
       idModulo: Number(this.permisoForm.value.idModulo),
     };
+    this.permisoForm.removeControl('id');
     this.permiService.agregarPermiso(payload).subscribe(
       (response: any) => {
         this.submitButton = 'Guardar';
@@ -232,17 +202,43 @@ export class AgregarPermisoComponent implements OnInit {
   actualizar() {
     this.submitButton = 'Cargando...';
     this.loading = true;
-
-    const descripcionCtrl = this.permisoForm.get('descripcion');
-    if (descripcionCtrl?.invalid) {
+    if (this.permisoForm.invalid) {
       this.submitButton = 'Guardar';
       this.loading = false;
+      const etiquetas: any = {
+        nombre: 'Nombre',
+        descripcion: 'Descripción',
+        idModulo: 'Módulo',
+      };
+
+      const camposFaltantes: string[] = [];
+      Object.keys(this.permisoForm.controls).forEach((key) => {
+        const control = this.permisoForm.get(key);
+        if (control?.invalid && control.errors?.['required']) {
+          camposFaltantes.push(etiquetas[key] || key);
+        }
+      });
+
+      const lista = camposFaltantes
+        .map(
+          (campo, index) => `
+        <div style="padding: 8px 12px; border-left: 4px solid #d9534f;
+                    background: #caa8a8; text-align: center; margin-bottom: 8px;
+                    border-radius: 4px;">
+          <strong style="color: #b02a37;">${index + 1}. ${campo}</strong>
+        </div>
+      `
+        )
+        .join('');
+
       Swal.fire({
         title: '¡Faltan campos obligatorios!',
         html: `
           <p style="text-align: center; font-size: 15px; margin-bottom: 16px; color: white">
-            El campo <strong>Descripción</strong> es obligatorio.
+            Los siguientes <strong>campos obligatorios</strong> están vacíos.<br>
+            Por favor complétalos antes de continuar:
           </p>
+          <div style="max-height: 350px; overflow-y: auto;">${lista}</div>
         `,
         icon: 'error',
         background: '#141a21',
@@ -252,14 +248,12 @@ export class AgregarPermisoComponent implements OnInit {
           popup: 'swal2-padding swal2-border',
         },
       });
-      return;
     }
-
     const payload = {
-      descripcion: String(descripcionCtrl?.value ?? '').trim(),
+      ...this.permisoForm.value,
+      idModulo: Number(this.permisoForm.value.idModulo),
     };
-
-    this.permiService.actualizarPermiso(Number(this.idPermiso), payload).subscribe(
+    this.permiService.actualizarPermiso(this.idPermiso, payload).subscribe(
       (response: any) => {
         this.submitButton = 'Actualizar';
         this.loading = false;

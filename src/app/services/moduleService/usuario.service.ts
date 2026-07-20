@@ -90,7 +90,7 @@ export class UsuariosService {
   }
 
   /**
-   * PATCH /login/cambiar/accesso — restablecer contraseña desde enlace (token en URL).
+   * POST /login/cambiar/accesso — restablecer contraseña desde enlace (token en URL).
    * Body: { userName, password }. Si se pasa token, se envía Authorization: Bearer <token>.
    */
   cambiarAccesso(userName: string, password: string, token?: string | null): Observable<any> {
@@ -100,7 +100,7 @@ export class UsuariosService {
     if (token && typeof token === 'string' && token.trim().length > 0) {
       options.headers = new HttpHeaders().set('Authorization', `Bearer ${token.trim()}`);
     }
-    return this.http.patch(
+    return this.http.post(
       environment.API_SECURITY + '/login/cambiar/accesso',
       { userName, password },
       options

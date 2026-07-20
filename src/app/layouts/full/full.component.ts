@@ -240,9 +240,8 @@ export class FullComponent implements OnInit, AfterViewInit {
     // Initialize project theme with options
     this.receiveOptions(this.options);
     
-    // Filtrar elementos del menú según permisos (deshabilitado temporalmente)
-    // this.navItems = this.filterNavItemsByPermissions(navItems);
-    this.navItems = navItems;
+    // Filtrar elementos del menú según permisos
+    this.navItems = this.filterNavItemsByPermissions(navItems);
   }
 
   ngOnInit(): void {

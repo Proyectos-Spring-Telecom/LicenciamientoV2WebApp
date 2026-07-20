@@ -1,0 +1,138 @@
+:host {
+  --app-export-bg: rgba(124, 58, 237, 0.22);
+  --app-export-border: rgba(167, 139, 250, 0.42);
+  --app-export-bg-hover: rgba(124, 58, 237, 0.34);
+  --app-export-border-hover: rgba(196, 181, 253, 0.55);
+}
+
+.mon-hist__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+
+  .mon-hist__btn-icon {
+    display: flex;
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.mon-hist__btn--export {
+  border-color: var(--app-export-border);
+  background: var(--app-export-bg);
+  color: #f8fafc;
+  box-shadow: none;
+
+  &:hover:not(:disabled) {
+    background: var(--app-export-bg-hover);
+    border-color: var(--app-export-border-hover);
+  }
+}
+
+.mon-hist__export-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.mon-hist__export-chevron {
+  display: flex;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  opacity: 0.82;
+  transition: transform 0.18s ease;
+}
+
+.mon-hist__export-wrap--open .mon-hist__export-chevron {
+  transform: rotate(180deg);
+}
+
+.mon-hist__export-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 6;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 230px;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  background: linear-gradient(180deg, rgba(28, 37, 46, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 18px 40px rgba(2, 6, 23, 0.45);
+}
+
+.mon-hist__export-wrap--open .mon-hist__export-menu {
+  display: flex;
+}
+
+.mon-hist__export-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #f8fafc;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.mon-hist__export-option--excel {
+  svg {
+    color: #4ade80;
+  }
+
+  &:hover {
+    background: rgba(22, 163, 74, 0.2);
+    border-color: rgba(74, 222, 128, 0.35);
+    color: #ecfdf5;
+  }
+}
+
+.mon-hist__export-option--pdf {
+  svg {
+    color: #f87171;
+  }
+
+  &:hover {
+    background: rgba(220, 38, 38, 0.2);
+    border-color: rgba(248, 113, 113, 0.35);
+    color: #fff;
+  }
+}

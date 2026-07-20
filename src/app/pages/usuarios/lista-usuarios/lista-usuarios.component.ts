@@ -6,6 +6,11 @@ import { lastValueFrom } from 'rxjs';
 import { routeAnimation } from 'src/app/pipe/module-open.animation';
 import { UsuariosService } from 'src/app/services/moduleService/usuario.service';
 import Swal from 'sweetalert2';
+import {
+  estatusTexto,
+  exportarTablaExcel,
+  resolverEstatusActivo,
+} from 'src/app/shared/utils/excel-export.util';
 
 @Component({
   selector: 'app-lista-usuarios',
@@ -115,7 +120,7 @@ export class ListaUsuariosComponent implements OnInit {
         norm(row?.id),
         norm(row?.NombreCompleto),
         norm(row?.UserName),
-        norm(row?.Telefono),
+        norm(row?.PhoneNumber),
         norm(row?.RolNombre),
       ].some((s) => s.includes(q));
 
@@ -155,23 +160,7 @@ export class ListaUsuariosComponent implements OnInit {
           this.paginaActual = paginaActual;
           this.totalPaginas = limite;
 
-          const dataTransformada = data.map((item: any) => {
-            const nombre = item?.Nombre ?? item?.nombre ?? '';
-            const paterno =
-              item?.ApellidoPaterno ?? item?.apellidoPaterno ?? '';
-            const materno =
-              item?.ApellidoMaterno ?? item?.apellidoMaterno ?? '';
-
-            return {
-              ...item,
-              id: Number(item?.Id ?? item?.id),
-              idRol: Number(item?.IdRol ?? item?.idRol),
-              idCliente: Number(item?.IdCliente ?? item?.idCliente),
-              NombreCompleto: [nombre, paterno, materno]
-                .filter(Boolean)
-                .join(' '),
-            };
-          });
+          const dataTransformada = data.map((item: any) => this.mapUsuarioRow(item));
 
           this.paginaActualData = dataTransformada;
 
@@ -360,7 +349,105 @@ export class ListaUsuariosComponent implements OnInit {
     this.isGrouped = false;
   }
 
-  // hasPermission(permission: string): boolean {
-  //   return this.permissionsService.getPermission(permission) !== undefined;
-  // }1
+  private mapUsuarioRow(item: any): any {
+    const nombre = item?.Nombre ?? item?.nombre ?? '';
+    const paterno = item?.ApellidoPaterno ?? item?.apellidoPaterno ?? '';
+    const materno = item?.ApellidoMaterno ?? item?.apellidoMaterno ?? '';
+    const phoneNumber = item?.PhoneNumber ?? item?.phoneNumber ?? '-';
+    const estatus = resolverEstatusActivo(item);
+
+    return {
+      ...item,
+      id: Number(item?.Id ?? item?.id),
+      idRol: Number(item?.IdRol ?? item?.idRol),
+      idCliente: Number(item?.IdCliente ?? item?.idCliente),
+      PhoneNumber: phoneNumber,
+      UserName: item?.UserName ?? item?.userName ?? '',
+      RolNombre:
+        item?.RolNombre ?? item?.rolNombre ?? item?.nombreRol ?? item?.NombreRol ?? '',
+      NombreCompleto: [nombre, paterno, materno].filter(Boolean).join(' '),
+      estatus,
+      estatusTexto: estatusTexto(estatus),
+    };
+  }
+
+  private async obtenerTodosLosUsuarios(): Promise<any[]> {
+    const pageSize = 100;
+    let page = 1;
+    let totalPages = 1;
+    const all: any[] = [];
+
+    do {
+      const response: any = await lastValueFrom(
+        this.usuService.obtenerUsuariosData(page, pageSize)
+      );
+      const data = Array.isArray(response?.data) ? response.data : [];
+      all.push(...data.map((item: any) => this.mapUsuarioRow(item)));
+
+      const paginated = response?.paginated ?? {};
+      const total = Number(paginated.total ?? data.length);
+      totalPages =
+        Number(paginated.lastPage) ||
+        Number(response?.pages) ||
+        (Number.isFinite(total) && total > 0
+          ? Math.max(1, Math.ceil(total / pageSize))
+          : page);
+
+      if (!data.length) {
+        break;
+      }
+      page++;
+    } while (page <= totalPages);
+
+    return all;
+  }
+
+  async exportarExcel(): Promise<void> {
+    try {
+      const rows = await this.obtenerTodosLosUsuarios();
+      const data = rows.map((row) => ({
+        Nombre: row.NombreCompleto,
+        Teléfono: row.PhoneNumber,
+        'Correo Electrónico': row.UserName,
+        Rol: row.RolNombre,
+        Estatus: row.estatusTexto,
+      }));
+
+      await exportarTablaExcel({
+        sheetName: 'Usuarios',
+        fileName: 'Usuarios',
+        columns: [
+          { header: 'Nombre', key: 'Nombre', width: 36 },
+          { header: 'Teléfono', key: 'Teléfono', width: 18 },
+          { header: 'Correo Electrónico', key: 'Correo Electrónico', width: 36 },
+          { header: 'Rol', key: 'Rol', width: 22 },
+          { header: 'Estatus', key: 'Estatus', width: 16 },
+        ],
+        rows: data,
+      });
+    } catch (err: any) {
+      if (err?.message === 'EMPTY') {
+        Swal.fire({
+          title: 'Sin datos',
+          text: 'No hay usuarios para exportar.',
+          icon: 'info',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Entendido',
+          background: '#141a21',
+          color: '#ffffff',
+        });
+        return;
+      }
+      console.error('Error al exportar usuarios:', err);
+      Swal.fire({
+        title: '¡Ops!',
+        text: 'No se pudo generar el archivo Excel.',
+        icon: 'error',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Entendido',
+        background: '#141a21',
+        color: '#ffffff',
+      });
+    }
+  }
 }

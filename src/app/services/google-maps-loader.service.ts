@@ -10,33 +10,38 @@ declare global {
   }
 }
 
+export type GoogleMapsLibrary = 'maps' | 'places' | 'streetView' | 'geocoding';
+
 @Injectable({ providedIn: 'root' })
 export class GoogleMapsLoaderService {
-  /** Carga Google Maps una sola vez; si ya está en la página no lo vuelve a descargar. */
-  load(apiKey?: string): Promise<void> {
+  /**
+   * Carga el script una sola vez y luego importa solo las librerías pedidas.
+   * `importLibrary` es cacheado por Google; pedir de más no vuelve a bajar el script.
+   */
+  load(
+    apiKey?: string,
+    libraries: GoogleMapsLibrary[] = ['maps', 'places', 'streetView', 'geocoding'],
+  ): Promise<void> {
     if (!window.__nextGoogleMapsLoadPromise) {
-      window.__nextGoogleMapsLoadPromise = this.bootstrap(apiKey);
+      window.__nextGoogleMapsLoadPromise = this.ensureScript(apiKey);
     }
-    return window.__nextGoogleMapsLoadPromise;
+
+    return window.__nextGoogleMapsLoadPromise.then(async () => {
+      await Promise.all(libraries.map((lib) => google.maps.importLibrary(lib)));
+    });
   }
 
-  /** Valida la llave, inserta el script si falta y trae la librería del mapa. */
-  private async bootstrap(apiKey?: string): Promise<void> {
+  private async ensureScript(apiKey?: string): Promise<void> {
     const key = String(apiKey ?? environment.googleMapsApiKey ?? '').trim();
     if (!key) {
       throw new Error('googleMapsApiKey no configurada en environment');
     }
 
-    if (typeof google === 'undefined' || typeof google.maps?.importLibrary !== 'function') {
-      await this.injectScript(key);
+    if (typeof google !== 'undefined' && typeof google.maps?.importLibrary === 'function') {
+      return;
     }
 
-    await Promise.all([
-      google.maps.importLibrary('maps'),
-      google.maps.importLibrary('places'),
-      google.maps.importLibrary('streetView'),
-      google.maps.importLibrary('geocoding'),
-    ]);
+    await this.injectScript(key);
   }
 
   /** Agrega el script de Google Maps al HTML de la página. */

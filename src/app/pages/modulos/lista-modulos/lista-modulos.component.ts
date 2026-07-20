@@ -8,6 +8,11 @@ import { routeAnimation } from 'src/app/pipe/module-open.animation';
 import { ModulosService } from 'src/app/services/moduleService/modulos.service';
 import { Permiso } from 'src/app/entities/permiso.enum';
 import Swal from 'sweetalert2';
+import {
+  estatusTexto,
+  exportarTablaExcel,
+  resolverEstatusActivo,
+} from 'src/app/shared/utils/excel-export.util';
 
 @Component({
   selector: 'app-lista-modulos',
@@ -171,6 +176,50 @@ export class ListaModulosComponent implements OnInit {
     e.component.refresh();
   }
 
+  /** Normaliza fila de módulo: estatus numérico + texto para grilla/Excel. */
+  private mapModuloRow(item: any): any {
+    const estatus = resolverEstatusActivo(item);
+    return {
+      ...item,
+      id: item?.id ?? item?.Id ?? null,
+      nombre: item?.nombre ?? item?.Nombre ?? '',
+      estatus,
+      estatusTexto: estatusTexto(estatus),
+    };
+  }
+
+  /** Misma fuente que la grilla (`/modulos/{page}/{limit}`), todas las páginas. */
+  private async obtenerTodosLosModulos(): Promise<any[]> {
+    const pageSize = 100;
+    let page = 1;
+    let totalPages = 1;
+    const all: any[] = [];
+
+    do {
+      const resp: any = await lastValueFrom(
+        this.moduloService.obtenerModuloData(page, pageSize)
+      );
+      const rows: any[] = Array.isArray(resp?.data) ? resp.data : [];
+      all.push(...rows.map((item) => this.mapModuloRow(item)));
+
+      const meta = resp?.paginated || {};
+      const total = Number(meta.total ?? resp?.total);
+      totalPages =
+        Number(meta.lastPage) ||
+        Number(resp?.pages) ||
+        (Number.isFinite(total) && total > 0
+          ? Math.max(1, Math.ceil(total / pageSize))
+          : page);
+
+      if (!rows.length) {
+        break;
+      }
+      page++;
+    } while (page <= totalPages);
+
+    return all;
+  }
+
   setupDataSource() {
     this.loading = true;
 
@@ -198,15 +247,7 @@ export class ListaModulosComponent implements OnInit {
             toNum(resp?.pages) ??
             Math.max(1, Math.ceil(totalRegistros / take));
 
-          const dataTransformada = rows.map((item: any) => ({
-            ...item,
-            estatusTexto:
-              item?.estatus === 1
-                ? 'Activo'
-                : item?.estatus === 0
-                ? 'Inactivo'
-                : null,
-          }));
+          const dataTransformada = rows.map((item: any) => this.mapModuloRow(item));
 
           this.totalRegistros = totalRegistros;
           this.paginaActual = paginaActual;
@@ -301,5 +342,49 @@ export class ListaModulosComponent implements OnInit {
     this.dataGrid.instance.pageIndex(0);
     this.dataGrid.instance.refresh();
     this.isGrouped = false;
+  }
+
+  /** Exporta Nombre y Estatus (sin Acciones): encabezados en negrita, centrado y autofiltro. */
+  async exportarExcel(): Promise<void> {
+    try {
+      const rows = await this.obtenerTodosLosModulos();
+      const data = rows.map((row) => ({
+        Nombre: row.nombre,
+        Estatus: row.estatusTexto,
+      }));
+
+      await exportarTablaExcel({
+        sheetName: 'Módulos',
+        fileName: 'Módulos',
+        columns: [
+          { header: 'Nombre', key: 'Nombre', width: 40 },
+          { header: 'Estatus', key: 'Estatus', width: 18 },
+        ],
+        rows: data,
+      });
+    } catch (err: any) {
+      if (err?.message === 'EMPTY') {
+        Swal.fire({
+          title: 'Sin datos',
+          text: 'No hay módulos para exportar.',
+          icon: 'info',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Entendido',
+          background: '#141a21',
+          color: '#ffffff',
+        });
+        return;
+      }
+      console.error('Error al exportar módulos:', err);
+      Swal.fire({
+        title: '¡Ops!',
+        text: 'No se pudo generar el archivo Excel.',
+        icon: 'error',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Entendido',
+        background: '#141a21',
+        color: '#ffffff',
+      });
+    }
   }
 }

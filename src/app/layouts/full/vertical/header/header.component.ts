@@ -25,7 +25,6 @@ import {
   ContratoDetalleDialogData,
 } from './contrato-detalle-dialog/contrato-detalle-dialog.component';
 import {
-  NotificacionesService,
   NotificacionesResponse,
   PagoSeguimientoDto,
   PagoServicioInmuebleDto,
@@ -217,7 +216,6 @@ export class HeaderComponent implements OnInit {
     private translate: TranslateService,
     private users: AuthenticationService,
     private router: Router,
-    private notificacionesService: NotificacionesService,
     public loginSuccessSound: LoginSuccessSoundService,
   ) {
     const user = this.users.getUser();
@@ -235,16 +233,11 @@ export class HeaderComponent implements OnInit {
   readonly notifLoginSpotlight = this.loginSuccessSound.highlightNotificaciones;
 
   ngOnInit(): void {
-    this.notificacionesService.obtenerNotificaciones().subscribe({
-      next: (data) => this.aplicarNotificacionesDesdeApi(data),
-      error: (err) => {
-        console.error('[notificaciones]', err);
-        this.aplicarNotificacionesDesdeApi({
-          vencimientosRenovacionesContrato: [],
-          pagoServiciosInmuebles: [],
-          pagosSeguimiento: [],
-        });
-      },
+    // GET /notificaciones deshabilitado — no se llama al API
+    this.aplicarNotificacionesDesdeApi({
+      vencimientosRenovacionesContrato: [],
+      pagoServiciosInmuebles: [],
+      pagosSeguimiento: [],
     });
   }
 
