@@ -1,0 +1,50 @@
+/** Respuesta de GET /monitoreo */
+export interface MonitoreoLocal {
+  id: number;
+  registro: string | null;
+  latitud: number;
+  longitud: number;
+  entidadFederativa: string | null;
+  municipio: string | null;
+  localidad: string | null;
+  colonia: string | null;
+  calle: string | null;
+  noInterior: string | number | null;
+  noExterior: string | number | null;
+  cp: number | string | null;
+  tipoRegistro: number | null;
+  predioObra: number | null;
+  estatus: number;
+  fechaCreacion: string | Date | Record<string, unknown> | null;
+  fechaActualizacion: string | Date | Record<string, unknown> | null;
+  idLicencia: number | null;
+  idRegistroLicencia: number | null;
+  registroLicencia: string | null;
+  nombreComercial: string | null;
+  giro: string | null;
+  licenciaSuelo: string | Record<string, unknown> | null;
+  nombrePropietario: string | Record<string, unknown> | null;
+  apellidoPaternoPropietario: string | Record<string, unknown> | null;
+  apellidoMaternoPropietario: string | Record<string, unknown> | null;
+  tipoPersona: number | null;
+  rfc: string | null;
+  fechaExpedicion: string | Date | Record<string, unknown> | null;
+  fechaRefrendo: string | Date | Record<string, unknown> | null;
+  estacionamiento: number | null;
+  tipoLicencia: number | null;
+  fechaHoraLicencia: string | Date | Record<string, unknown> | null;
+  fechaCreacionLicencia: string | Date | Record<string, unknown> | null;
+  fechaActualizacionLicencia: string | Date | Record<string, unknown> | null;
+  nombreCapturista: string | null;
+  apellidoPaternoCapturista: string | null;
+  apellidoMaternoCapturista: string | null;
+  nombreCompletoCapturista: string | null;
+  idGrupoCapturistaVisita: number | null;
+  fotos?: Array<{
+    id?: number;
+    idRegistro?: number;
+    ruta?: string | null;
+    fechaHora?: string | null;
+    idTipoFoto?: number | null;
+  }> | null;
+}

@@ -40,7 +40,7 @@ export class UsuariosService {
 		return this.http.get<any>(environment.API_SECURITY + '/usuarios/' + idUsuario);
 	}
 
-  /** PATCH /usuarios/{id} — nombre, apellidos, rol y grupo. */
+  /** PATCH /usuarios/{id} — nombre, apellidos, teléfono, rol y grupo. */
   actualizarUsuario(idUsuario: number, body: object): Observable<string> {
     return this.http.patch(`${environment.API_SECURITY}/usuarios/${idUsuario}`, body, {
       responseType: 'text',
@@ -51,8 +51,23 @@ export class UsuariosService {
     return this.http.post<any>(`${environment.API_SECURITY}/s3/upload`, data);
   }
 
-  actualizarContrasena(idUsuario: number, data: any): Observable<any> {
-    return this.http.put(`${environment.API_SECURITY}/usuarios/actualizar/contrasena/` + idUsuario, data);
+  /**
+   * PATCH /usuarios/actualizar/contrasena/{id}
+   * Body: passwordActual, passwordNueva, passwordNuevaConfirmacion
+   */
+  actualizarContrasena(
+    idUsuario: number,
+    data: {
+      passwordActual: string;
+      passwordNueva: string;
+      passwordNuevaConfirmacion: string;
+    },
+  ): Observable<string> {
+    return this.http.patch(
+      `${environment.API_SECURITY}/usuarios/actualizar/contrasena/${idUsuario}`,
+      data,
+      { responseType: 'text' },
+    );
   }
 
   private apiUrl = `${environment.API_SECURITY}/usuarios`.replace(/\/$/, '');

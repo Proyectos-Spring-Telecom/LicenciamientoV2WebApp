@@ -15,21 +15,14 @@ import { TableroService } from './services/tablero.service';
 import { Capturista } from './models/capturista';
 import { ListaGrupo } from './models/listaGrupo';
 import { UsuarioTablero } from './models/usuariosTablero';
-
-const MESES = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-];
+import {
+  DashboardCapturaPeriodoRequest,
+  DashboardCapturaPeriodoResponse,
+  DashboardCapturistaItem,
+  DashboardCardResponse,
+  DashboardEstadisticaMes,
+  DashboardEstadoActual,
+} from './models/dashboard';
 
 @Component({
   selector: 'app-dashboard',
@@ -51,7 +44,16 @@ export class DashboardComponent
   private interval: ReturnType<typeof setInterval> | null = null;
 
   public usuarios: UsuarioTablero[] = [];
-  public grupos: ListaGrupo[] = [];
+  /** Catálogo local de grupos (sin API legacy). */
+  public grupos: ListaGrupo[] = [
+    { id: 1, nombre: 'A' },
+    { id: 2, nombre: 'B' },
+    { id: 3, nombre: 'C' },
+    { id: 4, nombre: 'D' },
+    { id: 5, nombre: 'E' },
+    { id: 6, nombre: 'F' },
+    { id: 7, nombre: 'G' },
+  ];
   public listaCapturista: Capturista[] = [];
   public datosReporte: Array<Record<string, unknown>> = [];
   public resultadoGrupo: UsuarioTablero[] = [];
@@ -93,21 +95,16 @@ export class DashboardComponent
 
   ngOnInit(): void {
     this.obtenerDetalle();
-    this.obtenerTotal();
-    this.obtenerListaCapturistas();
-    this.obtenerGraficaMes();
-    this.obtenerGraficaDia();
-    this.obtenerGrupo();
+    this.cargarDashboard();
+    this.inicializarSemanaActual();
+    this.obtenerFiltros({ silencioso: true });
   }
 
   ngAfterContentInit(): void {
     this.interval = setInterval(() => {
       this.loadingMessage = 'Actualizando...';
       this.loadingVisible = true;
-      this.obtenerTotal();
-      this.obtenerListaCapturistas();
-      this.obtenerGraficaMes();
-      this.obtenerGraficaDia();
+      this.cargarDashboard();
     }, 180000);
   }
 
@@ -141,151 +138,217 @@ export class DashboardComponent
     this.graphicFilters = evt.component;
   }
 
-  obtenerListaCapturistas(): void {
-    this.tableroService.obtenerCapturista().subscribe({
-      next: (response) => {
-        this.listaCapturista = response ?? [];
-        this.datosReporte = (response ?? []).map((c) => ({
-          Nombre: c.nombre,
-          'Apellido Paterno': c.apellidoPaterno,
-          'Apellido Materno': c.apellidoMaterno,
-          Grupo: c.nombreGrupo,
-          Supervisor: c.nombreSupervisor,
-          'Total Licencias': c.totalLicencias,
-        }));
-        this.isDisabled = this.datosReporte.length === 0;
-      },
-      error: () => {
-        this.listaCapturista = [];
-        this.datosReporte = [];
-        this.isDisabled = true;
-      },
-    });
+  /** Semana actual completa: lunes → domingo (YYYY-MM-DD). */
+  private inicializarSemanaActual(): void {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const lunes = new Date(hoy);
+    const dia = lunes.getDay(); // 0=domingo … 6=sábado
+    const diasDesdeLunes = dia === 0 ? 6 : dia - 1;
+    lunes.setDate(lunes.getDate() - diasDesdeLunes);
+
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 6);
+
+    this.fechainicio = this.formatearFecha(lunes);
+    this.fechaFin = this.formatearFecha(domingo);
   }
 
-  obtenerTotal(): void {
-    this.tableroService.getTotalDatos().subscribe({
-      next: (res) => {
-        this.totalRechazados = res?.rechazoSinRespuesta ?? 0;
-        this.totalRevision = res?.datosRevision ?? 0;
-        this.totalFaltante = res?.informacionFaltante ?? 0;
-        this.totalValidados = res?.datosCorrectos ?? 0;
-      },
-      error: () => {
-        this.totalRechazados = 0;
-        this.totalRevision = 0;
-        this.totalFaltante = 0;
-        this.totalValidados = 0;
-      },
-    });
-  }
-
-  obtenerGraficaMes(): void {
-    this.tableroService.obtenerDatosMes().subscribe({
-      next: (response) => {
-        const lista = response?.lista ?? [];
-        this.datosGrafica = MESES.map((nombre, idx) => {
-          const mes = String(idx + 1);
-          return {
-            mes: nombre,
-            statusfaltante: this.sumMesEstatus(lista, mes, 'Información Faltante'),
-            statusrechazado: this.sumMesEstatus(lista, mes, 'Rechazo o Sin respuesta'),
-            statuscorrecto: this.sumMesEstatus(lista, mes, 'Datos Correctos'),
-            statusrevision: this.sumMesEstatus(lista, mes, 'Revisión'),
-          };
-        });
-      },
-      error: () => {
-        this.datosGrafica = MESES.map((mes) => ({
-          mes,
-          statusfaltante: 0,
-          statusrechazado: 0,
-          statuscorrecto: 0,
-          statusrevision: 0,
-        }));
-      },
-    });
-  }
-
-  private sumMesEstatus(lista: any[], mes: string, estatus: string): number {
-    return lista.reduce(
-      (sum, value) =>
-        typeof value?.total === 'number' &&
-        String(value.mes) === mes &&
-        value.estatus === estatus
-          ? sum + value.total
-          : sum,
-      0,
+  private formatearFecha(fecha: Date): string {
+    return (
+      this.datepipe.transform(fecha, 'yyyy-MM-dd') ??
+      `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`
     );
   }
 
-  obtenerFiltros(): void {
+  /** POST /dashboard/card → cards, gráfica mensual, pastel y capturistas */
+  cargarDashboard(): void {
+    this.tableroService.obtenerDashboardCard().subscribe({
+      next: (res) => this.aplicarRespuestaDashboard(res),
+      error: () => this.resetearIndicadores(),
+    });
+  }
+
+  private aplicarRespuestaDashboard(res: DashboardCardResponse): void {
+    const card = res?.card;
+    this.totalRechazados = card?.rechazoSinRespuesta ?? 0;
+    this.totalRevision = card?.revision ?? 0;
+    this.totalFaltante = card?.informacionFaltante ?? 0;
+    this.totalValidados = card?.datosCorrectos ?? 0;
+
+    this.datosGrafica = this.mapearEstadisticaOperativa(res?.estadisticaOperativa);
+    this.datosPastel = this.mapearEstadoActual(res?.estadoActual);
+    this.aplicarCapturistas(res?.registrosCapturistas);
+  }
+
+  private mapearEstadisticaOperativa(
+    lista: DashboardEstadisticaMes[] | undefined,
+  ): typeof this.datosGrafica {
+    return (lista ?? []).map((item) => ({
+      mes: item.mes,
+      statusfaltante: item.informacionFaltante ?? 0,
+      statusrechazado: item.rechazoSinRespuesta ?? 0,
+      statuscorrecto: item.datosCorrectos ?? 0,
+      statusrevision: item.revision ?? 0,
+    }));
+  }
+
+  private mapearEstadoActual(
+    estado: DashboardEstadoActual | undefined,
+  ): typeof this.datosPastel {
+    return [
+      { etiqueta: 'Revisión', percent: estado?.revision ?? 0, tipo: 4 },
+      { etiqueta: 'Rechazo o Sin Respuesta', percent: estado?.rechazoSinRespuesta ?? 0, tipo: 1 },
+      { etiqueta: 'Datos Correctos', percent: estado?.datosCorrectos ?? 0, tipo: 3 },
+      { etiqueta: 'Información Faltante', percent: estado?.informacionFaltante ?? 0, tipo: 2 },
+    ];
+  }
+
+  private aplicarCapturistas(lista: DashboardCapturistaItem[] | undefined): void {
+    const items = (lista ?? []).map((c) => {
+      const capturista = new Capturista();
+      capturista.id = c.idCapturista;
+      capturista.nombre = c.nombre ?? '';
+      capturista.apellidoPaterno = c.apellidoPaterno ?? '';
+      capturista.apellidoMaterno = c.apellidoMaterno ?? '';
+      capturista.nombreCompleto =
+        c.nombreCompleto?.trim() ||
+        [c.nombre, c.apellidoPaterno, c.apellidoMaterno]
+          .filter((p) => !!p && String(p).trim() !== '')
+          .join(' ');
+      capturista.nombreGrupo = c.grupo ?? '';
+      capturista.nombreSupervisor = '';
+      capturista.totalLicencias = c.totalRegistros ?? 0;
+      return capturista;
+    });
+
+    this.listaCapturista = items;
+    this.datosReporte = items.map((c) => ({
+      Nombre: c.nombreCompleto,
+      Grupo: c.nombreGrupo,
+      'Total Registros': c.totalLicencias,
+    }));
+    this.isDisabled = this.datosReporte.length === 0;
+  }
+
+  private resetearIndicadores(): void {
+    this.totalRechazados = 0;
+    this.totalRevision = 0;
+    this.totalFaltante = 0;
+    this.totalValidados = 0;
+    this.datosGrafica = [];
+    this.datosPastel = [
+      { etiqueta: 'Revisión', percent: 0, tipo: 4 },
+      { etiqueta: 'Rechazo o Sin Respuesta', percent: 0, tipo: 1 },
+      { etiqueta: 'Datos Correctos', percent: 0, tipo: 3 },
+      { etiqueta: 'Información Faltante', percent: 0, tipo: 2 },
+    ];
+    this.listaCapturista = [];
+    this.datosReporte = [];
+    this.isDisabled = true;
+  }
+
+  /** POST /dashboard/captura-periodo — Nivel de Captura por Período */
+  obtenerFiltros(opciones?: { silencioso?: boolean }): void {
+    const silencioso = opciones?.silencioso === true;
+
     if (!this.fechainicio) {
-      Swal.fire({
-        title: 'Campo requerido',
-        text: 'Seleccione la fecha inicial.',
-        icon: 'warning',
-        confirmButtonColor: '#3085d6',
-        confirmButtonText: 'Entendido',
-      });
+      if (!silencioso) {
+        Swal.fire({
+          color: '#ffffff',
+          background: '#141a21',
+          title: 'Campo requerido',
+          text: 'Seleccione la fecha inicial.',
+          icon: 'warning',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Entendido',
+        });
+      }
       return;
     }
 
-    const fechainicio =
-      this.datepipe.transform(this.fechainicio, 'yyyy-MM-dd') ?? String(this.fechainicio).substring(0, 10);
-    const fechaFin = this.fechaFin
-      ? this.datepipe.transform(this.fechaFin, 'yyyy-MM-dd') ?? String(this.fechaFin).substring(0, 10)
-      : null;
-    this.fechainicio = fechainicio;
-    this.fechaFin = fechaFin;
+    if (!this.fechaFin) {
+      if (!silencioso) {
+        Swal.fire({
+          color: '#ffffff',
+          background: '#141a21',
+          title: 'Campo requerido',
+          text: 'Seleccione la fecha final.',
+          icon: 'warning',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Entendido',
+        });
+      }
+      return;
+    }
 
-    this.tableroService
-      .obtenerDatosUsuario(fechainicio, fechaFin, this.grupo, this.idCapturista)
-      .subscribe({
-        next: (response) => {
-          const lista = (response?.lista ?? []).map((e: any) => {
-            if (e?.fecha) {
-              e.fecha = String(e.fecha).substring(0, 10);
-            }
-            return e;
-          });
+    const fechaInicial =
+      this.datepipe.transform(this.fechainicio, 'yyyy-MM-dd') ??
+      String(this.fechainicio).substring(0, 10);
+    const fechaFinal =
+      this.datepipe.transform(this.fechaFin, 'yyyy-MM-dd') ??
+      String(this.fechaFin).substring(0, 10);
 
-          const all = lista.reduce((acc: any, { fecha, estatus, total }: any) => {
-            acc[fecha] =
-              fecha in acc
-                ? {
-                    ...acc[fecha],
-                    [estatus]: (acc[fecha][estatus] || 0) + total,
-                  }
-                : { fecha, [estatus]: total };
-            return acc;
-          }, {});
+    this.fechainicio = fechaInicial;
+    this.fechaFin = fechaFinal;
 
-          this.item_totals = Object.values(all);
-          this.item_totals.sort((a: any, b: any) =>
-            String(a.fecha).localeCompare(String(b.fecha), 'en', { numeric: true }),
-          );
+    const body: DashboardCapturaPeriodoRequest = { fechaInicial, fechaFinal };
+    if (this.grupo != null) {
+      body.idGrupo = this.grupo;
+    }
+    if (this.idCapturista != null) {
+      body.idCapturista = this.idCapturista;
+    }
 
-          if (this.item_totals.length === 0) {
-            Swal.fire({
-              title: '¡Ops!',
-              text: 'No se encuentran datos por graficar',
-              icon: 'warning',
-              confirmButtonColor: '#3085d6',
-              confirmButtonText: 'Confirmar',
-            });
-          }
-        },
-        error: () => {
-          this.item_totals = [];
+    this.tableroService.obtenerCapturaPeriodo(body).subscribe({
+      next: (res) => this.aplicarCapturaPeriodo(res, silencioso),
+      error: () => {
+        this.item_totals = [];
+        if (!silencioso) {
           Swal.fire({
+            color: '#ffffff',
+            background: '#141a21',
             title: 'Error',
             text: 'No se pudieron obtener los datos del período.',
             icon: 'error',
             confirmButtonText: 'Entendido',
           });
-        },
+        }
+      },
+    });
+  }
+
+  private aplicarCapturaPeriodo(
+    res: DashboardCapturaPeriodoResponse | null | undefined,
+    silencioso = false,
+  ): void {
+    const lista = res?.capturaPeriodo ?? [];
+    this.item_totals = lista
+      .map((e) => {
+        const estatus = e?.estatus;
+        return {
+          fecha: e?.fecha ? String(e.fecha).substring(0, 10) : '',
+          'Información Faltante': estatus?.informacionFaltante ?? 0,
+          'Rechazo o Sin respuesta': estatus?.rechazoSinRespuesta ?? 0,
+          'Datos Correctos': estatus?.datosCorrectos ?? 0,
+          Revisión: estatus?.revision ?? 0,
+        };
+      })
+      .filter((e) => !!e.fecha)
+      .sort((a, b) => String(a.fecha).localeCompare(String(b.fecha), 'en', { numeric: true }));
+
+    if (!silencioso && this.item_totals.length === 0) {
+      Swal.fire({
+        color: '#ffffff',
+        background: '#141a21',
+        title: '¡Ops!',
+        text: 'No se encuentran datos por graficar',
+        icon: 'warning',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Confirmar',
       });
+    }
   }
 
   obtenerDetalle(): void {
@@ -297,17 +360,20 @@ export class DashboardComponent
     }
   }
 
-  obtenerUsuarios(value: number): void {
-    this.tableroService.obtenerUsuarios().subscribe({
-      next: (response: UsuarioTablero[]) => {
-        this.usuarios = response ?? [];
-        this.resultadoGrupo = [];
-        const numeroletra = (value + 9).toString(36).toUpperCase();
-        for (const user of this.usuarios) {
-          if (String(user.grupo) === numeroletra) {
-            this.resultadoGrupo.push(user);
-          }
-        }
+  obtenerUsuarios(idGrupo: number | null): void {
+    this.idCapturista = null;
+    this.resultadoGrupo = [];
+    this.usuarios = [];
+
+    if (idGrupo == null) {
+      return;
+    }
+
+    this.tableroService.obtenerUsuariosPorGrupo(idGrupo).subscribe({
+      next: (response) => {
+        const lista = Array.isArray(response?.data) ? response.data : [];
+        this.usuarios = lista;
+        this.resultadoGrupo = lista;
       },
       error: () => {
         this.usuarios = [];
@@ -316,44 +382,10 @@ export class DashboardComponent
     });
   }
 
-  obtenerGrupo(): void {
-    this.tableroService.obtenerGrupos().subscribe({
-      next: (response: ListaGrupo[]) => {
-        this.grupos = response ?? [];
-      },
-      error: () => {
-        this.grupos = [];
-      },
-    });
-  }
-
-  obtenerGraficaDia(): void {
-    this.tableroService.obtenerDatosDia().subscribe({
-      next: (response) => {
-        this.datosPastel = [
-          { etiqueta: 'Revisión', percent: response?.datosRevision ?? 0, tipo: 4 },
-          {
-            etiqueta: 'Rechazo o Sin Respuesta',
-            percent: response?.rechazoSinRespuesta ?? 0,
-            tipo: 1,
-          },
-          { etiqueta: 'Datos Correctos', percent: response?.datosCorrectos ?? 0, tipo: 3 },
-          {
-            etiqueta: 'Información Faltante',
-            percent: response?.informacionFaltante ?? 0,
-            tipo: 2,
-          },
-        ];
-      },
-      error: () => {
-        this.datosPastel = [
-          { etiqueta: 'Revisión', percent: 0, tipo: 4 },
-          { etiqueta: 'Rechazo o Sin Respuesta', percent: 0, tipo: 1 },
-          { etiqueta: 'Datos Correctos', percent: 0, tipo: 3 },
-          { etiqueta: 'Información Faltante', percent: 0, tipo: 2 },
-        ];
-      },
-    });
+  nombreCompletoUsuario(usuario: UsuarioTablero): string {
+    return [usuario?.nombre, usuario?.apellidoPaterno, usuario?.apellidoMaterno]
+      .filter((p) => !!p && String(p).trim() !== '')
+      .join(' ');
   }
 
   etiquetaPie = (arg: any): string => `${arg.valueText} Locales Comerciales`;

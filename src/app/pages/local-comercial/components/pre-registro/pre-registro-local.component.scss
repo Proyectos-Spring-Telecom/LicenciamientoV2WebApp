@@ -1,0 +1,948 @@
+/* Pre-registro local — UI only (sin servicios) */
+
+:host {
+  display: block;
+}
+
+:host ::ng-deep .perm-ig .form-floating > label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:host ::ng-deep .perm-ig .form-floating > .form-control,
+:host ::ng-deep .perm-ig .form-floating > .form-select {
+  height: calc(3.5rem + 2px);
+  min-height: calc(3.5rem + 2px);
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
+}
+
+.perm-date-input::-webkit-calendar-picker-indicator,
+input[type='date']::-webkit-calendar-picker-indicator,
+:host ::ng-deep .perm-date-input::-webkit-calendar-picker-indicator,
+:host ::ng-deep input[type='date']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1 !important;
+  filter: none !important;
+  background-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 1.15rem 1.15rem;
+}
+
+.pre-reg-shell {
+  --lf-accent: #d4893a;
+}
+
+.pre-reg-shell--obra {
+  --lf-accent: #d5238b;
+}
+
+.pre-reg-shell .local-form-banner__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+  min-width: 0;
+  overflow: visible;
+}
+
+.pre-reg-shell .local-form-banner__back {
+  align-self: flex-end;
+}
+
+/* Coords chip — debajo del subtítulo del banner */
+.local-form-banner__copy .pre-reg-coords {
+  margin-top: 0.85rem;
+}
+
+.pre-reg-coords {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  max-width: 100%;
+  padding: 0.55rem 0.55rem 0.55rem 0.95rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  box-sizing: border-box;
+}
+
+.pre-reg-coords > mat-icon {
+  flex-shrink: 0;
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+  color: #f0c98a;
+}
+
+.pre-reg-coords span {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.35;
+  color: #fff;
+}
+
+.pre-reg-coords__edit {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(212, 137, 58, 0.55);
+  border-radius: 50%;
+  background: rgba(212, 137, 58, 0.28);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 0 0 0 rgba(212, 137, 58, 0);
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+}
+
+.pre-reg-coords__edit mat-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+  color: #fff;
+}
+
+.pre-reg-coords__edit:hover {
+  background: rgba(212, 137, 58, 0.55);
+  border-color: rgba(240, 201, 138, 0.95);
+  transform: scale(1.12);
+  filter: brightness(1.12);
+  box-shadow:
+    0 0 0 3px rgba(212, 137, 58, 0.35),
+    0 8px 18px rgba(0, 0, 0, 0.35);
+}
+
+.pre-reg-coords__edit:active {
+  transform: scale(1.02);
+  filter: brightness(0.98);
+}
+
+/* Search button */
+.pre-reg-btn-search {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: calc(3.5rem + 2px);
+  padding: 0 1.25rem;
+  border: 1px solid rgba(212, 137, 58, 0.55);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(212, 137, 58, 0.35), rgba(104, 19, 48, 0.45));
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.pre-reg-btn-search:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.pre-reg-btn-search mat-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+  color: #fff;
+}
+
+/* Photo catalog rows */
+.pre-reg-photo-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0.95rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: #e6f1ff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+}
+
+.pre-reg-photo-row:hover {
+  border-color: rgba(212, 137, 58, 0.45);
+  background: rgba(212, 137, 58, 0.08);
+  transform: translateY(-1px);
+}
+
+.pre-reg-photo-row__icon {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(212, 137, 58, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(212, 137, 58, 0.35);
+}
+
+.pre-reg-photo-row__icon mat-icon {
+  color: #fff;
+}
+
+.pre-reg-photo-row__copy {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.pre-reg-photo-row__title {
+  font-size: 1rem;
+  font-weight: 650;
+  color: #fff;
+}
+
+.pre-reg-photo-row__sub {
+  font-size: 0.85rem;
+  color: rgba(230, 241, 255, 0.58);
+}
+
+.pre-reg-photo-row__chevron {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* Tipo registro cards */
+.pre-reg-type {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 120px;
+  padding: 1.25rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(230, 241, 255, 0.75);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.pre-reg-type mat-icon {
+  font-size: 42px;
+  width: 42px;
+  height: 42px;
+  color: inherit;
+}
+
+.pre-reg-type span {
+  font-size: 1.28rem;
+  font-weight: 650;
+}
+
+.pre-reg-type:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.pre-reg-type.is-active {
+  color: #fff;
+  border-color: rgba(212, 137, 58, 0.55);
+  background:
+    linear-gradient(145deg, rgba(212, 137, 58, 0.35), rgba(104, 19, 48, 0.55));
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+/* Switch section — mismo look que card activa (Local comercial), en grises.
+   Especificidad alta: local-form-tabs.css también pinta .local-form-section. */
+.local-form-section.pre-reg-switch-section {
+  padding: 1.35rem 1.25rem;
+  border-color: rgba(148, 163, 184, 0.55) !important;
+  background:
+    linear-gradient(145deg, rgba(148, 163, 184, 0.35), rgba(71, 85, 105, 0.55)) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+.pre-reg-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.pre-reg-switch-row__copy {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.pre-reg-switch-row__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.25rem;
+  font-weight: 650;
+  color: #fff;
+  letter-spacing: 0.01em;
+}
+
+.pre-reg-switch-row__desc {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: rgba(230, 241, 255, 0.82);
+}
+
+.pre-reg-toggle {
+  flex-shrink: 0;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 80px;
+  height: 40px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.toggle-switch input[type='checkbox'] {
+  display: none;
+}
+
+.toggle-switch-background {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(75, 85, 99, 0.85);
+  border-radius: 20px;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.12);
+  transition: background-color 0.3s ease-in-out;
+}
+
+.toggle-switch-handle {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 30px;
+  height: 30px;
+  background-color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease-in-out;
+}
+
+.toggle-switch input[type='checkbox']:checked + .toggle-switch-background {
+  background-color: #681330;
+  box-shadow: inset 0 0 0 2px #961641;
+}
+
+.toggle-switch input[type='checkbox']:checked + .toggle-switch-background .toggle-switch-handle {
+  transform: translateX(40px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2), 0 0 0 3px rgba(150, 22, 65, 0.55);
+}
+
+/* Primary CTA */
+.pre-reg-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 1.5rem;
+  border: 1px solid rgba(212, 137, 58, 0.55);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(212, 137, 58, 0.55), rgba(104, 19, 48, 0.75));
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.pre-reg-btn-primary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.pre-reg-btn-primary mat-icon {
+  color: #fff;
+}
+
+.pre-reg-btn-primary--xl {
+  width: 100%;
+  min-height: 56px;
+  border-radius: 14px;
+  font-size: 1.1rem;
+}
+
+.local-form-tab-nav .button-success,
+.local-form-tab-nav .button-danger {
+  min-height: 50px;
+  height: 50px;
+}
+
+/* Progress — mismo tamaño fijo en todos los banners del flujo */
+.pre-reg-progress {
+  --pre-reg-progress-width: 240px;
+  --pre-reg-progress-height: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0;
+  width: min(var(--pre-reg-progress-width), 100%);
+  max-width: var(--pre-reg-progress-width);
+  flex: 0 0 auto;
+  box-sizing: border-box;
+}
+
+.pre-reg-progress--banner {
+  align-items: flex-end;
+  align-self: flex-end;
+}
+
+.pre-reg-progress__label {
+  width: 100%;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(230, 241, 255, 0.7);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pre-reg-progress__track {
+  width: 100%;
+  height: var(--pre-reg-progress-height);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.pre-reg-progress__bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #d5238b, #681330);
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Section head with action */
+.pre-reg-section-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pre-reg-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 137, 58, 0.45);
+  background: rgba(212, 137, 58, 0.12);
+  color: #f0c98a;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.pre-reg-add-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: inherit;
+}
+
+/* Corresponsables — cards confirmadas + fila de alta */
+.pre-reg-corresp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.pre-reg-corresp {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pre-reg-corresp__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.pre-reg-corresp__icon mat-icon {
+  color: #fff;
+}
+
+.pre-reg-corresp__copy {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.pre-reg-corresp__name {
+  font-weight: 650;
+  color: #fff;
+}
+
+.pre-reg-corresp__role {
+  font-size: 0.85rem;
+  color: rgba(230, 241, 255, 0.58);
+}
+
+.pre-reg-corresp__delete-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 56, 35, 0.12);
+  color: #ff8a80;
+  cursor: pointer;
+}
+
+.pre-reg-corresp__delete-icon mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: inherit;
+}
+
+.pre-reg-corresp-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 0.85rem;
+}
+
+.pre-reg-corresp-row__field {
+  min-width: 0;
+}
+
+.pre-reg-corresp-row__field--nombre {
+  flex: 1 1 240px;
+}
+
+.pre-reg-corresp-row__field--ocupacion {
+  flex: 1 1 220px;
+}
+
+.pre-reg-corresp-row__actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.55rem;
+  flex: 0 0 auto;
+  padding-bottom: 2px;
+}
+
+.pre-reg-corresp-select-wrap {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: calc(3.5rem + 2px);
+  height: calc(3.5rem + 2px);
+  padding: 0 0.75rem 0 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #1c252e;
+  box-sizing: border-box;
+}
+
+.pre-reg-corresp-otro-back {
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+  width: 48px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-left: 0;
+  border-radius: 0 14px 14px 0;
+  background: rgba(148, 163, 184, 0.18);
+  color: #e6f1ff;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.pre-reg-corresp-otro-back:hover {
+  filter: brightness(1.12);
+}
+
+.pre-reg-corresp-otro-back mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: inherit;
+}
+
+.pre-reg-corresp-row__field--ocupacion .perm-ig .form-floating {
+  border-radius: 0;
+}
+
+.pre-reg-corresp-row__field--ocupacion .perm-ig .form-control {
+  border-radius: 0 !important;
+}
+
+.pre-reg-corresp-select {
+  width: 100%;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.pre-reg-corresp-select ::ng-deep .mat-mdc-select-trigger {
+  height: 100%;
+  align-items: center;
+}
+
+.pre-reg-corresp-select ::ng-deep .mat-mdc-select-value {
+  color: #fff;
+}
+
+.pre-reg-corresp-select ::ng-deep .mat-mdc-select-placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.pre-reg-corresp-select ::ng-deep .mat-mdc-select-arrow {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.pre-reg-corresp-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1;
+}
+
+.pre-reg-corresp-option mat-icon {
+  flex-shrink: 0;
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+  color: #f0c98a;
+  font-family: 'Material Icons' !important;
+  font-weight: normal;
+  font-style: normal;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  speak: never;
+  -webkit-font-smoothing: antialiased;
+}
+
+.pre-reg-corresp__add,
+.pre-reg-corresp__delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: calc(3.5rem + 2px);
+  height: calc(3.5rem + 2px);
+  padding: 0 1rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 0.92rem;
+  font-weight: 650;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.pre-reg-corresp__add {
+  border-color: rgba(74, 222, 128, 0.55);
+  background: rgba(74, 222, 128, 0.18);
+  color: #fff;
+}
+
+.pre-reg-corresp__delete {
+  border-color: rgba(251, 113, 133, 0.55);
+  background: rgba(255, 56, 35, 0.14);
+  color: #ff8a80;
+}
+
+.pre-reg-corresp__add:hover,
+.pre-reg-corresp__delete:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.pre-reg-corresp__add mat-icon,
+.pre-reg-corresp__delete mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: inherit;
+}
+
+.pre-reg-empty {
+  margin: 0.35rem 0 0;
+  color: rgba(230, 241, 255, 0.55);
+  font-size: 0.9rem;
+}
+
+/* Fotos del Predio — misma grilla; Agregar debajo de la principal */
+.pre-reg-fotos-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  height: 100%;
+}
+
+.pre-reg-fotos-stack__item {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.pre-reg-fotos-stack__remove {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(251, 113, 133, 0.45);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #ff8a80;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.pre-reg-fotos-stack__remove:hover {
+  filter: brightness(1.12);
+}
+
+.pre-reg-fotos-stack__remove mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: inherit;
+}
+
+.pre-reg-fotos-stack__add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  padding: 0.7rem 1rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(212, 137, 58, 0.55);
+  background: rgba(212, 137, 58, 0.1);
+  color: #f0c98a;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
+}
+
+.pre-reg-fotos-stack__add:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  background: rgba(212, 137, 58, 0.18);
+}
+
+.pre-reg-fotos-stack__add mat-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+  color: inherit;
+}
+
+/* Signatures — el trazo debe quedar dentro de la card */
+.pre-reg-sign {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  box-sizing: border-box;
+}
+
+.pre-reg-sign__pad {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 160px !important;
+  max-height: 160px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.18));
+  touch-action: none;
+  cursor: crosshair;
+  user-select: none;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+.pre-reg-sign__preview {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 14px;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.18));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-sizing: border-box;
+}
+
+.pre-reg-sign__reset {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 3;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.75);
+  color: #fff;
+  cursor: pointer;
+}
+
+.pre-reg-sign__reset mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #fff;
+}
+
+.pre-reg-sign__hint {
+  margin: 0.45rem 0 0;
+  font-size: 0.8rem;
+  color: rgba(230, 241, 255, 0.5);
+}
+
+/* Finish */
+.pre-reg-finish {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.85rem;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.pre-reg-finish__nav {
+  width: 100%;
+}
+
+.pre-reg-finish__nav .button-back,
+.pre-reg-finish__nav .button-success {
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  height: auto;
+  min-height: 56px;
+  padding: 0.85rem 1.75rem;
+  white-space: nowrap;
+  font-size: 1.05rem;
+  font-weight: 650;
+  flex: 0 0 auto;
+}
+
+.pre-reg-finish__note {
+  margin: 0;
+  text-align: center;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: rgba(230, 241, 255, 0.55);
+}
+
+@media (max-width: 767.98px) {
+  .pre-reg-switch-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .local-form-tab-nav .button-success,
+  .local-form-tab-nav .button-danger {
+    flex: 1 1 calc(50% - 6px);
+    width: auto;
+    min-width: 0;
+  }
+
+  .pre-reg-finish__nav .button-back,
+  .pre-reg-finish__nav .button-success {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .pre-reg-corresp-row__field--nombre,
+  .pre-reg-corresp-row__field--ocupacion {
+    flex: 1 1 100%;
+  }
+
+  .pre-reg-corresp-row__actions {
+    width: 100%;
+  }
+
+  .pre-reg-corresp__add,
+  .pre-reg-corresp__delete {
+    flex: 1 1 0;
+  }
+
+  .pre-reg-section-head-actions {
+    flex-direction: column;
+  }
+}

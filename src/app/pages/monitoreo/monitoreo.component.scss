@@ -17,6 +17,7 @@
   --estatus-info: #f9c300;
   --estatus-rechazo: #eb1919;
   --estatus-correctos: #52bb56;
+  --estatus-baja: #c84ec8;
 
   height: 100%;
   background: var(--monitor-bg);
@@ -221,6 +222,10 @@
     --card-accent: var(--estatus-correctos);
   }
 
+  &[data-estatus='baja'] {
+    --card-accent: var(--estatus-baja);
+  }
+
   &:hover {
     transform: translateY(-1px);
     border-color: color-mix(in srgb, var(--card-accent) 45%, rgba(255, 255, 255, 0.14));
@@ -279,10 +284,14 @@
   align-items: flex-start;
   gap: 4px;
   margin-bottom: 4px;
+}
 
-  .monitor-local-card__status {
-    align-self: flex-end;
-  }
+.monitor-local-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  width: 100%;
 }
 
 .monitor-local-card__name {
@@ -305,6 +314,27 @@
   color: #fff;
   background: color-mix(in srgb, var(--card-accent) 55%, #0f172a);
   border: 1px solid color-mix(in srgb, var(--card-accent) 45%, transparent);
+}
+
+.monitor-local-card__predio {
+  max-width: 100%;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  color: #fff;
+
+  &--obra {
+    background: rgba(232, 163, 23, 0.55);
+    border: 1px solid rgba(232, 163, 23, 0.75);
+  }
+
+  &--sin {
+    background: rgba(96, 165, 250, 0.45);
+    border: 1px solid rgba(96, 165, 250, 0.7);
+  }
 }
 
 .monitor-local-card__line {

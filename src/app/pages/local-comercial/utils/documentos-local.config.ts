@@ -15,20 +15,21 @@ export interface DocumentoLocalConfig {
 }
 
 const DOCUMENTO_DEFAULTS = {
-  accept: 'image/*,.pdf',
-  badgeDefault: 'PNG · JPG · WEBP · PDF · Máx. 3 MB',
+  accept: 'image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf',
+  badgeDefault: 'PNG · JPG · JPEG · PDF · Máx. 3 MB',
+  uploadTitle: 'Sube imagen o PDF',
 };
 
 export const DOCUMENTOS_LOCAL: DocumentoLocalConfig[] = [
-  { controlName: 'ReciboSapac', titulo: 'RECIBO SAPAC', idTipoFoto: 3, buttonClass: 'success', tab: 'sapac', uploadTitle: 'Sube tu imagen', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'CaratulaMedidor', titulo: 'CARÁTULA MEDIDOR', idTipoFoto: 4, buttonClass: 'primary', tab: 'sapac', uploadTitle: 'Sube tu imagen', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'CuadroMedidor', titulo: 'CUADRO MEDIDOR', idTipoFoto: 5, buttonClass: 'warning', tab: 'sapac', uploadTitle: 'Sube tu imagen', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'ReciboPredial', titulo: 'RECIBO PREDIAL', idTipoFoto: 2, buttonClass: 'success', tab: 'catastral', uploadTitle: 'Sube tu imagen', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'LicenciaFuncionamiento', titulo: 'LICENCIA DE FUNCIONAMIENTO', idTipoFoto: 1, buttonClass: 'success', tab: 'licenciamiento', uploadTitle: 'Sube archivo', icon: 'description', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'FachadaEstablecimiento', titulo: 'FACHADA DEL ESTABLECIMIENTO', idTipoFoto: 6, buttonClass: 'primary', tab: 'licenciamiento', uploadTitle: 'Sube tu imagen', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'Bodega', titulo: 'BODEGA', idTipoFoto: 8, buttonClass: 'warning', tab: 'licenciamiento', uploadTitle: 'Sube tu imagen', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'EstacionamientoIMG', titulo: 'ESTACIONAMIENTO', idTipoFoto: 7, buttonClass: 'danger', tab: 'licenciamiento', uploadTitle: 'Sube tu imagen', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'VistoBueno', titulo: 'VISTO BUENO', idTipoFoto: 9, buttonClass: 'success', tab: 'proteccion', uploadTitle: 'Sube archivo', icon: 'description', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Sapac.reciboSapac', titulo: 'RECIBO SAPAC', idTipoFoto: 3, buttonClass: 'success', tab: 'sapac', icon: 'image', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Sapac.caratulamedidor', titulo: 'CARÁTULA MEDIDOR', idTipoFoto: 4, buttonClass: 'primary', tab: 'sapac', icon: 'image', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Sapac.cuadromedidor', titulo: 'CUADRO MEDIDOR', idTipoFoto: 5, buttonClass: 'warning', tab: 'sapac', icon: 'image', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Catastro.reciboPredial', titulo: 'RECIBO PREDIAL', idTipoFoto: 2, buttonClass: 'success', tab: 'catastral', icon: 'image', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Licencias.licenciaFuncionamiento', titulo: 'LICENCIA DE FUNCIONAMIENTO', idTipoFoto: 1, buttonClass: 'success', tab: 'licenciamiento', icon: 'description', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Licencias.fachada', titulo: 'FACHADA DEL ESTABLECIMIENTO', idTipoFoto: 6, buttonClass: 'primary', tab: 'licenciamiento', icon: 'image', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Licencias.bodega', titulo: 'BODEGA', idTipoFoto: 8, buttonClass: 'warning', tab: 'licenciamiento', icon: 'image', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Licencias.estacionamiento', titulo: 'ESTACIONAMIENTO', idTipoFoto: 7, buttonClass: 'danger', tab: 'licenciamiento', icon: 'image', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'ProteccionCivil.vistoBueno', titulo: 'VISTO BUENO', idTipoFoto: 9, buttonClass: 'success', tab: 'proteccion', icon: 'description', ...DOCUMENTO_DEFAULTS },
 ];
 
 export const DOCUMENTOS_SAPAC = DOCUMENTOS_LOCAL.filter((d) => d.tab === 'sapac');
@@ -124,39 +125,61 @@ export function tieneCoordenadasValidas(lat: unknown, lng: unknown): boolean {
 }
 
 
-export function formatApiDateTime(value: unknown): string {
+/** Extrae yyyy-MM-dd del texto sin usar Date (evita desfase por zona horaria). */
+function extraerFechaCalendario(value: unknown): { y: number; m: number; d: number } | null {
   if (value == null || value === '') {
-    return '';
+    return null;
   }
+  if (value instanceof Date) {
+    if (isNaN(value.getTime())) {
+      return null;
+    }
+    return {
+      y: value.getFullYear(),
+      m: value.getMonth() + 1,
+      d: value.getDate(),
+    };
+  }
+  const raw = String(value).trim();
+  // "2027-07-19", "2027-07-19T00:00:00", "2027-07-19 02:24:28"
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw);
+  if (!match) {
+    const date = new Date(raw);
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+    return {
+      y: date.getFullYear(),
+      m: date.getMonth() + 1,
+      d: date.getDate(),
+    };
+  }
+  const y = Number(match[1]);
+  const m = Number(match[2]);
+  const d = Number(match[3]);
+  if (!y || m < 1 || m > 12 || d < 1 || d > 31) {
+    return null;
+  }
+  return { y, m, d };
+}
 
-  const selectedDate = value instanceof Date ? value : new Date(String(value));
-  if (isNaN(selectedDate.getTime())) {
+export function formatApiDateTime(value: unknown): string {
+  const parts = extraerFechaCalendario(value);
+  if (!parts) {
     return '';
   }
 
   const now = new Date();
-  const combined = new Date(
-    selectedDate.getFullYear(),
-    selectedDate.getMonth(),
-    selectedDate.getDate(),
-    now.getHours(),
-    now.getMinutes(),
-    now.getSeconds()
-  );
-
   const pad = (n: number) => String(n).padStart(2, '0');
-  return `${combined.getFullYear()}-${pad(combined.getMonth() + 1)}-${pad(combined.getDate())} ${pad(combined.getHours())}:${pad(combined.getMinutes())}:${pad(combined.getSeconds())}`;
+  return `${parts.y}-${pad(parts.m)}-${pad(parts.d)} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 }
 
 /** Valor yyyy-MM-dd para input type="date" al cargar desde API. */
 export function toDateInputValue(value: unknown): string {
-  if (value == null || value === '') {
-    return '';
-  }
-  const date = value instanceof Date ? value : new Date(String(value));
-  if (isNaN(date.getTime())) {
+  const parts = extraerFechaCalendario(value);
+  if (!parts) {
     return '';
   }
   const pad = (n: number) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return `${parts.y}-${pad(parts.m)}-${pad(parts.d)}`;
 }

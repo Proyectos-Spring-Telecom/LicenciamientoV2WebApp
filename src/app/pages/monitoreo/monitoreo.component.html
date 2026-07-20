@@ -64,7 +64,14 @@
               </div>
               <div class="monitor-local-card__info">
                 <div class="monitor-local-card__top">
-                  <span class="monitor-local-card__status">{{ etiquetaEstatus(local) }}</span>
+                  <div class="monitor-local-card__badges">
+                    <span class="monitor-local-card__status">{{ etiquetaEstatus(local) }}</span>
+                    <span
+                      class="monitor-local-card__predio"
+                      [class.monitor-local-card__predio--obra]="esEnObra(local)"
+                      [class.monitor-local-card__predio--sin]="!esEnObra(local)"
+                    >{{ etiquetaPredio(local) }}</span>
+                  </div>
                   <h3 class="monitor-local-card__name">{{ local.nombreComercial || 'Sin nombre' }}</h3>
                 </div>
                 <p class="monitor-local-card__line">
@@ -117,14 +124,19 @@
         <app-monitoreo-local-filter
           [selectedEstatus]="selectedEstatus"
           [estatusCounts]="estatusFilterCounts"
-          [totalCount]="totalLocalesCount"
+          [selectedPredio]="selectedPredio"
+          [predioCounts]="predioFilterCounts"
+          [totalCount]="totalTrasFiltroPredio"
+          [predioTotalCount]="totalTrasFiltroEstatus"
           (estatusChange)="onEstatusFilterChange($event)"
+          (predioChange)="onPredioFilterChange($event)"
         ></app-monitoreo-local-filter>
       </div>
       <app-mapa
         (localesReady)="onLocalesReady($event)"
         (localFocused)="onMapLocalFocused($event)"
         (estatusFilterReset)="onEstatusFilterChange($event)"
+        (predioFilterReset)="onPredioFilterChange($event)"
       ></app-mapa>
     </div>
   </div>

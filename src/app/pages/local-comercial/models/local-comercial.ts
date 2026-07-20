@@ -9,6 +9,10 @@ export interface LocalComercial {
     lng: number;
     nombreCapturista: any;
     nombreComercial : string;
+    /** 0 = sin obra, 1 = predio en obra */
+    predioObra?: number;
+    /** Etiqueta legible para el grid */
+    predioObraLabel?: string;
     nombreEstatus: any;
     rfc: any;
     urlLicencia: any;

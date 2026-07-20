@@ -1,9 +1,18 @@
 ﻿// @ts-nocheck
 import { routeAnimation } from 'src/app/pipe/module-open.animation';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { LocalComercialService } from './../../services/local-comercial.service';
 import { Component, OnInit, inject, ElementRef, ViewChild, enableProdMode, Inject, } from '@angular/core';
-import { DetalleLocal, direccion, direccionSapac, contacto, representante, proteccionCivil } from '../../models/detalle-local-comercial';
+import {
+  DetalleLocal,
+  DocumentoDetalleItem,
+  LicenciaConstruccionDetalle,
+  direccion,
+  direccionSapac,
+  contacto,
+  representante,
+  proteccionCivil,
+} from '../../models/detalle-local-comercial';
 // import { DatePipe } from '@angular/common';
 import Swal from 'sweetalert2';
 import { User } from 'src/app/entities/User';
@@ -17,6 +26,7 @@ import { GoogleMapsLoaderService } from 'src/app/services/google-maps-loader.ser
 import { environment } from 'src/environments/environment';
 import { LicenciamientoPermiso } from 'src/app/entities/licenciamiento-permiso.const';
 import { galeriaMetaAnimation, galeriaPhotoAnimation } from '../../animations/detalle-galeria.animation';
+import { mapRegistroToDetalleLocal, unwrapRegistroResponse } from '../../utils/map-registro-api.util';
 
 var currentInfoWindow = null;
 let map: google.maps.Map;
@@ -87,6 +97,7 @@ export class DetalleLocalComercialComponent implements OnInit {
   public mensajeAgrupar: string = 'Arrastre un encabezado de columna aquí para agrupara por esa columna';
   public isDisabled: boolean = true;
   public imagenCarrusel = 'assets/default.png';
+  public imagenCarruselLc = 'assets/default.png';
   public loading: boolean = false;
   public informacion: DetalleLocal;
   public imei: string;
@@ -94,7 +105,10 @@ export class DetalleLocalComercialComponent implements OnInit {
   public galeria: any;
   public nombre: string = 'Dato';
   public i: number = 0;
+  public iLc: number = 0;
   public galeriaDireccion: 'init' | 'next' | 'prev' = 'init';
+  public galeriaDireccionLc: 'init' | 'next' | 'prev' = 'init';
+  public ocultaBtnsLc = false;
   public interval = null;
   public loadingMessage: string = 'Cargando...';
 	loadingVisible = false;
@@ -145,6 +159,9 @@ export class DetalleLocalComercialComponent implements OnInit {
       representante: {} as representante,
       proteccionCivil: { esEmpresa: false, tienePrograma: false } as proteccionCivil,
       fotos: [],
+      predioObra: 0,
+      licenciaConstruccion: null,
+      documentosLicenciaConstruccion: [],
       NombreProteccionCivil: null,
       ApellidoPaternoProteccionCivil: null,
       ApellidoMaternoProteccionCivil: null,
@@ -169,7 +186,49 @@ export class DetalleLocalComercialComponent implements OnInit {
       representante: { ...base.representante, ...(res.representante || {}) },
       proteccionCivil: { ...base.proteccionCivil, ...(res.proteccionCivil || {}) },
       fotos: Array.isArray(res.fotos) ? res.fotos : [],
+      predioObra: Number(res.predioObra) === 1 ? 1 : 0,
+      licenciaConstruccion: res.licenciaConstruccion ?? null,
+      documentosLicenciaConstruccion: Array.isArray(res.documentosLicenciaConstruccion)
+        ? res.documentosLicenciaConstruccion
+        : [],
     };
+  }
+
+  get esPredioEnObra(): boolean {
+    return Number(this.informacion?.predioObra) === 1;
+  }
+
+  get licenciaConstruccion(): LicenciaConstruccionDetalle | null {
+    return this.informacion?.licenciaConstruccion ?? null;
+  }
+
+  get documentosLc(): DocumentoDetalleItem[] {
+    return this.informacion?.documentosLicenciaConstruccion ?? [];
+  }
+
+  get etiquetaTituloDetalle(): string {
+    return this.esPredioEnObra ? 'Propietario:' : 'Nombre Comercial:';
+  }
+
+  get tituloDetallePrincipal(): string {
+    if (this.esPredioEnObra) {
+      const propietario = this.licenciaConstruccion?.NombrePropietario?.trim();
+      if (propietario) {
+        return propietario;
+      }
+    }
+    return (this.nombreComercial || this.informacion?.nombreComercial || '').trim();
+  }
+
+  get tipoSolicitudLcTexto(): string {
+    const tipo = Number(this.licenciaConstruccion?.TipoSolicitudLicencia);
+    const map: Record<number, string> = {
+      1: 'Obra nueva',
+      2: 'Licencia sencilla',
+      3: 'Regularización y/o aprobación, cambio de uso',
+      4: 'Otros, canalización vía pública, etc',
+    };
+    return map[tipo] || '';
   }
 
   /** NO BORRAR — Alerta de cargando del detalle. */
@@ -533,18 +592,23 @@ export class DetalleLocalComercialComponent implements OnInit {
 
   constructor(
     public router: Router,
+    private activatedRoute: ActivatedRoute,
     public localComercialService: LocalComercialService,
     private googleMapsLoader: GoogleMapsLoaderService) {
       this.showFilterRow = true;
-		  this.showHeaderFilter = true;
+      this.showHeaderFilter = true;
       this.informacion = this.crearInformacionVacia();
      }
 
   ngOnInit() {
     this.obtenerPermisos();
     this.datosCargados = false;
-    this.id = 1;
-    this.obtenerDetalleLocal(this.id, true);
+    this.activatedRoute.params.subscribe((param) => {
+      this.id = Number(param['id']);
+      if (this.id) {
+        this.obtenerDetalleLocal(this.id, true);
+      }
+    });
   }
 
   onShown() {
@@ -607,27 +671,38 @@ export class DetalleLocalComercialComponent implements OnInit {
       this.mostrarCargandoDetalle();
     }
 
-    /* Vista libre sin params: registro local (sin servicio). */
-    const res = this.crearDetalleLocalDemo(id);
-    this.informacion = this.normalizarInformacion(res);
-    this.nombreComercial = this.informacion.nombreComercial ?? '';
-    this.direccionNombreEntidadFederativa =
-      this.informacion.direccion?.nombreEntidadFederativaLicencia ?? null;
+    this.localComercialService.obtenerRegistroPorId(id).subscribe({
+      next: (response) => {
+        const api = unwrapRegistroResponse(response);
+        const res = mapRegistroToDetalleLocal(api);
+        this.informacion = this.normalizarInformacion(res);
+        this.nombreComercial = this.informacion.nombreComercial ?? '';
+        this.direccionNombreEntidadFederativa =
+          this.informacion.direccion?.nombreEntidadFederativaLicencia ?? null;
 
-    this.aplicarDetalleLocal();
-    this.tieneUbicacionMapa = this.tieneCoordenadasValidas(
-      this.informacion.lat,
-      this.informacion.lng
-    );
+        this.aplicarDetalleLocal();
+        this.tieneUbicacionMapa = this.tieneCoordenadasValidas(
+          this.informacion.lat,
+          this.informacion.lng
+        );
 
-    this.datosCargados = true;
-    this.ocultarCargandoDetalle(true);
+        this.datosCargados = true;
+        this.ocultarCargandoDetalle(true);
 
-    if (this.tieneUbicacionMapa) {
-      setTimeout(() => this.inicializarMapaDetalle(id), 0);
-    } else {
-      this.isAvailable = false;
-    }
+        if (this.tieneUbicacionMapa) {
+          setTimeout(() => this.inicializarMapaDetalle(id), 0);
+        } else {
+          this.isAvailable = false;
+        }
+      },
+      error: () => {
+        this.informacion = this.crearInformacionVacia();
+        this.datosCargados = true;
+        this.tieneUbicacionMapa = false;
+        this.isAvailable = false;
+        this.ocultarCargandoDetalle(false);
+      },
+    });
   }
 
   private crearDetalleLocalDemo(id: number): DetalleLocal {
@@ -676,34 +751,34 @@ export class DetalleLocalComercialComponent implements OnInit {
       VistoBueno: null,
       RfcProteccionCivil: null,
       direccion: {
-        idEntidadFederativaLicencia: 17,
-        idMunicipioLicencia: 1,
-        idLocalidadLicencia: 1,
-        idColoniaLicencia: 1,
-        idCalleLicencia: 1,
-        nombreEntidadFederativaLicencia: 'Morelos',
-        nombreMuncipioLicencia: 'Cuernavaca',
-        nombreLocalidadLicencia: 'Cuernavaca',
-        nombreColoniaLicencia: 'Centro',
-        nombreCalleLicencia: 'Calle Demo',
-        noInteriorLicencia: '1',
-        noExteriorLicencia: '100',
-        cpLicencia: 62000,
+        idEntidadFederativaLicencia: null,
+        idMunicipioLicencia: null,
+        idLocalidadLicencia: null,
+        idColoniaLicencia: null,
+        idCalleLicencia: null,
+        nombreEntidadFederativaLicencia: null,
+        nombreMuncipioLicencia: null,
+        nombreLocalidadLicencia: null,
+        nombreColoniaLicencia: null,
+        nombreCalleLicencia: null,
+        noInteriorLicencia: null,
+        noExteriorLicencia: null,
+        cpLicencia: null,
       },
       direccionSapac: {
-        idEntidadFederativaSapac: 17,
-        idMunicipioSapac: 1,
-        idLocalidadSapac: 1,
-        idColoniaSapac: 1,
-        idCalleSapac: 1,
-        nombreEntidadFederativaSapac: 'Morelos',
-        nombreMuncipioSapac: 'Cuernavaca',
-        nombreLocalidadSapac: 'Cuernavaca',
-        nombreColoniaSapac: 'Centro',
-        nombreCalleSapac: 'Calle Demo',
-        noInteriorSapac: '1',
-        noExteriorSapac: '100',
-        cpSapac: 62000,
+        idEntidadFederativaSapac: null,
+        idMunicipioSapac: null,
+        idLocalidadSapac: null,
+        idColoniaSapac: null,
+        idCalleSapac: null,
+        nombreEntidadFederativaSapac: null,
+        nombreMuncipioSapac: null,
+        nombreLocalidadSapac: null,
+        nombreColoniaSapac: null,
+        nombreCalleSapac: null,
+        noInteriorSapac: null,
+        noExteriorSapac: null,
+        cpSapac: null,
       },
       contacto: {
         contactoNombre: 'María',
@@ -758,6 +833,7 @@ export class DetalleLocalComercialComponent implements OnInit {
       this.imagenEstacionamiento = fotos.find((x) => x.idTipoFoto == 7);
       this.imagenBodega = fotos.find((x) => x.idTipoFoto == 8);
       this.imagenVistoBueno = fotos.find((x) => x.idTipoFoto == 9);
+      this.i = 0;
       this.galeriaDireccion = 'init';
       this.actualizarImagenCarrusel();
       this.ocultaBtns = fotos.length < 2;
@@ -769,6 +845,12 @@ export class DetalleLocalComercialComponent implements OnInit {
       this.ocultaBtns = true;
       this.loading = false;
     }
+
+    const docsLc = this.documentosLc;
+    this.iLc = 0;
+    this.galeriaDireccionLc = 'init';
+    this.ocultaBtnsLc = docsLc.length < 2;
+    this.actualizarImagenCarruselLc();
 
     this.nombreSapacCompleto = this.concatenarNombre(
       this.informacion.nombreSapac,
@@ -1095,6 +1177,19 @@ export class DetalleLocalComercialComponent implements OnInit {
     return this.obtenerTipoFoto(this.informacion?.fotos?.[this.i]);
   }
 
+  get galeriaSlideLc(): { url: string; tipo: string; index: number } {
+    const doc = this.documentosLc[this.iLc];
+    return {
+      url: this.imagenCarruselLc,
+      tipo: doc?.titulo || 'Documento',
+      index: this.iLc,
+    };
+  }
+
+  get tipoDocumentoLcActual(): string {
+    return this.documentosLc[this.iLc]?.titulo || 'Sin documento';
+  }
+
   trackGaleriaSlide(_index: number, slide: { index: number }): number {
     return slide.index;
   }
@@ -1103,6 +1198,48 @@ export class DetalleLocalComercialComponent implements OnInit {
     const foto = this.informacion?.fotos?.[this.i];
     this.imagenCarrusel = this.resolveFotoRuta(foto?.ruta);
     this.loading = false;
+  }
+
+  private actualizarImagenCarruselLc(): void {
+    const doc = this.documentosLc[this.iLc];
+    this.imagenCarruselLc = this.resolveFotoRuta(doc?.ruta);
+  }
+
+  prevLc(): void {
+    const total = this.documentosLc.length;
+    if (total < 2) {
+      return;
+    }
+    this.galeriaDireccionLc = 'prev';
+    this.iLc = this.iLc === 0 ? total - 1 : this.iLc - 1;
+    this.actualizarImagenCarruselLc();
+  }
+
+  nextLc(): void {
+    const total = this.documentosLc.length;
+    if (total < 2) {
+      return;
+    }
+    this.galeriaDireccionLc = 'next';
+    this.iLc = this.iLc === total - 1 ? 0 : this.iLc + 1;
+    this.actualizarImagenCarruselLc();
+  }
+
+  irADocumentoLc(index: number): void {
+    if (index < 0 || index >= this.documentosLc.length) {
+      return;
+    }
+    this.galeriaDireccionLc = index > this.iLc ? 'next' : index < this.iLc ? 'prev' : 'init';
+    this.iLc = index;
+    this.actualizarImagenCarruselLc();
+  }
+
+  esDocumentoLcActualPlaceholder(): boolean {
+    const doc = this.documentosLc[this.iLc];
+    if (!doc) {
+      return true;
+    }
+    return this.resolveFotoRuta(doc.ruta) === this.defaultImage;
   }
 
   private obtenerTipoFoto(foto?: { tipoFoto?: string; idTipoFoto?: number }): string {
@@ -1156,21 +1293,49 @@ export class DetalleLocalComercialComponent implements OnInit {
       2: 'Rechazo o Sin respuesta',
       3: 'Datos Correctos',
       4: 'Revisión',
+      5: 'Baja',
     };
-    this.informacion.estatus = nombreEstatus;
-    this.informacion.nombreEstatus = mapa[nombreEstatus] ?? etiqueta;
 
-    // NO BORRAR — Alerta de confirmación de cambio de estatus.
-    Swal.fire({
-      color: '#ffffff',
-      background: '#141a21',
-      title: '¡Confirmación Realizada!',
-      html: `El estatus se cambió a <strong>${etiqueta}</strong>.`,
-      icon: 'success',
-      confirmButtonColor: '#3085d6',
-      confirmButtonText: 'Confirmar',
+    this.localComercialService.actualizarEstatusRegistro(this.id, nombreEstatus).subscribe({
+      next: () => {
+        this.informacion.estatus = nombreEstatus;
+        this.informacion.nombreEstatus = mapa[nombreEstatus] ?? etiqueta;
+        this[flags.text] = etiqueta;
+        this[flags.load] = false;
+        this[flags.icon] = true;
+
+        // NO BORRAR — Alerta de confirmación de cambio de estatus.
+        Swal.fire({
+          color: '#ffffff',
+          background: '#141a21',
+          title: '¡Confirmación Realizada!',
+          html: `El estatus se cambió a <strong>${etiqueta}</strong>.`,
+          icon: 'success',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Confirmar',
+        }).then(() => {
+          this.regresar();
+        });
+      },
+      error: () => {
+        this[flags.text] = etiqueta;
+        this[flags.load] = false;
+        this[flags.icon] = true;
+        Swal.fire({
+          color: '#ffffff',
+          background: '#141a21',
+          title: 'Error',
+          html: 'No se pudo actualizar el estatus. Intente de nuevo.',
+          icon: 'error',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Entendido',
+        });
+      },
     });
-    this.regresar();
+  }
+
+  get esDatosCorrectos(): boolean {
+    return Number(this.informacion?.estatus) === 3;
   }
 
   private confirmarCambioEstatus(

@@ -15,18 +15,69 @@
 
     <div class="dropdown" [class.open]="isOpen" (click)="$event.stopPropagation()">
       <div class="symbology-card">
-        <div class="dropdown-header text-center">
-          <div class="symbology-title-line">Simbología para conocer el estado en el</div>
-          <div class="symbology-title-line">se encuentra el establecimiento comercial.</div>
-        </div>
-        <div class="dropdown-content">
-          @for (notification of notifications; track notification.name) {
-            <div [ngClass]="notification.color" class="notification">
-              <mat-icon class="icon">{{ notification.icon }}</mat-icon>
-              <div class="name">{{ notification.name }}</div>
-            </div>
-          }
-        </div>
+        <header class="sym-head">
+          <div class="sym-head__badge" aria-hidden="true">
+            <mat-icon>map</mat-icon>
+          </div>
+          <div class="sym-head__copy">
+            <span class="sym-head__kicker">Mapa de monitoreo</span>
+            <h3 class="sym-head__title">Simbología</h3>
+            <p class="sym-head__desc">
+              Identifica el estatus del establecimiento y si el predio está en obra.
+            </p>
+          </div>
+        </header>
+
+        <section class="sym-section" aria-label="Estatus del establecimiento">
+          <div class="sym-section__label">
+            <mat-icon>flag</mat-icon>
+            <span>Estatus</span>
+          </div>
+          <div class="sym-section__list">
+            @for (item of estatusItems; track item.name) {
+              <article class="sym-item" [ngClass]="item.colorClass">
+                <span class="sym-item__stripe" aria-hidden="true"></span>
+                <span class="sym-item__icon" aria-hidden="true">
+                  <mat-icon>{{ item.icon }}</mat-icon>
+                </span>
+                <div class="sym-item__text">
+                  <strong>{{ item.name }}</strong>
+                  <small>{{ item.hint }}</small>
+                </div>
+                <span class="sym-item__dot" aria-hidden="true"></span>
+              </article>
+            }
+          </div>
+        </section>
+
+        <section class="sym-section sym-section--predio" aria-label="Predio en obra">
+          <div class="sym-section__label">
+            <mat-icon>construction</mat-icon>
+            <span>Predio en obra</span>
+          </div>
+          <div class="sym-section__list sym-section__list--predio">
+            @for (item of predioItems; track item.name) {
+              <article class="sym-item" [ngClass]="item.colorClass">
+                <span class="sym-item__stripe" aria-hidden="true"></span>
+                <span class="sym-item__icon" aria-hidden="true">
+                  <mat-icon>{{ item.icon }}</mat-icon>
+                </span>
+                <div class="sym-item__text">
+                  <strong>{{ item.name }}</strong>
+                  <small>{{ item.hint }}</small>
+                </div>
+                <span class="sym-item__pin sym-item__pin--inline" aria-hidden="true" [class.sym-item__pin--obra]="item.colorClass === 'sym-item--obra'">
+                  <span class="sym-item__pin-head"></span>
+                  <span class="sym-item__pin-point"></span>
+                </span>
+              </article>
+            }
+          </div>
+        </section>
+
+        <footer class="sym-foot">
+          Toca un marcador en el mapa para ver el detalle del local
+        </footer>
       </div>
     </div>
   </div>

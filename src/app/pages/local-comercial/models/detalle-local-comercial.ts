@@ -1,3 +1,34 @@
+export interface LicenciaConstruccionDetalle {
+  Id?: number | null;
+  TipoSolicitudLicencia?: number | string | null;
+  DescripcionProyecto?: string | null;
+  SuperficieTerrenoM2?: number | string | null;
+  SuperficieTerrenoObraM2?: number | string | null;
+  DescripcionSistemaConstructivo?: string | null;
+  NombrePropietario?: string | null;
+  DomicilioNotificacion?: string | null;
+  RFC?: string | null;
+  NombreDRO?: string | null;
+  NoRegLicenciaConstruccion?: string | null;
+  CedulaProfesional?: string | null;
+  Fecha?: string | Date | null;
+  NumeroExpediente?: string | null;
+  NumeroControl?: string | null;
+  SeguimientoObra?: string | null;
+  Corresponsables?: Array<{
+    Id?: number | null;
+    NombreCompleto?: string | null;
+    NoRegLicenciaConstruccion?: string | null;
+    CedulaProfesional?: string | null;
+  }>;
+}
+
+export interface DocumentoDetalleItem {
+  titulo: string;
+  ruta: string;
+  idTipoFoto?: number | null;
+}
+
 export class DetalleLocal{
     direccion: direccion;  
     direccionSapac: direccionSapac;
@@ -5,6 +36,11 @@ export class DetalleLocal{
     proteccionCivil: proteccionCivil;
     representante: representante;
     fotos: fotos [];
+    /** 0 = local comercial normal, 1 = predio en obra */
+    predioObra?: number;
+    licenciaConstruccion?: LicenciaConstruccionDetalle | null;
+    /** Archivos de Licencia de Construcción (URLs) para galería del detalle. */
+    documentosLicenciaConstruccion?: DocumentoDetalleItem[];
     apellidoMaterno?: string;
     apellidoMaternoSapac?: string;
     apellidoPaterno?: string;

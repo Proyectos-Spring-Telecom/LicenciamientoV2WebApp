@@ -170,6 +170,7 @@ export class AgregarUsuarioComponent implements OnInit {
         nombre: u?.nombre ?? '',
         apellidoPaterno: u?.apellidoPaterno ?? '',
         apellidoMaterno: u?.apellidoMaterno ?? '',
+        telefono: u?.telefono ?? '',
         idRol: u?.idRol != null ? Number(u.idRol) : null,
         idGrupo: u?.idGrupo != null ? Number(u.idGrupo) : null,
       });
@@ -233,6 +234,7 @@ export class AgregarUsuarioComponent implements OnInit {
       apellidoPaterno: String(v.apellidoPaterno ?? '').trim(),
       apellidoMaterno: String(v.apellidoMaterno ?? '').trim(),
       correo: String(v.correo ?? '').trim(),
+      telefono: String(v.telefono ?? '').trim(),
       password: v.password,
       confirmPassword: v.confirmPassword,
       idRol: Number(v.idRol),
@@ -248,6 +250,7 @@ export class AgregarUsuarioComponent implements OnInit {
       nombre: String(v.nombre ?? '').trim(),
       apellidoPaterno: String(v.apellidoPaterno ?? '').trim(),
       apellidoMaterno: String(v.apellidoMaterno ?? '').trim(),
+      telefono: String(v.telefono ?? '').trim(),
       idRol: Number(v.idRol),
       idGrupo: Number(v.idGrupo),
     };
@@ -301,6 +304,7 @@ export class AgregarUsuarioComponent implements OnInit {
       apellidoPaterno: 'Apellido Paterno',
       apellidoMaterno: 'Apellido Materno',
       correo: 'Correo',
+      telefono: 'Teléfono',
       password: 'Contraseña',
       confirmPassword: 'Confirmar contraseña',
       idRol: 'Rol',
@@ -365,10 +369,11 @@ export class AgregarUsuarioComponent implements OnInit {
       nombre: 'Nombre',
       apellidoPaterno: 'Apellido Paterno',
       apellidoMaterno: 'Apellido Materno',
+      telefono: 'Teléfono',
       idRol: 'Rol',
       idGrupo: 'Grupo',
     };
-    const required = ['nombre', 'apellidoPaterno', 'apellidoMaterno', 'idRol', 'idGrupo'];
+    const required = ['nombre', 'apellidoPaterno', 'apellidoMaterno', 'telefono', 'idRol', 'idGrupo'];
     const faltantes = required
       .filter((key) => {
         const ctrl = this.usuarioForm.get(key);

@@ -1,0 +1,936 @@
+<!-- Solo modal visible hasta confirmar ubicación; luego entra el formulario -->
+<div *ngIf="ubicacionConfirmada" [@routeAnimation] class="card card--panel perm-wrapper">
+  <header class="perm-head perm-head--left" role="region" aria-label="Sección: Pre-registro de Local">
+    <div class="perm-head__icon" aria-hidden="true">
+      <mat-icon>{{ mostrarApartadoObra ? 'assignment_turned_in' : 'storefront' }}</mat-icon>
+    </div>
+    <div class="perm-head__text">
+      <span class="eyebrow">{{ title }}</span>
+      <h2>{{ mostrarApartadoObra ? 'Finalización del Trámite' : titulo }}</h2>
+    </div>
+    <nav class="perm-head__crumbs" aria-label="Ruta">
+      <span class="crumb">{{ title }}</span>
+      <span class="sep">/</span>
+      <span class="crumb active">{{ mostrarApartadoObra ? 'Finalización del Trámite' : titulo }}</span>
+    </nav>
+  </header>
+
+  <div class="surface">
+    <section class="perm-form-nc container-fluid py-3 py-md-4">
+
+      <!-- ═══════ FORMULARIO 1: Tipo de Local ═══════ -->
+      <div class="local-form-shell pre-reg-shell"
+        [hidden]="mostrarApartadoObra"
+        [class.is-step-hidden]="mostrarApartadoObra"
+        [attr.aria-hidden]="mostrarApartadoObra" data-accent="licenciamiento">
+
+        <div class="local-form-banner local-tab-header--licenciamiento">
+          <div class="row g-3 align-items-center">
+            <div class="col-12 col-lg-8">
+              <div class="local-form-banner__main">
+                <div class="local-form-banner__icon" aria-hidden="true">
+                  <mat-icon>apartment</mat-icon>
+                </div>
+                <div class="local-form-banner__copy">
+                  <!-- <span class="local-form-banner__step">Paso {{ pasoActualFlujo }} de {{ pasosTotalesFlujo }}</span> -->
+                  <div class="local-form-banner__title">Tipo de Local</div>
+                  <p class="local-form-banner__subtitle">
+                    Proporcione la información física del establecimiento para el registro.
+                  </p>
+                  <div class="pre-reg-coords" *ngIf="direccionSeleccionada || (lat != null && lng != null)">
+                    <mat-icon>pin_drop</mat-icon>
+                    <span [title]="direccionSeleccionada">{{ direccionSeleccionada || 'Ubicación confirmada' }}</span>
+                    <button type="button" class="pre-reg-coords__edit" (click)="abrirModalUbicacion()" title="Cambiar ubicación">
+                      <mat-icon>edit_location_alt</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-4">
+              <div class="local-form-banner__actions">
+                <div class="pre-reg-progress pre-reg-progress--banner">
+                  <!-- <span class="pre-reg-progress__label">{{ porcentajeAvanceFlujo }}% · PASO {{ pasoActualFlujo }} DE {{ pasosTotalesFlujo }}</span> -->
+                  <div class="pre-reg-progress__track">
+                    <div class="pre-reg-progress__bar" [style.width.%]="porcentajeAvanceFlujo"></div>
+                  </div>
+                </div>
+                <button type="button" class="button-back local-form-banner__back" (click)="redirigirLista()">
+                  <i class="fa fa-arrow-left"></i>&nbsp;&nbsp;Regresar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="local-form-section">
+          <div class="local-form-section__head">
+            <span class="local-form-section__badge"><mat-icon>place</mat-icon></span>
+            <div>
+              <h4 class="local-form-section__title">Ubicación física</h4>
+              <p class="local-form-section__desc">Datos del domicilio del establecimiento</p>
+            </div>
+          </div>
+
+          <div class="row g-3 g-md-4">
+            <div class="col-12 col-md-8">
+              <label class="form-label perm-label" for="preCp">Código Postal</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>markunread_mailbox</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preCp" class="form-control" placeholder="Código Postal"
+                    [(ngModel)]="codigoPostal" maxlength="5" />
+                  <label for="preCp">Código Postal</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4 d-flex align-items-end">
+              <button type="button" class="pre-reg-btn-search w-100" (click)="buscarCodigoPostal()">
+                <mat-icon>search</mat-icon>
+                Buscar
+              </button>
+            </div>
+          </div>
+
+          <div class="row g-3 g-md-4 mt-1">
+            <div class="col-12 col-sm-6 col-xl-3">
+              <label class="form-label perm-label" for="preEstado">Estado</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>map</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preEstado" class="form-control" placeholder="Estado" name="preEstado"
+                    [(ngModel)]="estado"
+                    [readonly]="!direccionManualPorErrorSepomex" />
+                  <label for="preEstado">Estado</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+              <label class="form-label perm-label" for="preMunicipio">Municipio</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>signpost</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preMunicipio" class="form-control" placeholder="Municipio" name="preMunicipio"
+                    [(ngModel)]="municipio"
+                    [readonly]="!direccionManualPorErrorSepomex" />
+                  <label for="preMunicipio">Municipio</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+              <label class="form-label perm-label" for="preColonia">Colonia</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>location_on</mat-icon></span>
+                <!-- Sepomex OK: select. Sepomex error: input texto (mismo ngModel → mismo body). -->
+                <div class="form-floating flex-grow-1" *ngIf="direccionManualPorErrorSepomex; else coloniaSelectTpl">
+                  <input id="preColonia" class="form-control" placeholder="Colonia" name="preColonia"
+                    [(ngModel)]="colonia" />
+                  <label for="preColonia">Colonia</label>
+                </div>
+                <ng-template #coloniaSelectTpl>
+                  <div class="form-floating flex-grow-1 perm-select-floating">
+                    <select id="preColonia" class="form-select" name="preColonia" [(ngModel)]="colonia">
+                      <option value="">Seleccionar...</option>
+                      <option *ngFor="let col of coloniasSepomex" [ngValue]="col.nombre">{{ col.nombre }}</option>
+                    </select>
+                  </div>
+                </ng-template>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+              <label class="form-label perm-label" for="preCalle">Calle</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>route</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preCalle" class="form-control" placeholder="Calle"
+                    [(ngModel)]="calleNumero" name="preCalle" />
+                  <label for="preCalle">Calle</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+              <label class="form-label perm-label" for="preNoInt">No. Interior</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>numbers</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preNoInt" class="form-control" placeholder="No. Interior"
+                    [(ngModel)]="noInterior" name="preNoInt" />
+                  <label for="preNoInt">No. Interior</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+              <label class="form-label perm-label" for="preNoExt">No. Exterior</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>numbers</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preNoExt" class="form-control" placeholder="No. Exterior"
+                    [(ngModel)]="noExterior" name="preNoExt" />
+                  <label for="preNoExt">No. Exterior</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="local-form-section local-form-section--docs">
+          <div class="local-form-section__head">
+            <span class="local-form-section__badge"><mat-icon>photo_library</mat-icon></span>
+            <div>
+              <h4 class="local-form-section__title">Catálogo fotográfico</h4>
+              <p class="local-form-section__desc">Documentos e imágenes del establecimiento</p>
+            </div>
+          </div>
+
+          <div class="row g-3 local-form-uploaders">
+            <div class="col-12 col-md-4" *ngFor="let doc of documentosCatalogo">
+              <app-file-uploader-card [label]="doc.titulo"
+                [accept]="doc.accept" [uploadTitle]="doc.uploadTitle" [icon]="doc.icon"
+                [badgeDefault]="doc.badgeDefault" [colorVariant]="doc.buttonClass"
+                [remoteUrl]="documentosExistentes[doc.controlName]"
+                (fileSelected)="onDocumentoSeleccionado(doc.controlName, $event)"
+                (fileRejected)="onDocumentoRechazado(doc.controlName)"
+                (remoteFileClick)="verDocumentoExistente(doc, $event)">
+              </app-file-uploader-card>
+            </div>
+          </div>
+        </div>
+
+        <div class="local-form-section">
+          <div class="local-form-section__head">
+            <span class="local-form-section__badge"><mat-icon>category</mat-icon></span>
+            <div>
+              <h4 class="local-form-section__title">Tipo de registro</h4>
+              <p class="local-form-section__desc">Seleccione la categoría del predio</p>
+            </div>
+          </div>
+
+          <!-- Campo API: TipoRegistro (0 = Local comercial, 1 = Vivienda) -->
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <button type="button" class="pre-reg-type"
+                [class.is-active]="tipoRegistro === 'comercial'"
+                (click)="seleccionarTipoRegistro('comercial')">
+                <mat-icon>storefront</mat-icon>
+                <span>Local comercial</span>
+              </button>
+            </div>
+            <div class="col-12 col-md-6">
+              <button type="button" class="pre-reg-type"
+                [class.is-active]="tipoRegistro === 'vivienda'"
+                (click)="seleccionarTipoRegistro('vivienda')">
+                <mat-icon>home</mat-icon>
+                <span>Vivienda</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Campo API: PredioObra (0 = No, 1 = Sí) -->
+        <div class="local-form-section pre-reg-switch-section">
+          <div class="pre-reg-switch-row">
+            <div class="pre-reg-switch-row__copy">
+              <div class="pre-reg-switch-row__title">¿Predio en obra?</div>
+              <p class="pre-reg-switch-row__desc">
+                Active esta opción si el local se encuentra actualmente en proceso de construcción o remodelación mayor.
+              </p>
+            </div>
+            <label class="toggle-switch pre-reg-toggle" [attr.aria-checked]="predioEnObra">
+              <input type="checkbox" [checked]="predioEnObra"
+                (change)="onPredioEnObraChange($any($event.target).checked)" />
+              <div class="toggle-switch-background">
+                <div class="toggle-switch-handle"></div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="local-form-tab-nav">
+          <button type="button" class="button-danger" (click)="redirigirLista()">
+            <i class="fa fa-times">&nbsp;&nbsp;</i>Cancelar
+          </button>
+          <button type="button" class="button-success" (click)="continuar()">
+            <i class="fa fa-arrow-right"></i>&nbsp;&nbsp;Continuar
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══════ FORMULARIO 2: Finalización del Trámite (predio en obra) ═══════ -->
+      <div class="local-form-shell pre-reg-shell pre-reg-shell--obra"
+        [hidden]="!mostrarApartadoObra"
+        [class.is-step-hidden]="!mostrarApartadoObra"
+        [attr.aria-hidden]="!mostrarApartadoObra" data-accent="proteccion">
+
+        <div class="local-form-banner local-tab-header--proteccion">
+          <div class="row g-3 align-items-center">
+            <div class="col-12 col-lg-8">
+              <div class="local-form-banner__main">
+                <div class="local-form-banner__icon" aria-hidden="true">
+                  <mat-icon>assignment_turned_in</mat-icon>
+                </div>
+                <div class="local-form-banner__copy">
+                  <!-- <span class="local-form-banner__step">Paso {{ pasoActualFlujo }} de {{ pasosTotalesFlujo }}</span> -->
+                  <div class="local-form-banner__title">Finalización del Trámite</div>
+                  <p class="local-form-banner__subtitle">
+                    Complete la información de obra, documentación y firmas para continuar.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-4">
+              <div class="local-form-banner__actions">
+                <div class="pre-reg-progress pre-reg-progress--banner">
+                  <!-- <span class="pre-reg-progress__label">{{ porcentajeAvanceFlujo }}% · PASO {{ pasoActualFlujo }} DE {{ pasosTotalesFlujo }}</span> -->
+                  <div class="pre-reg-progress__track">
+                    <div class="pre-reg-progress__bar" [style.width.%]="porcentajeAvanceFlujo"></div>
+                  </div>
+                </div>
+                <button type="button" class="button-back local-form-banner__back" (click)="volverATipoLocal()">
+                  <i class="fa fa-arrow-left"></i>&nbsp;&nbsp;Regresar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="local-form-section">
+          <div class="local-form-section__head">
+            <span class="local-form-section__badge"><mat-icon>info</mat-icon></span>
+            <div>
+              <h4 class="local-form-section__title">Información general</h4>
+              <p class="local-form-section__desc">Datos del trámite de obra</p>
+            </div>
+          </div>
+          <div class="row g-3 g-md-4">
+            <div class="col-12 col-lg-6">
+              <label class="form-label perm-label" for="preTipoLic">Tipo de Licencia</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>badge</mat-icon></span>
+                <div class="form-floating flex-grow-1 perm-select-floating">
+                  <select id="preTipoLic" class="form-select" [(ngModel)]="tipoLicencia">
+                    <option value="">Seleccionar...</option>
+                    <option value="1">Obra nueva</option>
+                    <option value="2">Licencia sencilla</option>
+                    <option value="3">Regularización y/o aprobación, cambio de uso</option>
+                    <option value="4">Otros, canalización vía pública, etc</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-6">
+              <label class="form-label perm-label" for="preUbicObra">Ubicación de la construcción</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>place</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preUbicObra" class="form-control" placeholder="Ubicación"
+                    [(ngModel)]="ubicacionConstruccion" />
+                  <label for="preUbicObra">Ubicación de la construcción</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12">
+              <label class="form-label perm-label" for="preDesc">Descripción del proyecto</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>notes</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preDesc" class="form-control" type="text"
+                    placeholder="Descripción del proyecto"
+                    [(ngModel)]="descripcionProyecto" />
+                  <label for="preDesc">Descripción del proyecto</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="local-form-section">
+          <div class="local-form-section__head">
+            <span class="local-form-section__badge"><mat-icon>person</mat-icon></span>
+            <div>
+              <h4 class="local-form-section__title">Datos del propietario</h4>
+              <p class="local-form-section__desc">Titular del predio</p>
+            </div>
+          </div>
+          <div class="row g-3 g-md-4">
+            <div class="col-12 col-md-6">
+              <label class="form-label perm-label" for="prePropNombre">Nombre completo</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>badge</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="prePropNombre" class="form-control" placeholder="Nombre completo"
+                    [(ngModel)]="propietarioNombre" />
+                  <label for="prePropNombre">Nombre completo</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label perm-label" for="prePropRfc">ID / RFC</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>credit_card</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="prePropRfc" class="form-control" placeholder="RFC"
+                    [(ngModel)]="propietarioRfc" maxlength="13" />
+                  <label for="prePropRfc">ID / RFC</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="local-form-section">
+          <div class="local-form-section__head">
+            <span class="local-form-section__badge"><mat-icon>engineering</mat-icon></span>
+            <div>
+              <h4 class="local-form-section__title">Director responsable</h4>
+              <p class="local-form-section__desc">Profesional a cargo de la obra</p>
+            </div>
+          </div>
+          <div class="row g-3 g-md-4">
+            <div class="col-12 col-md-4">
+              <label class="form-label perm-label" for="preDirNombre">Nombre del Director</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>person</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preDirNombre" class="form-control" placeholder="Nombre completo"
+                    [(ngModel)]="directorNombre" />
+                  <label for="preDirNombre">Nombre completo</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label perm-label" for="preDirLic">Número de Licencia / Registro</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>verified</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preDirLic" class="form-control" placeholder="Número oficial"
+                    [(ngModel)]="directorLicencia" />
+                  <label for="preDirLic">Número oficial</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label perm-label" for="preDirCedula">Cédula Profesional</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>badge</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preDirCedula" class="form-control" placeholder="Cédula Profesional"
+                    [(ngModel)]="directorCedula" />
+                  <label for="preDirCedula">Cédula Profesional</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row g-3 g-md-4 mt-1">
+            <div class="col-12 col-md-4">
+              <label class="form-label perm-label" for="preSupTerreno">Superficie terreno (m²)</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>square_foot</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preSupTerreno" class="form-control" type="number" min="0"
+                    placeholder="Superficie terreno"
+                    [(ngModel)]="superficieTerrenoM2" />
+                  <label for="preSupTerreno">Superficie terreno (m²)</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label perm-label" for="preSupObra">Superficie obra (m²)</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>straighten</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preSupObra" class="form-control" type="number" min="0"
+                    placeholder="Superficie obra"
+                    [(ngModel)]="superficieTerrenoObraM2" />
+                  <label for="preSupObra">Superficie obra (m²)</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label perm-label" for="preSistConst">Sistema constructivo</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>construction</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preSistConst" class="form-control"
+                    placeholder="Descripción del sistema constructivo"
+                    [(ngModel)]="descripcionSistemaConstructivo" />
+                  <label for="preSistConst">Descripción del sistema constructivo</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label perm-label" for="preNumExp">Número de expediente</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>folder</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preNumExp" class="form-control" placeholder="Número de expediente"
+                    [(ngModel)]="numeroExpediente" />
+                  <label for="preNumExp">Número de expediente</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label perm-label" for="preNumCtrl">Número de control</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>tag</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preNumCtrl" class="form-control" placeholder="Número de control"
+                    [(ngModel)]="numeroControl" />
+                  <label for="preNumCtrl">Número de control</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label perm-label" for="preFechaLc">Fecha</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>event</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preFechaLc" class="form-control perm-date-input" type="date"
+                    [(ngModel)]="fechaLicenciaConstruccion" name="preFechaLc" />
+                  <label for="preFechaLc">Fecha</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label perm-label" for="preSegObra">Seguimiento de obra</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>fact_check</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preSegObra" class="form-control" type="text" placeholder="Seguimiento de obra"
+                    [(ngModel)]="seguimientoObra" name="preSegObra" />
+                  <label for="preSegObra">Seguimiento de obra</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="local-form-section">
+          <div class="local-form-section__head pre-reg-section-head-actions">
+            <div class="d-flex align-items-start gap-3 flex-grow-1 min-w-0">
+              <span class="local-form-section__badge"><mat-icon>groups</mat-icon></span>
+              <div>
+                <h4 class="local-form-section__title">Corresponsables</h4>
+                <p class="local-form-section__desc">Especialistas asociados al trámite</p>
+              </div>
+            </div>
+            <button type="button" class="pre-reg-add-btn" *ngIf="!mostrandoFormCorresponsable"
+              (click)="abrirFormCorresponsable()">
+              <mat-icon>add</mat-icon>
+              Añadir
+            </button>
+          </div>
+
+          <div class="pre-reg-corresp-list" *ngIf="corresponsables.length">
+            <div class="pre-reg-corresp" *ngFor="let item of corresponsables" @correspCard>
+              <span class="pre-reg-corresp__icon" aria-hidden="true">
+                <mat-icon>person</mat-icon>
+              </span>
+              <div class="pre-reg-corresp__copy">
+                <span class="pre-reg-corresp__name">{{ item.nombre }}</span>
+                <span class="pre-reg-corresp__role" *ngIf="item.noRegLicenciaConstruccion || item.cedulaProfesional">
+                  {{ item.noRegLicenciaConstruccion || item.cedulaProfesional }}
+                </span>
+              </div>
+              <button type="button" class="pre-reg-corresp__delete-icon" (click)="quitarCorresponsable(item.id)"
+                title="Eliminar">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="pre-reg-corresp-row" *ngIf="mostrandoFormCorresponsable" @correspForm>
+            <div class="pre-reg-corresp-row__field pre-reg-corresp-row__field--nombre">
+              <label class="form-label perm-label" for="preCorrNombreDraft">Nombre Completo</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>person</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preCorrNombreDraft" class="form-control" type="text" name="preCorrNombreDraft"
+                    placeholder="Nombre Completo" [(ngModel)]="draftNombreCorresponsable" />
+                  <label for="preCorrNombreDraft">Nombre Completo</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="pre-reg-corresp-row__field pre-reg-corresp-row__field--nombre">
+              <label class="form-label perm-label" for="preCorrNoRegDraft">No. Reg. Licencia</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>badge</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preCorrNoRegDraft" class="form-control" type="text" name="preCorrNoRegDraft"
+                    placeholder="No. Reg. Licencia" [(ngModel)]="draftNoRegCorresponsable" />
+                  <label for="preCorrNoRegDraft">No. Reg. Licencia</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="pre-reg-corresp-row__field pre-reg-corresp-row__field--nombre">
+              <label class="form-label perm-label" for="preCorrCedulaDraft">Cédula Profesional</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>verified</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preCorrCedulaDraft" class="form-control" type="text" name="preCorrCedulaDraft"
+                    placeholder="Cédula Profesional" [(ngModel)]="draftCedulaCorresponsable" />
+                  <label for="preCorrCedulaDraft">Cédula Profesional</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="pre-reg-corresp-row__actions">
+              <button type="button" class="pre-reg-corresp__add" (click)="confirmarCorresponsable()"
+                title="Agregar">
+                <mat-icon>add</mat-icon>
+                <span>Agregar</span>
+              </button>
+              <button type="button" class="pre-reg-corresp__delete" (click)="cancelarFormCorresponsable()"
+                title="Eliminar">
+                <mat-icon>delete</mat-icon>
+                <span>Eliminar</span>
+              </button>
+            </div>
+          </div>
+
+          <p class="pre-reg-empty" *ngIf="!corresponsables.length && !mostrandoFormCorresponsable">
+            No hay corresponsables. Usa “Añadir” para agregar uno.
+          </p>
+        </div>
+
+        <div class="local-form-section local-form-section--docs">
+          <div class="local-form-section__head">
+            <span class="local-form-section__badge"><mat-icon>cloud_upload</mat-icon></span>
+            <div>
+              <h4 class="local-form-section__title">Captura de documentación</h4>
+              <p class="local-form-section__desc">Archivos técnicos del proyecto</p>
+            </div>
+          </div>
+
+          <div class="row g-3 local-form-uploaders">
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Constancia de alineamiento"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="description"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="primary"
+                [remoteUrl]="documentosExistentes['constanciaAlineamiento']"
+                (fileSelected)="onDocumentoSeleccionado('constanciaAlineamiento', $event)"
+                (fileRejected)="onDocumentoRechazado('constanciaAlineamiento')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Constancia de alineamiento', controlName: 'constanciaAlineamiento' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Constancia de número oficial"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="pin"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="primary"
+                [remoteUrl]="documentosExistentes['constanciaNumero']"
+                (fileSelected)="onDocumentoSeleccionado('constanciaNumero', $event)"
+                (fileRejected)="onDocumentoRechazado('constanciaNumero')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Constancia de número oficial', controlName: 'constanciaNumero' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Licencia de uso de suelo"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="description"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="success"
+                [remoteUrl]="documentosExistentes['permisoSuelo']"
+                (fileSelected)="onDocumentoSeleccionado('permisoSuelo', $event)"
+                (fileRejected)="onDocumentoRechazado('permisoSuelo')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Licencia de uso de suelo', controlName: 'permisoSuelo' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Plano autorizado"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="verified"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="primary"
+                [remoteUrl]="documentosExistentes['planoAutorizado']"
+                (fileSelected)="onDocumentoSeleccionado('planoAutorizado', $event)"
+                (fileRejected)="onDocumentoRechazado('planoAutorizado')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Plano autorizado', controlName: 'planoAutorizado' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Licencia de fraccionamiento"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="apartment"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="success"
+                [remoteUrl]="documentosExistentes['licenciaFraccionamiento']"
+                (fileSelected)="onDocumentoSeleccionado('licenciaFraccionamiento', $event)"
+                (fileRejected)="onDocumentoRechazado('licenciaFraccionamiento')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Licencia de fraccionamiento', controlName: 'licenciaFraccionamiento' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Constancia propietario"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="person"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="primary"
+                [remoteUrl]="documentosExistentes['constanciaPropietario']"
+                (fileSelected)="onDocumentoSeleccionado('constanciaPropietario', $event)"
+                (fileRejected)="onDocumentoRechazado('constanciaPropietario')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Constancia propietario', controlName: 'constanciaPropietario' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Factibilidad"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="water_drop"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="success"
+                [remoteUrl]="documentosExistentes['factibilidad']"
+                (fileSelected)="onDocumentoSeleccionado('factibilidad', $event)"
+                (fileRejected)="onDocumentoRechazado('factibilidad')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Factibilidad', controlName: 'factibilidad' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Recibos impuesto predial"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="receipt"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="danger"
+                [remoteUrl]="documentosExistentes['recibosPredial']"
+                (fileSelected)="onDocumentoSeleccionado('recibosPredial', $event)"
+                (fileRejected)="onDocumentoRechazado('recibosPredial')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Recibos impuesto predial', controlName: 'recibosPredial' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Juego de planos arquitectónicos 1"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="architecture"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="warning"
+                [remoteUrl]="documentosExistentes['planos1']"
+                (fileSelected)="onDocumentoSeleccionado('planos1', $event)"
+                (fileRejected)="onDocumentoRechazado('planos1')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Juego de planos arquitectónicos 1', controlName: 'planos1' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Juego de planos arquitectónicos 2"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="architecture"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="warning"
+                [remoteUrl]="documentosExistentes['planos2']"
+                (fileSelected)="onDocumentoSeleccionado('planos2', $event)"
+                (fileRejected)="onDocumentoRechazado('planos2')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Juego de planos arquitectónicos 2', controlName: 'planos2' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Juego de planos arquitectónicos 3"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="architecture"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="warning"
+                [remoteUrl]="documentosExistentes['planos3']"
+                (fileSelected)="onDocumentoSeleccionado('planos3', $event)"
+                (fileRejected)="onDocumentoRechazado('planos3')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Juego de planos arquitectónicos 3', controlName: 'planos3' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Otros"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="photo_camera"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="warning"
+                [remoteUrl]="documentosExistentes['otrosDocs']"
+                (fileSelected)="onDocumentoSeleccionado('otrosDocs', $event)"
+                (fileRejected)="onDocumentoRechazado('otrosDocs')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Otros', controlName: 'otrosDocs' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Escrituras"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="menu_book"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="warning"
+                [remoteUrl]="documentosExistentes['escrituras']"
+                (fileSelected)="onDocumentoSeleccionado('escrituras', $event)"
+                (fileRejected)="onDocumentoRechazado('escrituras')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Escrituras', controlName: 'escrituras' }, $event)">
+              </app-file-uploader-card>
+            </div>
+            <div class="col-12 col-md-4">
+              <app-file-uploader-card
+                label="Recibos municipales"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
+                uploadTitle="Sube imagen o PDF"
+                icon="receipt_long"
+                badgeDefault="PNG · JPG · JPEG · PDF · Máx. 3 MB"
+                colorVariant="danger"
+                [remoteUrl]="documentosExistentes['recibosMunicipales']"
+                (fileSelected)="onDocumentoSeleccionado('recibosMunicipales', $event)"
+                (fileRejected)="onDocumentoRechazado('recibosMunicipales')"
+                (remoteFileClick)="verDocumentoExistente({ titulo: 'Recibos municipales', controlName: 'recibosMunicipales' }, $event)">
+              </app-file-uploader-card>
+            </div>
+          </div>
+        </div>
+
+        <div class="local-form-section">
+          <div class="local-form-section__head">
+            <span class="local-form-section__badge"><mat-icon>draw</mat-icon></span>
+            <div>
+              <h4 class="local-form-section__title">Captura de firmas digitales</h4>
+              <p class="local-form-section__desc">Firmas autógrafas del trámite</p>
+            </div>
+          </div>
+
+          <div class="row g-3 g-md-4">
+            <div class="col-12 col-md-6">
+              <label class="form-label perm-label">Firma del Propietario</label>
+              <div class="pre-reg-sign">
+                <img
+                  *ngIf="urlFirmaVisible('propietario') as urlFirma"
+                  class="pre-reg-sign__preview"
+                  [src]="urlFirma"
+                  alt="Firma del propietario"
+                />
+                <canvas
+                  #firmaPropietario
+                  class="pre-reg-sign__pad"
+                  aria-label="Área de firma del propietario"
+                  (pointerdown)="onFirmaPointerDown('propietario', $event)"
+                  (pointermove)="onFirmaPointerMove('propietario', $event)"
+                  (pointerup)="onFirmaPointerUp('propietario', $event)"
+                  (pointerleave)="onFirmaPointerUp('propietario', $event)"
+                  (pointercancel)="onFirmaPointerUp('propietario', $event)">
+                </canvas>
+                <button type="button" class="pre-reg-sign__reset" (click)="limpiarFirma('propietario')" title="Limpiar">
+                  <mat-icon>refresh</mat-icon>
+                </button>
+              </div>
+              <p class="pre-reg-sign__hint">Utilice el ratón o lápiz óptico</p>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label perm-label">Firma del Director Responsable (DRO)</label>
+              <div class="pre-reg-sign">
+                <img
+                  *ngIf="urlFirmaVisible('director') as urlFirma"
+                  class="pre-reg-sign__preview"
+                  [src]="urlFirma"
+                  alt="Firma del director"
+                />
+                <canvas
+                  #firmaDirector
+                  class="pre-reg-sign__pad"
+                  aria-label="Área de firma del director"
+                  (pointerdown)="onFirmaPointerDown('director', $event)"
+                  (pointermove)="onFirmaPointerMove('director', $event)"
+                  (pointerup)="onFirmaPointerUp('director', $event)"
+                  (pointerleave)="onFirmaPointerUp('director', $event)"
+                  (pointercancel)="onFirmaPointerUp('director', $event)">
+                </canvas>
+                <button type="button" class="pre-reg-sign__reset" (click)="limpiarFirma('director')" title="Limpiar">
+                  <mat-icon>refresh</mat-icon>
+                </button>
+              </div>
+              <p class="pre-reg-sign__hint">Requiere firma autógrafa digital</p>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label perm-label">Firma del Corresponsable</label>
+              <div class="pre-reg-sign">
+                <img
+                  *ngIf="urlFirmaVisible('corresponsable') as urlFirma"
+                  class="pre-reg-sign__preview"
+                  [src]="urlFirma"
+                  alt="Firma del corresponsable"
+                />
+                <canvas
+                  #firmaCorresponsable
+                  class="pre-reg-sign__pad"
+                  aria-label="Área de firma del corresponsable"
+                  (pointerdown)="onFirmaPointerDown('corresponsable', $event)"
+                  (pointermove)="onFirmaPointerMove('corresponsable', $event)"
+                  (pointerup)="onFirmaPointerUp('corresponsable', $event)"
+                  (pointerleave)="onFirmaPointerUp('corresponsable', $event)"
+                  (pointercancel)="onFirmaPointerUp('corresponsable', $event)">
+                </canvas>
+                <button type="button" class="pre-reg-sign__reset" (click)="limpiarFirma('corresponsable')" title="Limpiar">
+                  <mat-icon>refresh</mat-icon>
+                </button>
+              </div>
+              <p class="pre-reg-sign__hint">Firma del corresponsable</p>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label perm-label">Firma responsable recepción de documento</label>
+              <div class="pre-reg-sign">
+                <img
+                  *ngIf="urlFirmaVisible('recepcion') as urlFirma"
+                  class="pre-reg-sign__preview"
+                  [src]="urlFirma"
+                  alt="Firma de recepción"
+                />
+                <canvas
+                  #firmaRecepcion
+                  class="pre-reg-sign__pad"
+                  aria-label="Área de firma de recepción"
+                  (pointerdown)="onFirmaPointerDown('recepcion', $event)"
+                  (pointermove)="onFirmaPointerMove('recepcion', $event)"
+                  (pointerup)="onFirmaPointerUp('recepcion', $event)"
+                  (pointerleave)="onFirmaPointerUp('recepcion', $event)"
+                  (pointercancel)="onFirmaPointerUp('recepcion', $event)">
+                </canvas>
+                <button type="button" class="pre-reg-sign__reset" (click)="limpiarFirma('recepcion')" title="Limpiar">
+                  <mat-icon>refresh</mat-icon>
+                </button>
+              </div>
+              <p class="pre-reg-sign__hint">Firma de quien recibe el documento</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pre-reg-finish">
+          <div class="local-form-tab-nav pre-reg-finish__nav">
+            <button type="button" class="button-back" (click)="volverATipoLocal()">
+              <i class="fa fa-arrow-left"></i>&nbsp;&nbsp;Regresar
+            </button>
+            <button type="button" class="button-success" (click)="finalizarRegistro()">
+              <i class="fa fa-check-circle"></i>&nbsp;&nbsp;Finalizar Registro
+            </button>
+          </div>
+          <p class="pre-reg-finish__note">
+            Al finalizar, su solicitud será enviada a revisión técnica. Recibirá una notificación en un plazo de 5 a 10 días hábiles.
+          </p>
+        </div>
+      </div>
+
+    </section>
+  </div>
+</div>

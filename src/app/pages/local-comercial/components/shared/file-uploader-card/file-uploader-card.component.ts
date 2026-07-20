@@ -3,7 +3,10 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  OnChanges,
+  OnDestroy,
   Output,
+  SimpleChanges,
   ViewChild
 } from '@angular/core';
 
@@ -13,17 +16,27 @@ import {
   templateUrl: './file-uploader-card.component.html',
   styleUrls: ['./file-uploader-card.component.scss']
 })
-export class FileUploaderCardComponent {
+export class FileUploaderCardComponent implements OnChanges, OnDestroy {
+  /** Imágenes solo PNG/JPG/JPEG + PDF. */
+  static readonly ACCEPT_IMAGEN_PDF =
+    'image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf';
+  static readonly BADGE_IMAGEN_PDF = 'PNG · JPG · JPEG · PDF · Máx. 3 MB';
+  private static readonly EXT_IMAGEN = new Set(['png', 'jpg', 'jpeg']);
+  private static readonly MIME_IMAGEN = new Set(['image/png', 'image/jpeg']);
+
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   @Input() label = '';
-  @Input() accept = 'image/*,.pdf';
-  @Input() uploadTitle = 'Sube archivo';
+  /** Se mantiene por compatibilidad; el picker siempre usa imagen + PDF. */
+  @Input() accept = FileUploaderCardComponent.ACCEPT_IMAGEN_PDF;
+  @Input() uploadTitle = 'Sube imagen o PDF';
   @Input() icon = 'cloud_upload';
-  @Input() badgeDefault = 'PNG · JPG · WEBP · PDF · Máx. 3 MB';
+  @Input() badgeDefault = FileUploaderCardComponent.BADGE_IMAGEN_PDF;
   @Input() remoteUrl: string | null = null;
   @Input() allowPdf = true;
   @Input() colorVariant: 'success' | 'primary' | 'warning' | 'danger' | string = 'primary';
+
+  readonly acceptImagenPdf = FileUploaderCardComponent.ACCEPT_IMAGEN_PDF;
 
   @Output() fileSelected = new EventEmitter<File>();
   @Output() fileRejected = new EventEmitter<void>();
@@ -31,6 +44,18 @@ export class FileUploaderCardComponent {
 
   dragging = false;
   selectedFileName = '';
+  private localPreviewUrl: string | null = null;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['remoteUrl'] && this.remoteUrl?.trim() && !this.selectedFileName) {
+      // Archivo remoto (editar): limpia preview local previa
+      this.revocarLocalPreview();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.revocarLocalPreview();
+  }
 
   openFilePicker(): void {
     this.fileInput.nativeElement.click();
@@ -62,26 +87,27 @@ export class FileUploaderCardComponent {
   }
 
   etiquetaBadge(): string {
-    if (this.selectedFileName) {
-      return this.selectedFileName;
+    if (!this.tieneArchivoEnBadge()) {
+      return this.badgeDefault;
     }
-    const url = this.urlRemota();
-    if (url) {
-      return this.extraerNombreDesdeUrl(url);
-    }
-    return this.badgeDefault;
+    return this.esArchivoImagen() ? 'Ver imagen' : 'Ver archivo';
   }
 
-  urlRemota(): string | null {
-    if (this.selectedFileName) {
-      return null;
+  urlVistaPrevia(): string | null {
+    if (this.localPreviewUrl) {
+      return this.localPreviewUrl;
     }
     const url = this.remoteUrl?.trim();
     return url ? url : null;
   }
 
+  /** @deprecated usar urlVistaPrevia */
+  urlRemota(): string | null {
+    return this.urlVistaPrevia();
+  }
+
   tieneArchivoEnBadge(): boolean {
-    return !!this.selectedFileName || !!this.urlRemota();
+    return !!this.selectedFileName || !!this.remoteUrl?.trim() || !!this.localPreviewUrl;
   }
 
   labelColorClass(): string {
@@ -95,13 +121,13 @@ export class FileUploaderCardComponent {
   onBadgeClick(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    const url = this.urlRemota();
+    const url = this.urlVistaPrevia();
     if (!url) {
       return;
     }
     this.remoteFileClick.emit({
       url,
-      fileName: this.etiquetaBadge(),
+      fileName: this.selectedFileName || this.extraerNombreDesdeUrl(url),
     });
   }
 
@@ -116,23 +142,48 @@ export class FileUploaderCardComponent {
       return;
     }
     this.selectedFileName = file.name;
+    this.revocarLocalPreview();
+    this.localPreviewUrl = URL.createObjectURL(file);
     this.fileSelected.emit(file);
   }
 
+  private esArchivoImagen(): boolean {
+    const fuente = this.selectedFileName || this.urlVistaPrevia() || '';
+    if (!fuente) {
+      return true;
+    }
+    const extension = fuente.split('?')[0].split(/[/\\]/).pop()?.split('.').pop()?.toLowerCase() ?? '';
+    if (extension === 'pdf') {
+      return false;
+    }
+    if (FileUploaderCardComponent.EXT_IMAGEN.has(extension)) {
+      return true;
+    }
+    // blob: o URL sin extensión → imagen (fotos del catálogo)
+    return !fuente.toLowerCase().includes('.pdf');
+  }
+
   private isAllowed(file: File): boolean {
-    if (file.type.startsWith('image/')) {
-      return true;
-    }
     const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
-    if (['jpg', 'jpeg', 'jfif', 'pjpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(extension)) {
+    if (FileUploaderCardComponent.EXT_IMAGEN.has(extension)) {
       return true;
     }
-    return this.allowPdf && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'));
+    if (FileUploaderCardComponent.MIME_IMAGEN.has(file.type)) {
+      return true;
+    }
+    return this.allowPdf && (file.type === 'application/pdf' || extension === 'pdf');
   }
 
   private extraerNombreDesdeUrl(url: string): string {
     const sinQuery = url.split('?')[0];
     const segmentos = sinQuery.split(/[/\\]/);
     return segmentos[segmentos.length - 1] || this.label || 'Archivo';
+  }
+
+  private revocarLocalPreview(): void {
+    if (this.localPreviewUrl) {
+      URL.revokeObjectURL(this.localPreviewUrl);
+      this.localPreviewUrl = null;
+    }
   }
 }

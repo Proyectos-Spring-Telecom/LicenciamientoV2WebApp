@@ -1,18 +1,33 @@
 ﻿<div class="ubicacion-modal">
   <header class="ubicacion-modal__head">
+    <div class="ubicacion-modal__badge" aria-hidden="true">
+      <mat-icon>pin_drop</mat-icon>
+    </div>
     <div class="ubicacion-modal__head-copy">
-      <h2 class="ubicacion-modal__title" mat-dialog-title>
-        <i class="fas fa-map-marker-alt"></i>&nbsp;Ubicación del lugar
-      </h2>
+      <span class="ubicacion-modal__eyebrow">Paso inicial</span>
+      <div class="ubicacion-modal__title" mat-dialog-title>Ubicación del lugar</div>
       <p class="ubicacion-modal-hint">
-        Haga clic en el mapa para colocar el pin. Si no queda bien, arrástrelo hasta la posición correcta.
+        Haz clic en el mapa para colocar el pin. Si no queda bien, arrástralo hasta la posición correcta.
       </p>
     </div>
   </header>
 
   <mat-dialog-content class="ubicacion-modal-content">
-    <div class="ubicacion-modal-map">
-      <div #mapContainer class="ubicacion-modal-map__canvas"></div>
+    <div class="ubicacion-modal-map" [class.has-pin]="!!markerPosition">
+      <div class="ubicacion-modal-map__frame">
+        <div #mapContainer class="ubicacion-modal-map__canvas"></div>
+        <div class="ubicacion-modal-map__chip" *ngIf="markerPosition; else noPin"
+          [class.ubicacion-modal-map__chip--loading]="resolviendoDireccion">
+          <mat-icon>{{ resolviendoDireccion ? 'hourglass_top' : 'check_circle' }}</mat-icon>
+          <span [title]="direccionSeleccionada || ''">{{ etiquetaDireccion }}</span>
+        </div>
+        <ng-template #noPin>
+          <div class="ubicacion-modal-map__chip ubicacion-modal-map__chip--muted">
+            <mat-icon>touch_app</mat-icon>
+            <span>Selecciona un punto en el mapa</span>
+          </div>
+        </ng-template>
+      </div>
     </div>
   </mat-dialog-content>
 
@@ -20,7 +35,8 @@
     <button type="button" class="button-danger" (click)="cancelar()">
       <i class="fa fa-times">&nbsp;&nbsp;</i>Cancelar
     </button>
-    <button type="button" class="button-success ubicacion-modal-actions__confirm" [disabled]="!markerPosition" (click)="confirmar()">
+    <button type="button" class="button-success ubicacion-modal-actions__confirm"
+      [disabled]="!markerPosition" (click)="confirmar()">
       <i class="fa fa-check"></i>&nbsp;&nbsp;Confirmar ubicación
     </button>
   </mat-dialog-actions>

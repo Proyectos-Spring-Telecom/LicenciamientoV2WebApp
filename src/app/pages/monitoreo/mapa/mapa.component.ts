@@ -2,7 +2,6 @@ import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/cor
 import { Router } from '@angular/router';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import Swal from 'sweetalert2';
-import { LocalComercialService } from '../../local-comercial/services/local-comercial.service';
 import { LocalComercial } from '../../local-comercial/models/local-comercial';
 import {
   mostrarCargandoLocalComercial,
@@ -14,13 +13,23 @@ import {
   localMatchesEstatusFilter,
   MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT,
   MonitoreoLocalEstatusFilter,
-  resolveLocalEstatusFilter,
 } from '../local-filter/monitoreo-local-estatus-filter.data';
+import {
+  esPredioEnObra,
+  localMatchesPredioFilter,
+  MONITOREO_LOCAL_PREDIO_FILTER_DEFAULT,
+  MonitoreoLocalPredioFilter,
+} from '../local-filter/monitoreo-local-predio-filter.data';
+import { MonitoreoService } from '../services/monitoreo.service';
+import { buildMarkerObraSvgDataUrl } from './monitoreo-marker-icons';
+
 const DEFAULT_IMAGE = 'assets/default.png';
 
 const MARKER_ASPECT_RATIO = 739 / 1067;
 const MARKER_DISPLAY_HEIGHT = 40;
 const MARKER_DISPLAY_WIDTH = Math.round(MARKER_DISPLAY_HEIGHT * MARKER_ASPECT_RATIO);
+const MARKER_OBRA_HEIGHT = 52;
+const MARKER_OBRA_WIDTH = 40;
 
 const MARKER_ICONS: Record<string, string> = {
   'Datos Correctos': 'assets/images/logos/marker_success.png',
@@ -31,6 +40,7 @@ const MARKER_ICONS: Record<string, string> = {
   InformacionFaltante: 'assets/images/logos/marker_warning.png',
   Rechazo: 'assets/images/logos/marker_danger.png',
   'Rechazo o Sin respuesta': 'assets/images/logos/marker_danger.png',
+  Baja: 'assets/images/logos/marker_down.png',
 };
 
 const MAP_STYLES_SIN_ESTABLECIMIENTOS: google.maps.MapTypeStyle[] = [
@@ -42,108 +52,6 @@ const MAP_STYLES_SIN_ESTABLECIMIENTOS: google.maps.MapTypeStyle[] = [
   { featureType: 'poi.attraction', stylers: [{ visibility: 'off' }] },
   { featureType: 'poi.government', stylers: [{ visibility: 'off' }] },
   { featureType: 'poi.park', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
-];
-
-/** Datos temporales mientras no exista el endpoint del mapa. */
-const LOCALES_DEMO_MAPA: LocalComercial[] = [
-  {
-    id: 9001,
-    lat: 18.92506594438654,
-    lng: -99.22440748392435,
-    nombreComercial: 'Abarrotes Centro',
-    nombreEstatus: 'Datos Correctos',
-    grupo: 'A',
-    giro: 'Abarrotes',
-    rfc: 'AAC900101AAA',
-    nombreCapturista: 'Demo Capturista',
-    urlLicencia: '',
-    estatus: 1,
-    fechaHora: null,
-  },
-  {
-    id: 9002,
-    lat: 18.9315,
-    lng: -99.2185,
-    nombreComercial: 'Farmacia Reforma',
-    nombreEstatus: 'Revisión',
-    grupo: 'B',
-    giro: 'Farmacia',
-    rfc: 'FAR900202BBB',
-    nombreCapturista: 'Demo Capturista',
-    urlLicencia: '',
-    estatus: 2,
-    fechaHora: null,
-  },
-  {
-    id: 9003,
-    lat: 18.9188,
-    lng: -99.2312,
-    nombreComercial: 'Café Plaza',
-    nombreEstatus: 'Información Faltante',
-    grupo: 'C',
-    giro: 'Cafetería',
-    rfc: 'CAF900303CCC',
-    nombreCapturista: 'Demo Capturista',
-    urlLicencia: '',
-    estatus: 3,
-    fechaHora: null,
-  },
-  {
-    id: 9004,
-    lat: 18.9224,
-    lng: -99.2108,
-    nombreComercial: 'Taller Automotriz',
-    nombreEstatus: 'Rechazo o Sin respuesta',
-    grupo: 'D',
-    giro: 'Taller mecánico',
-    rfc: 'TAL900404DDD',
-    nombreCapturista: 'Demo Capturista',
-    urlLicencia: '',
-    estatus: 4,
-    fechaHora: null,
-  },
-  {
-    id: 9005,
-    lat: 18.9282,
-    lng: -99.2278,
-    nombreComercial: 'Panadería La Espiga',
-    nombreEstatus: 'Revisión',
-    grupo: 'A',
-    giro: 'Panadería',
-    rfc: 'PAN900505EEE',
-    nombreCapturista: 'Demo Capturista',
-    urlLicencia: '',
-    estatus: 2,
-    fechaHora: null,
-  },
-  {
-    id: 9006,
-    lat: 18.9156,
-    lng: -99.2194,
-    nombreComercial: 'Óptica Visión+',
-    nombreEstatus: 'Datos Correctos',
-    grupo: 'B',
-    giro: 'Óptica',
-    rfc: 'OPT900606FFF',
-    nombreCapturista: 'Demo Capturista',
-    urlLicencia: '',
-    estatus: 1,
-    fechaHora: null,
-  },
-  {
-    id: 9007,
-    lat: 18.9331,
-    lng: -99.2132,
-    nombreComercial: 'Miscelánea Sol',
-    nombreEstatus: 'Información Faltante',
-    grupo: 'C',
-    giro: 'Miscelánea',
-    rfc: 'MIS900707GGG',
-    nombreCapturista: 'Demo Capturista',
-    urlLicencia: '',
-    estatus: 3,
-    fechaHora: null,
-  },
 ];
 
 interface MapaMarkerEntry {
@@ -172,6 +80,7 @@ export class MapaComponent implements OnInit, OnDestroy {
   @Output() localesReady = new EventEmitter<LocalComercial[]>();
   @Output() localFocused = new EventEmitter<number>();
   @Output() estatusFilterReset = new EventEmitter<MonitoreoLocalEstatusFilter>();
+  @Output() predioFilterReset = new EventEmitter<MonitoreoLocalPredioFilter>();
 
   public panorama: google.maps.StreetViewPanorama;
   public sv: google.maps.StreetViewService;
@@ -181,6 +90,7 @@ export class MapaComponent implements OnInit, OnDestroy {
   public mensajeModulo = 'Monitoreo';
 
   selectedEstatusFilter: MonitoreoLocalEstatusFilter = MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT;
+  selectedPredioFilter: MonitoreoLocalPredioFilter = MONITOREO_LOCAL_PREDIO_FILTER_DEFAULT;
 
   private map: google.maps.Map;
   private activeMarkerIndex: number | null = null;
@@ -191,13 +101,19 @@ export class MapaComponent implements OnInit, OnDestroy {
 
   constructor(
     public router: Router,
-    public localComercialService: LocalComercialService,
+    private monitoreoService: MonitoreoService,
     private googleMapsLoader: GoogleMapsLoaderService,
   ) {}
 
   /** Aplica un filtro de estatus sobre los marcadores del mapa. */
   applyEstatusFilter(estatus: MonitoreoLocalEstatusFilter): void {
     this.selectedEstatusFilter = estatus;
+    this.applyMarkerVisibility();
+  }
+
+  /** Aplica filtro de predio en obra sobre los marcadores del mapa. */
+  applyPredioFilter(predio: MonitoreoLocalPredioFilter): void {
+    this.selectedPredioFilter = predio;
     this.applyMarkerVisibility();
   }
 
@@ -212,7 +128,9 @@ export class MapaComponent implements OnInit, OnDestroy {
     const visible = this.getVisibleLocales().some((local) => local.id === localId);
     if (!visible) {
       this.selectedEstatusFilter = MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT;
+      this.selectedPredioFilter = MONITOREO_LOCAL_PREDIO_FILTER_DEFAULT;
       this.estatusFilterReset.emit(this.selectedEstatusFilter);
+      this.predioFilterReset.emit(this.selectedPredioFilter);
       this.applyMarkerVisibility();
     }
 
@@ -243,8 +161,10 @@ export class MapaComponent implements OnInit, OnDestroy {
   }
 
   private getVisibleLocales(): LocalComercial[] {
-    return (this.listaLocales || []).filter((local) =>
-      localMatchesEstatusFilter(local.nombreEstatus, this.selectedEstatusFilter),
+    return (this.listaLocales || []).filter(
+      (local) =>
+        localMatchesEstatusFilter(local.nombreEstatus, this.selectedEstatusFilter) &&
+        localMatchesPredioFilter(local.predioObra, this.selectedPredioFilter),
     );
   }
 
@@ -379,6 +299,11 @@ export class MapaComponent implements OnInit, OnDestroy {
     const urlImagen = this.escapeHtml(this.resolveFotoRuta(local.urlLicencia));
     const nombreComercial = this.escapeHtml(this.textoTooltip(local.nombreComercial));
     const nombreEstatus = this.escapeHtml(this.textoTooltip(local.nombreEstatus));
+    const predioEnObra = esPredioEnObra(local.predioObra);
+    const predioLabel = this.escapeHtml(predioEnObra ? 'En obra' : 'Sin obra');
+    const predioClass = predioEnObra
+      ? 'mon-veh-tooltip__head-label--obra'
+      : 'mon-veh-tooltip__head-label--sin-obra';
     const grupo = this.escapeHtml(
       this.tieneValor(local.grupo) ? this.formatoGrupo(local.grupo) : 'Sin información',
     );
@@ -399,7 +324,10 @@ export class MapaComponent implements OnInit, OnDestroy {
       '</svg></button>' +
       '<div class="mon-veh-tooltip__glow" aria-hidden="true"></div>' +
       '<header class="mon-veh-tooltip__head mon-veh-tooltip__head--center">' +
+      '<div class="mon-veh-tooltip__head-badges">' +
       `<span class="mon-veh-tooltip__head-label" style="background-color:${estatusColor}">${nombreEstatus}</span>` +
+      `<span class="mon-veh-tooltip__head-label ${predioClass}">${predioLabel}</span>` +
+      '</div>' +
       `<h3 class="mon-veh-tooltip__head-title">${nombreComercial}</h3>` +
       '</header>' +
       `<div class="mon-veh-tooltip__photo"><img src="${urlImagen}" alt="Licencia" onerror="this.onerror=null;this.src='${DEFAULT_IMAGE}'" /></div>` +
@@ -421,7 +349,14 @@ export class MapaComponent implements OnInit, OnDestroy {
     );
   }
 
-  private getMarkerIcon(nombreEstatus: string): google.maps.Icon {
+  private getMarkerIcon(nombreEstatus: string, enObra = false): google.maps.Icon {
+    if (enObra) {
+      return {
+        url: buildMarkerObraSvgDataUrl(nombreEstatus),
+        scaledSize: new google.maps.Size(MARKER_OBRA_WIDTH, MARKER_OBRA_HEIGHT),
+        anchor: new google.maps.Point(MARKER_OBRA_WIDTH / 2, MARKER_OBRA_HEIGHT - 2),
+      };
+    }
     const url = MARKER_ICONS[nombreEstatus] || 'assets/images/logos/marker_spring.webp';
     return {
       url,
@@ -515,25 +450,23 @@ export class MapaComponent implements OnInit, OnDestroy {
   obtenerListaLocalesComerciales(): void {
     mostrarCargandoLocalComercial('Obteniendo información de los locales comerciales');
 
-    // TODO: reactivar cuando exista el endpoint de licencias para el mapa
-    // this.localComercialService.obtenerListaLocalesMapa().subscribe({
-    //   next: (response) => {
-    //     this.listaLocales = response;
-    //     this.inicializarMapa();
-    //   },
-    //   error: () => {
-    //     ocultarCargandoLocalComercial();
-    //     Swal.fire({
-    //       icon: 'error',
-    //       title: 'Error',
-    //       text: 'No se pudieron obtener los locales para el mapa.',
-    //     });
-    //   },
-    // });
-
-    this.listaLocales = [...LOCALES_DEMO_MAPA];
-    this.localesReady.emit(this.listaLocales);
-    this.inicializarMapa();
+    this.monitoreoService.obtenerLocalesMapa().subscribe({
+      next: (response) => {
+        this.listaLocales = response || [];
+        this.localesReady.emit(this.listaLocales);
+        this.inicializarMapa();
+      },
+      error: () => {
+        ocultarCargandoLocalComercial();
+        this.listaLocales = [];
+        this.localesReady.emit(this.listaLocales);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron obtener los locales para el mapa.',
+        });
+      },
+    });
   }
 
   private inicializarMapa(): void {
@@ -586,10 +519,13 @@ export class MapaComponent implements OnInit, OnDestroy {
           .filter((local) => local.lat != null && local.lng != null)
           .map((local, i) => {
             const contentString = this.buildInfoWindowContent(local, i);
+            const enObra = esPredioEnObra(local.predioObra);
             const marker = new google.maps.Marker({
               position: { lat: local.lat, lng: local.lng },
-              icon: this.getMarkerIcon(local.nombreEstatus),
+              icon: this.getMarkerIcon(local.nombreEstatus, enObra),
+              title: `${local.nombreComercial || 'Local'}${enObra ? ' · En obra' : ' · Sin obra'}`,
               animation: google.maps.Animation.DROP,
+              zIndex: enObra ? 20 : 10,
             });
             const infowindow = new google.maps.InfoWindow({ content: contentString });
             this.infoWindows[i] = infowindow;
@@ -658,8 +594,12 @@ export class MapaComponent implements OnInit, OnDestroy {
                   e.preventDefault();
                   e.stopPropagation();
                   infoBtn.blur();
+                  const id = Number(local?.id);
+                  if (!Number.isFinite(id) || id <= 0) {
+                    return;
+                  }
                   mostrarCargandoLocalComercial('Obteniendo información del local comercial');
-                  this.router.navigateByUrl('/local-comercial/detalle-local-comercial');
+                  this.router.navigateByUrl('/local-comercial/detalle-local-comercial/' + id);
                 });
               }
               if (closeBtn) {

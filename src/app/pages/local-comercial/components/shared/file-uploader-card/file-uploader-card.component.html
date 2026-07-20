@@ -1,25 +1,34 @@
-<div class="uploader-wrap">
-  <label class="uploader-doc-label" *ngIf="label" [ngClass]="labelColorClass()">{{ label }}</label>
-  <div class="uploader-hero">
-    <div
-      class="uploader"
-      [class.dragging]="dragging"
-      (dragover)="onDragOver($event)"
-      (dragleave)="onDragLeave($event)"
-      (drop)="onDrop($event)">
-      <div class="uploader__glow"></div>
-      <div class="uploader__body">
-        <div class="uploader__icon">
+<div class="uploader-wrap" [attr.data-variant]="colorVariant">
+  <div
+    class="uploader"
+    [class.dragging]="dragging"
+    [class.has-file]="tieneArchivoEnBadge()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)">
+    <span class="uploader__rail" aria-hidden="true"></span>
+
+    <div class="uploader__inner">
+      <header class="uploader__head" *ngIf="label">
+        <span class="uploader-doc-label" [ngClass]="labelColorClass()">{{ label }}</span>
+      </header>
+
+      <div class="uploader__drop">
+        <div class="uploader__icon" aria-hidden="true">
           <mat-icon>{{ icon }}</mat-icon>
         </div>
-        <h5 class="uploader__title">{{ uploadTitle }}</h5>
-        <p class="uploader__subtitle">Arrastra y suelta aquí o</p>
+
+        <div class="uploader__copy">
+          <h5 class="uploader__title">{{ uploadTitle }}</h5>
+          <p class="uploader__subtitle">Arrastra y suelta aquí o</p>
+        </div>
+
         <div class="uploader__cta">
           <button mat-flat-button color="primary" type="button" (click)="openFilePicker()">
             Seleccionar archivo
           </button>
           <button
-            *ngIf="urlRemota() as url"
+            *ngIf="tieneArchivoEnBadge() && urlVistaPrevia()"
             type="button"
             class="uploader__badge uploader__badge--file"
             [ngClass]="badgeFileColorClass()"
@@ -28,21 +37,20 @@
             {{ etiquetaBadge() }}
           </button>
           <span
-            *ngIf="!urlRemota()"
+            *ngIf="!tieneArchivoEnBadge() || !urlVistaPrevia()"
             class="uploader__badge"
-            [class.uploader__badge--file]="tieneArchivoEnBadge()"
-            [ngClass]="tieneArchivoEnBadge() ? badgeFileColorClass() : null"
             [title]="etiquetaBadge()">
             {{ etiquetaBadge() }}
           </span>
         </div>
-        <input
-          #fileInput
-          type="file"
-          [accept]="accept"
-          (change)="onFileSelected($event)"
-          class="uploader__input" />
       </div>
     </div>
+
+    <input
+      #fileInput
+      type="file"
+      [accept]="acceptImagenPdf"
+      (change)="onFileSelected($event)"
+      class="uploader__input" />
   </div>
 </div>

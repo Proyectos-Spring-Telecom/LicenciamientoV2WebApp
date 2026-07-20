@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Router } from '@angular/router';
 import { LocalComercial } from '../local-comercial/models/local-comercial';
+import { mostrarCargandoLocalComercial } from '../local-comercial/utils/local-comercial-swal.util';
 import {
   createEmptyLocalEstatusFilterCounts,
   localMatchesEstatusFilter,
@@ -10,6 +11,14 @@ import {
   MonitoreoLocalEstatusFilterCounts,
   resolveLocalEstatusFilter,
 } from './local-filter/monitoreo-local-estatus-filter.data';
+import {
+  createEmptyLocalPredioFilterCounts,
+  esPredioEnObra,
+  localMatchesPredioFilter,
+  MONITOREO_LOCAL_PREDIO_FILTER_DEFAULT,
+  MonitoreoLocalPredioFilter,
+  MonitoreoLocalPredioFilterCounts,
+} from './local-filter/monitoreo-local-predio-filter.data';
 import { MapaComponent } from './mapa/mapa.component';
 
 const BODY_MAPA_CLASS = 'monitoreo-mapa-active';
@@ -42,6 +51,7 @@ export class MonitoreoComponent implements OnInit, OnDestroy {
   listaLocales: LocalComercial[] = [];
   selectedLocalId: number | null = null;
   selectedEstatus: MonitoreoLocalEstatusFilter = MONITOREO_LOCAL_ESTATUS_FILTER_DEFAULT;
+  selectedPredio: MonitoreoLocalPredioFilter = MONITOREO_LOCAL_PREDIO_FILTER_DEFAULT;
   searchTerm = '';
 
   /** Lista visible (deslizada a su sitio). Empieza oculta fuera a la izquierda. */
@@ -64,6 +74,9 @@ export class MonitoreoComponent implements OnInit, OnDestroy {
       if (!localMatchesEstatusFilter(local.nombreEstatus, this.selectedEstatus)) {
         return false;
       }
+      if (!localMatchesPredioFilter(local.predioObra, this.selectedPredio)) {
+        return false;
+      }
       if (!term) {
         return true;
       }
@@ -84,12 +97,44 @@ export class MonitoreoComponent implements OnInit, OnDestroy {
     return (this.listaLocales || []).length;
   }
 
+  /** Locales visibles según filtro de predio (para chip Todos de estatus). */
+  get totalTrasFiltroPredio(): number {
+    return (this.listaLocales || []).filter((local) =>
+      localMatchesPredioFilter(local.predioObra, this.selectedPredio),
+    ).length;
+  }
+
+  /** Locales visibles según filtro de estatus (para chip Todos de predio). */
+  get totalTrasFiltroEstatus(): number {
+    return (this.listaLocales || []).filter((local) =>
+      localMatchesEstatusFilter(local.nombreEstatus, this.selectedEstatus),
+    ).length;
+  }
+
   get estatusFilterCounts(): MonitoreoLocalEstatusFilterCounts {
     const counts = createEmptyLocalEstatusFilterCounts();
     for (const local of this.listaLocales || []) {
+      if (!localMatchesPredioFilter(local.predioObra, this.selectedPredio)) {
+        continue;
+      }
       const estatus = resolveLocalEstatusFilter(local.nombreEstatus);
       if (estatus) {
         counts[estatus] += 1;
+      }
+    }
+    return counts;
+  }
+
+  get predioFilterCounts(): MonitoreoLocalPredioFilterCounts {
+    const counts = createEmptyLocalPredioFilterCounts();
+    for (const local of this.listaLocales || []) {
+      if (!localMatchesEstatusFilter(local.nombreEstatus, this.selectedEstatus)) {
+        continue;
+      }
+      if (esPredioEnObra(local.predioObra)) {
+        counts['en-obra'] += 1;
+      } else {
+        counts['sin-obra'] += 1;
       }
     }
     return counts;
@@ -102,6 +147,19 @@ export class MonitoreoComponent implements OnInit, OnDestroy {
   onEstatusFilterChange(estatus: MonitoreoLocalEstatusFilter): void {
     this.selectedEstatus = estatus;
     this.mapaComponent?.applyEstatusFilter(estatus);
+  }
+
+  onPredioFilterChange(predio: MonitoreoLocalPredioFilter): void {
+    this.selectedPredio = predio;
+    this.mapaComponent?.applyPredioFilter(predio);
+  }
+
+  etiquetaPredio(local: LocalComercial): string {
+    return esPredioEnObra(local.predioObra) ? 'En obra' : 'Sin obra';
+  }
+
+  esEnObra(local: LocalComercial): boolean {
+    return esPredioEnObra(local.predioObra);
   }
 
   onMapLocalFocused(localId: number): void {
@@ -120,7 +178,12 @@ export class MonitoreoComponent implements OnInit, OnDestroy {
 
   irADetalle(local: LocalComercial, event: Event): void {
     event.stopPropagation();
-    this.router.navigateByUrl('/local-comercial/detalle-local-comercial');
+    const id = Number(local?.id);
+    if (!Number.isFinite(id) || id <= 0) {
+      return;
+    }
+    mostrarCargandoLocalComercial('Obteniendo información del local comercial');
+    this.router.navigateByUrl('/local-comercial/detalle-local-comercial/' + id);
   }
 
   /** Contrae/expande solo la lista; la card de filtros del mapa es independiente. */

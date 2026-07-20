@@ -67,8 +67,26 @@
         }
       </div>
 
+      <div class="mon-loc-filter__section-label">Predio en obra</div>
+      <div class="mon-loc-filter__predio" role="group" aria-label="Filtrar por predio en obra">
+        @for (option of predioOptions; track option.id) {
+          <button
+            type="button"
+            class="mon-loc-filter__predio-chip mon-loc-filter__predio-chip--{{ option.id }}"
+            [class.mon-loc-filter__predio-chip--active]="selectedPredio === option.id"
+            [attr.aria-pressed]="selectedPredio === option.id"
+            [attr.aria-label]="option.ariaLabel"
+            (click)="selectPredio(option.id)"
+          >
+            <span class="mon-loc-filter__estatus-stripe" aria-hidden="true"></span>
+            <strong>{{ predioChipCount(option.id) }}</strong>
+            <small>{{ option.shortLabel }}</small>
+          </button>
+        }
+      </div>
+
       <p class="mon-loc-filter__hint">
-        Toca un estatus para mostrar u ocultar marcadores en el mapa
+        Filtra por estatus y predio en obra para mostrar u ocultar marcadores
       </p>
     </div>
   }

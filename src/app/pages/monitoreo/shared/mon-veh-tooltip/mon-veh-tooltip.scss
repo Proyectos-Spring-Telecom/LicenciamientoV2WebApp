@@ -104,6 +104,16 @@
   min-width: 0;
 }
 
+.mon-veh-tooltip__head-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
 .mon-veh-tooltip__head-label {
   display: inline-block;
   margin-bottom: 0;
@@ -116,6 +126,16 @@
   color: #fff;
   font-family: 'Poppins', sans-serif;
   line-height: 1.2;
+}
+
+.mon-veh-tooltip__head-label--obra {
+  background-color: #e8a317 !important;
+  border-color: rgba(255, 220, 140, 0.55);
+}
+
+.mon-veh-tooltip__head-label--sin-obra {
+  background-color: #438ae3 !important;
+  border-color: rgba(160, 205, 255, 0.45);
 }
 
 .mon-veh-tooltip__head--center .mon-veh-tooltip__head-title {
