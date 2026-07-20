@@ -178,7 +178,7 @@
       <div class="card detalle-info-card advanced-forms route-animations-elements">
         <div class="card-header detalle-seccion-header">
           <div class="detalle-seccion-heading detalle-seccion-heading--obra-prop">
-            <div class="detalle-seccion-heading__title"><i class="fa fa-user" aria-hidden="true"></i><span>Propietario y DRO</span></div>
+            <div class="detalle-seccion-heading__title"><i class="fa fa-user" aria-hidden="true"></i><span>Propietario y Director Responsable de Obra</span></div>
             <div class="detalle-seccion-heading__sub">Datos del propietario y director responsable de obra</div>
           </div>
         </div>
@@ -210,7 +210,7 @@
             <div class="detalle-campos-grid">
               <div class="route-animations-elements detalle-campo">
                 <i class="fa fa-id-badge"></i> &nbsp;&nbsp;
-                <div class="informacion">Nombre DRO:</div>
+                <div class="informacion">Nombre del Director Responsable de Obra:</div>
                 <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.NombreDRO)">{{ licenciaConstruccion?.NombreDRO }}</div>
                 <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.NombreDRO)">Sin Informaci&oacute;n </div>
               </div>
@@ -221,7 +221,7 @@
                 <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.NoRegLicenciaConstruccion)">Sin Informaci&oacute;n </div>
               </div>
               <div class="route-animations-elements detalle-campo">
-                <i class="fa fa-id-card"></i> &nbsp;&nbsp;
+                <i class="fa fa-certificate"></i> &nbsp;&nbsp;
                 <div class="informacion">C&eacute;dula profesional:</div>
                 <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.CedulaProfesional)">{{ licenciaConstruccion?.CedulaProfesional }}</div>
                 <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.CedulaProfesional)">Sin Informaci&oacute;n </div>
@@ -279,7 +279,7 @@
                 <div class="respuesta_null" *ngIf="!tieneValor(corr?.NoRegLicenciaConstruccion)">Sin Informaci&oacute;n </div>
               </div>
               <div class="route-animations-elements detalle-campo">
-                <i class="fa fa-id-card"></i> &nbsp;&nbsp;
+                <i class="fa fa-certificate"></i> &nbsp;&nbsp;
                 <div class="informacion">C&eacute;dula profesional:</div>
                 <div class="respuesta" *ngIf="tieneValor(corr?.CedulaProfesional)">{{ corr?.CedulaProfesional }}</div>
                 <div class="respuesta_null" *ngIf="!tieneValor(corr?.CedulaProfesional)">Sin Informaci&oacute;n </div>
@@ -841,10 +841,12 @@
               <div *ngIf="!tieneUbicacionMapa" class="not-street text-center detalle-street">
                 <p class="street"><i class="fa fa-map-marker"></i>&nbsp;&nbsp;Sin ubicaci&oacute;n registrada</p>
               </div>
-              <div *ngIf="tieneUbicacionMapa && isAvailable" id="street-view" class="detalle-street"></div>
-              <div class="not-street text-center detalle-street"
-                *ngIf="tieneUbicacionMapa && !isAvailable">
-                <p class="street"><i class="fa fa-exclamation-triangle"></i>&nbsp;&nbsp;Street View No Disponible</p>
+              <!-- #street-view debe existir en el DOM al init; no destruirlo con *ngIf de isAvailable -->
+              <div *ngIf="tieneUbicacionMapa" class="detalle-street-host">
+                <div id="street-view" class="detalle-street" [hidden]="!isAvailable"></div>
+                <div class="not-street text-center detalle-street" *ngIf="!isAvailable">
+                  <p class="street"><i class="fa fa-exclamation-triangle"></i>&nbsp;&nbsp;Street View No Disponible</p>
+                </div>
               </div>
             </div>
           </div>

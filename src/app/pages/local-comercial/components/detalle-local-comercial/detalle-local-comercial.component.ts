@@ -2,7 +2,8 @@
 import { routeAnimation } from 'src/app/pipe/module-open.animation';
 import { Router, ActivatedRoute } from '@angular/router';
 import { LocalComercialService } from './../../services/local-comercial.service';
-import { Component, OnInit, inject, ElementRef, ViewChild, enableProdMode, Inject, } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Subscription } from 'rxjs';
 import {
   DetalleLocal,
   DocumentoDetalleItem,
@@ -69,10 +70,18 @@ const ICON_USER =
   animations: [routeAnimation, galeriaPhotoAnimation, galeriaMetaAnimation],
   standalone: false,
 })
-export class DetalleLocalComercialComponent implements OnInit {
+export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
   @ViewChild('myImage', { static: true }) image: ElementRef;
   customMarkerUrl: string;
   mapMarkerUrl: string;
+  private mapaInitToken = 0;
+  private mapaDetalle: google.maps.Map | null = null;
+  private mapaMarker: google.maps.Marker | null = null;
+  private mapaInfoWindow: google.maps.InfoWindow | null = null;
+  private mapaHostEl: HTMLElement | null = null;
+  private streetHostEl: HTMLElement | null = null;
+  private detalleSub: Subscription | null = null;
+  private routeSub: Subscription | null = null;
 
 
   public detalle: User;
@@ -255,15 +264,26 @@ export class DetalleLocalComercialComponent implements OnInit {
   }
 
   /** NO BORRAR — Cierra la alerta de cargando del detalle. */
-  private ocultarCargandoDetalle(conRetraso = false): void {
-    if (!Swal.isVisible()) {
-      return;
-    }
-    if (conRetraso) {
-      setTimeout(() => Swal.close(), 500);
-      return;
-    }
-    Swal.close();
+  private ocultarCargandoDetalle(conRetraso = false): Promise<void> {
+    return new Promise((resolve) => {
+      if (!Swal.isVisible()) {
+        resolve();
+        return;
+      }
+
+      const cerrar = () => {
+        Swal.close();
+        // Un frame después del cierre para que el layout del mapa tenga tamaño real.
+        requestAnimationFrame(() => resolve());
+      };
+
+      if (conRetraso) {
+        // Retraso corto: no bloquear el mapa (antes eran 500ms y el mapa nacía detrás del Swal).
+        setTimeout(cerrar, 120);
+        return;
+      }
+      cerrar();
+    });
   }
 
   private tieneCoordenadasValidas(lat: unknown, lng: unknown): boolean {
@@ -587,14 +607,16 @@ export class DetalleLocalComercialComponent implements OnInit {
   loadIndicatorVisibleFourth = false;
   
   iconFifth = true;
-  buttonTextFifth = 'Cancelar';
+  buttonTextFifth = 'Regresar';
   loadIndicatorVisibleFifth = false;
 
   constructor(
     public router: Router,
     private activatedRoute: ActivatedRoute,
     public localComercialService: LocalComercialService,
-    private googleMapsLoader: GoogleMapsLoaderService) {
+    private googleMapsLoader: GoogleMapsLoaderService,
+    private cdr: ChangeDetectorRef,
+  ) {
       this.showFilterRow = true;
       this.showHeaderFilter = true;
       this.informacion = this.crearInformacionVacia();
@@ -603,7 +625,9 @@ export class DetalleLocalComercialComponent implements OnInit {
   ngOnInit() {
     this.obtenerPermisos();
     this.datosCargados = false;
-    this.activatedRoute.params.subscribe((param) => {
+    // Precarga Maps en paralelo al GET del detalle (solo maps + streetView).
+    void this.googleMapsLoader.load(environment.googleMapsApiKey, ['maps', 'streetView']);
+    this.routeSub = this.activatedRoute.params.subscribe((param) => {
       this.id = Number(param['id']);
       if (this.id) {
         this.obtenerDetalleLocal(this.id, true);
@@ -624,8 +648,17 @@ export class DetalleLocalComercialComponent implements OnInit {
 	}
 
   ngOnDestroy() {
-		clearInterval(this.interval);
-	}
+    this.mapaInitToken++;
+    this.detalleSub?.unsubscribe();
+    this.routeSub?.unsubscribe();
+    clearInterval(this.interval);
+    this.mapaDetalle = null;
+    this.mapaMarker = null;
+    this.mapaInfoWindow = null;
+    this.mapaHostEl = null;
+    this.streetHostEl = null;
+    this.panorama = null;
+  }
 
   col(colAmount: number) {
     return `1 1 calc(${100 / colAmount}% - ${this._gap - (this._gap / colAmount)}px)`;
@@ -671,8 +704,13 @@ export class DetalleLocalComercialComponent implements OnInit {
       this.mostrarCargandoDetalle();
     }
 
-    this.localComercialService.obtenerRegistroPorId(id).subscribe({
+    this.detalleSub?.unsubscribe();
+    this.detalleSub = this.localComercialService.obtenerRegistroPorId(id).subscribe({
       next: (response) => {
+        if (this.id !== id) {
+          return;
+        }
+
         const api = unwrapRegistroResponse(response);
         const res = mapRegistroToDetalleLocal(api);
         this.informacion = this.normalizarInformacion(res);
@@ -685,22 +723,33 @@ export class DetalleLocalComercialComponent implements OnInit {
           this.informacion.lat,
           this.informacion.lng
         );
+        this.isAvailable = this.tieneUbicacionMapa;
 
         this.datosCargados = true;
-        this.ocultarCargandoDetalle(true);
+        this.cdr.detectChanges();
 
-        if (this.tieneUbicacionMapa) {
-          setTimeout(() => this.inicializarMapaDetalle(id), 0);
-        } else {
-          this.isAvailable = false;
-        }
+        // Cerrar Swal ANTES de crear/actualizar el mapa (si nace detrás, queda gris mucho rato).
+        void this.ocultarCargandoDetalle(mostrarCargando).then(() => {
+          if (this.id !== id) {
+            return;
+          }
+          if (this.tieneUbicacionMapa) {
+            this.programarInicializarMapaDetalle(id);
+          } else {
+            this.mapaInitToken++;
+          }
+        });
       },
       error: () => {
+        if (this.id !== id) {
+          return;
+        }
+        this.mapaInitToken++;
         this.informacion = this.crearInformacionVacia();
         this.datosCargados = true;
         this.tieneUbicacionMapa = false;
         this.isAvailable = false;
-        this.ocultarCargandoDetalle(false);
+        void this.ocultarCargandoDetalle(false);
       },
     });
   }
@@ -948,102 +997,215 @@ export class DetalleLocalComercialComponent implements OnInit {
     this.calleSapac = dirSapac?.nombreCalleSapac ?? null;
   }
 
-  private inicializarMapaDetalle(id: number): void {
-    const mapEl = document.getElementById('map');
-    const streetEl = document.getElementById('street-view');
-    if (!mapEl || !streetEl) {
+  /** Espera a que Angular pinte #map / #street-view (evita carrera con *ngIf). */
+  private programarInicializarMapaDetalle(id: number): void {
+    const token = ++this.mapaInitToken;
+    this.esperarContenedoresMapa(token, id, 0);
+  }
+
+  private esperarContenedoresMapa(token: number, id: number, intento: number): void {
+    if (token !== this.mapaInitToken) {
       return;
     }
 
-    void this.googleMapsLoader.load(environment.googleMapsApiKey).then(() => {
-      const lat = Number(this.informacion.lat);
-      const lng = Number(this.informacion.lng);
-      const coordinates = { lat, lng };
+    const mapEl = document.getElementById('map');
+    const streetEl = document.getElementById('street-view');
 
+    if (mapEl && mapEl.offsetWidth > 0 && mapEl.offsetHeight > 0) {
+      void this.inicializarMapaDetalle(id, mapEl, streetEl);
+      return;
+    }
+
+    if (intento >= 40) {
+      if (mapEl) {
+        void this.inicializarMapaDetalle(id, mapEl, streetEl);
+      }
+      return;
+    }
+
+    setTimeout(() => this.esperarContenedoresMapa(token, id, intento + 1), 25);
+  }
+
+  private refrescarVistaMapa(
+    coordinates: google.maps.LatLngLiteral,
+    token: number,
+  ): void {
+    const go = () => {
+      if (token !== this.mapaInitToken || !this.mapaDetalle) {
+        return;
+      }
+      google.maps.event.trigger(this.mapaDetalle, 'resize');
+      this.mapaDetalle.setCenter(coordinates);
+    };
+    requestAnimationFrame(go);
+    setTimeout(go, 80);
+    setTimeout(go, 250);
+  }
+
+  private actualizarStreetView(
+    coordinates: google.maps.LatLngLiteral,
+    streetEl: HTMLElement,
+    token: number,
+  ): void {
+    if (!this.sv) {
       this.sv = new google.maps.StreetViewService();
-      this.panorama = new google.maps.StreetViewPanorama(streetEl);
-      this.sv.getPanorama(
-        { location: coordinates, radius: 50 },
-        (data, status) => {
-          this.processSVData(data, status);
+    }
+    if (!this.panorama || this.streetHostEl !== streetEl) {
+      this.panorama = new google.maps.StreetViewPanorama(streetEl, {
+        visible: false,
+        disableDefaultUI: false,
+      });
+      this.streetHostEl = streetEl;
+    }
+
+    this.sv.getPanorama(
+      { location: coordinates, radius: 50 },
+      (data, status) => {
+        if (token !== this.mapaInitToken) {
+          return;
+        }
+        this.processSVData(data, status);
+        if (this.isAvailable && this.panorama) {
           this.panorama.setVisible(true);
-          this.isStreetView = false;
+        } else if (this.panorama) {
+          this.panorama.setVisible(false);
         }
-      );
+        this.isStreetView = false;
+        this.cdr.detectChanges();
+      }
+    );
+  }
 
-      map = new google.maps.Map(mapEl, {
-        center: coordinates,
-        zoom: 16,
-        gestureHandling: 'greedy',
-        clickableIcons: false,
-        styles: MAP_STYLES_SIN_ESTABLECIMIENTOS,
-      });
+  private inicializarMapaDetalle(
+    id: number,
+    mapEl: HTMLElement,
+    streetEl: HTMLElement | null,
+  ): void {
+    const token = this.mapaInitToken;
 
-      const marker = new google.maps.Marker({
-        position: coordinates,
-        map,
-        icon: this.getMarkerIcon(this.informacion.nombreEstatus ?? ''),
-      });
-
-      const licenciaImgUrl =
-        'http://www.gtmtec.mx/FotosLicenciamiento\\' + id + '\\LicenciaFuncionamiento.jpeg';
-      const contentString = this.buildInfoWindowContent(licenciaImgUrl);
-
-      const infowindow = new google.maps.InfoWindow({
-        content: contentString,
-        maxWidth: 380,
-      });
-
-      let closeInfoTimeout: ReturnType<typeof setTimeout> | null = null;
-
-      const openInfoWindow = () => {
-        if (closeInfoTimeout) {
-          clearTimeout(closeInfoTimeout);
-          closeInfoTimeout = null;
+    void this.googleMapsLoader
+      .load(environment.googleMapsApiKey, ['maps', 'streetView'])
+      .then(() => {
+        if (token !== this.mapaInitToken) {
+          return;
         }
-        if (currentInfoWindow != null && currentInfoWindow !== infowindow) {
-          currentInfoWindow.close();
-        }
-        infowindow.open({ map, anchor: marker });
-        currentInfoWindow = infowindow;
-      };
 
-      const cancelCloseInfoWindow = () => {
-        if (closeInfoTimeout) {
-          clearTimeout(closeInfoTimeout);
-          closeInfoTimeout = null;
-        }
-      };
+        const lat = Number(this.informacion.lat);
+        const lng = Number(this.informacion.lng);
+        const coordinates = { lat, lng };
 
-      const scheduleCloseInfoWindow = () => {
-        cancelCloseInfoWindow();
-        closeInfoTimeout = setTimeout(() => {
+        if (streetEl) {
+          this.actualizarStreetView(coordinates, streetEl, token);
+        } else {
+          this.isAvailable = false;
+        }
+
+        const reutilizar = this.mapaDetalle && this.mapaHostEl === mapEl;
+        const licenciaImgUrl =
+          'http://www.gtmtec.mx/FotosLicenciamiento\\' + id + '\\LicenciaFuncionamiento.jpeg';
+
+        if (reutilizar) {
+          this.mapaDetalle.setOptions({
+            center: coordinates,
+            zoom: 16,
+          });
+          if (this.mapaMarker) {
+            this.mapaMarker.setPosition(coordinates);
+            this.mapaMarker.setIcon(this.getMarkerIcon(this.informacion.nombreEstatus ?? ''));
+          } else {
+            this.mapaMarker = new google.maps.Marker({
+              position: coordinates,
+              map: this.mapaDetalle,
+              icon: this.getMarkerIcon(this.informacion.nombreEstatus ?? ''),
+            });
+          }
+          if (this.mapaInfoWindow) {
+            this.mapaInfoWindow.setContent(this.buildInfoWindowContent(licenciaImgUrl));
+          }
+          this.refrescarVistaMapa(coordinates, token);
+          return;
+        }
+
+        map = new google.maps.Map(mapEl, {
+          center: coordinates,
+          zoom: 16,
+          gestureHandling: 'greedy',
+          clickableIcons: false,
+          styles: MAP_STYLES_SIN_ESTABLECIMIENTOS,
+        });
+        this.mapaDetalle = map;
+        this.mapaHostEl = mapEl;
+
+        this.mapaMarker = new google.maps.Marker({
+          position: coordinates,
+          map,
+          icon: this.getMarkerIcon(this.informacion.nombreEstatus ?? ''),
+        });
+
+        const contentString = this.buildInfoWindowContent(licenciaImgUrl);
+
+        const infowindow = new google.maps.InfoWindow({
+          content: contentString,
+          maxWidth: 380,
+        });
+        this.mapaInfoWindow = infowindow;
+
+        let closeInfoTimeout: ReturnType<typeof setTimeout> | null = null;
+
+        const openInfoWindow = () => {
+          if (closeInfoTimeout) {
+            clearTimeout(closeInfoTimeout);
+            closeInfoTimeout = null;
+          }
+          if (currentInfoWindow != null && currentInfoWindow !== infowindow) {
+            currentInfoWindow.close();
+          }
+          infowindow.open({ map, anchor: this.mapaMarker });
+          currentInfoWindow = infowindow;
+        };
+
+        const cancelCloseInfoWindow = () => {
+          if (closeInfoTimeout) {
+            clearTimeout(closeInfoTimeout);
+            closeInfoTimeout = null;
+          }
+        };
+
+        const scheduleCloseInfoWindow = () => {
+          cancelCloseInfoWindow();
+          closeInfoTimeout = setTimeout(() => {
+            infowindow.close();
+            if (currentInfoWindow === infowindow) {
+              currentInfoWindow = null;
+            }
+            closeInfoTimeout = null;
+          }, 250);
+        };
+
+        google.maps.event.addListener(this.mapaMarker, 'mouseover', openInfoWindow);
+        google.maps.event.addListener(this.mapaMarker, 'click', openInfoWindow);
+        google.maps.event.addListener(this.mapaMarker, 'mouseout', scheduleCloseInfoWindow);
+
+        google.maps.event.addListener(map, 'click', () => {
+          cancelCloseInfoWindow();
           infowindow.close();
           if (currentInfoWindow === infowindow) {
             currentInfoWindow = null;
           }
-          closeInfoTimeout = null;
-        }, 250);
-      };
+        });
 
-      google.maps.event.addListener(marker, 'mouseover', openInfoWindow);
-      google.maps.event.addListener(marker, 'click', openInfoWindow);
-      google.maps.event.addListener(marker, 'mouseout', scheduleCloseInfoWindow);
+        google.maps.event.addListener(infowindow, 'domready', () => {
+          this.applyInfoWindowShellStyles();
+          this.setupInfoWindowImageFallback(licenciaImgUrl);
+          this.setupInfoWindowHoverPersistence(scheduleCloseInfoWindow, cancelCloseInfoWindow);
+        });
 
-      google.maps.event.addListener(map, 'click', () => {
-        cancelCloseInfoWindow();
-        infowindow.close();
-        if (currentInfoWindow === infowindow) {
-          currentInfoWindow = null;
-        }
+        this.refrescarVistaMapa(coordinates, token);
+      })
+      .catch(() => {
+        this.isAvailable = false;
+        this.cdr.detectChanges();
       });
-
-      google.maps.event.addListener(infowindow, 'domready', () => {
-        this.applyInfoWindowShellStyles();
-        this.setupInfoWindowImageFallback(licenciaImgUrl);
-        this.setupInfoWindowHoverPersistence(scheduleCloseInfoWindow, cancelCloseInfoWindow);
-      });
-    });
   }
 
   obtenerLocalidades(idMunicipio) {
@@ -1119,11 +1281,16 @@ export class DetalleLocalComercialComponent implements OnInit {
   }
 
   processSVData(data, status): void {
-    if (data != null && this.panorama) {
+    const ok =
+      status === google.maps.StreetViewStatus.OK &&
+      data?.location?.pano &&
+      this.panorama;
+
+    if (ok) {
       this.panorama.setPano(data.location.pano);
       this.panorama.setPov({
         heading: 270,
-        pitch: 0
+        pitch: 0,
       });
       this.isAvailable = true;
     } else {
@@ -1419,7 +1586,7 @@ export class DetalleLocalComercialComponent implements OnInit {
     this.regresar();
     setTimeout(() => {
       this.regresar();
-      this.buttonTextFifth = 'Cancelar';
+      this.buttonTextFifth = 'Regresar';
       this.loadIndicatorVisibleFifth = false;
       this.iconFifth = true;
     }, 300);

@@ -12,8 +12,17 @@ export const navItems: NavItem[] = [
     route: '/menu-level',
     permission: [
       Permiso.CONSULTAR_MODULO,
+      Permiso.AGREGAR_MODULO,
+      Permiso.ACTUALIZAR_MODULO,
+      Permiso.ELIMINAR_MODULO,
       Permiso.CONSULTAR_PERMISOS,
+      Permiso.AGREGAR_PERMISO,
+      Permiso.ACTUALIZAR_PERMISO,
+      Permiso.ELIMINAR_PERMISO,
       Permiso.CONSULTAR_ROLES,
+      Permiso.AGREGAR_ROL,
+      Permiso.ACTUALIZAR_ROL,
+      Permiso.ELIMINAR_ROL,
     ],
     children: [
       {
@@ -68,6 +77,7 @@ export const navItems: NavItem[] = [
     displayName: 'Monitoreo',
     iconName: 'map',
     route: '/monitoreo',
+    permission: Permiso.CONSULTAR_MONITOREO,
   },
   {
     displayName: 'Locales Comerciales',

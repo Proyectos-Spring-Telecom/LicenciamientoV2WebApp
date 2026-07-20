@@ -23,28 +23,14 @@
               <span class="input-group-text fw-bold">
                 <mat-icon aria-hidden="true">view_module</mat-icon>
               </span>
-              @if (esEdicion) {
-              <div class="form-floating flex-grow-1">
-                <input
-                  type="text"
-                  class="form-control"
-                  id="permNivel"
-                  [value]="nombreModuloActual || ('Módulo ' + (permisoForm.getRawValue().idModulo ?? ''))"
-                  readonly
-                  disabled
-                >
-                <label for="permNivel">Módulo asignado</label>
-              </div>
-              } @else {
               <div class="form-floating flex-grow-1 perm-select-floating">
-                <select class="form-control" formControlName="idModulo" id="permNivel">
-                  <option [ngValue]="null" disabled hidden></option>
+                <select class="form-control" formControlName="idModulo">
+                  <option [ngValue]="null" selected disabled hidden></option>
                   <option *ngFor="let modulo of listaModulos" [ngValue]="modulo.id">
                     {{ modulo.nombre }}
                   </option>
                 </select>
               </div>
-              }
             </div>
           </div>
           <div class="col-12 col-md-4">
@@ -54,8 +40,8 @@
                 <mat-icon aria-hidden="true">title</mat-icon>
               </span>
               <div class="form-floating flex-grow-1">
-                <input type="text" formControlName="nombre" class="form-control" id="permNombre" placeholder="Ej.: Gestión de usuarios" required>
-                <label for="permNombre">Ej.: Gestión de usuarios</label>
+                <input type="text" formControlName="nombre" class="form-control" id="permNombre" placeholder="Ej.: 23" [readonly]="!idPermiso" required>
+                <label for="permNombre">Ej.: 23</label>
               </div>
             </div>
           </div>

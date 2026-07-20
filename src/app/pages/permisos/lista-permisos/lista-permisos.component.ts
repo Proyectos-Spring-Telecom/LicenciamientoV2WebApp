@@ -7,6 +7,11 @@ import { lastValueFrom } from 'rxjs';
 import { routeAnimation } from 'src/app/pipe/module-open.animation';
 import { PermisosService } from 'src/app/services/moduleService/permisos.service';
 import Swal from 'sweetalert2';
+import {
+  estatusTexto,
+  exportarTablaExcel,
+  resolverEstatusActivo,
+} from 'src/app/shared/utils/excel-export.util';
 
 @Component({
   selector: 'app-lista-permisos',
@@ -78,15 +83,7 @@ export class ListaPermisosComponent implements OnInit {
             toNum(resp?.pages) ??
             Math.max(1, Math.ceil(totalRegistros / take));
 
-          const dataTransformada = rows.map((item: any) => ({
-            ...item,
-            estatusTexto:
-              Number(item?.estatus) === 1
-                ? 'Activo'
-                : Number(item?.estatus) === 0
-                  ? 'Inactivo'
-                  : null,
-          }));
+          const dataTransformada = rows.map((item: any) => this.mapPermisoRow(item));
 
           this.totalRegistros = totalRegistros;
           this.paginaActual = paginaActual;
@@ -368,6 +365,98 @@ export class ListaPermisosComponent implements OnInit {
     } else {
       this.autoExpandAllGroups = !this.autoExpandAllGroups;
       this.dataGrid.instance.refresh();
+    }
+  }
+
+  private mapPermisoRow(item: any): any {
+    const estatus = resolverEstatusActivo(item);
+    return {
+      ...item,
+      idPermiso: item?.idPermiso ?? item?.IdPermiso ?? null,
+      nombrePermiso: item?.nombrePermiso ?? item?.NombrePermiso ?? item?.nombre ?? '',
+      descripcionPermiso:
+        item?.descripcionPermiso ?? item?.DescripcionPermiso ?? item?.descripcion ?? '',
+      nombreModulo: item?.nombreModulo ?? item?.NombreModulo ?? '',
+      estatus,
+      estatusTexto: estatusTexto(estatus),
+    };
+  }
+
+  private async obtenerTodosLosPermisos(): Promise<any[]> {
+    const pageSize = 100;
+    let page = 1;
+    let totalPages = 1;
+    const all: any[] = [];
+
+    do {
+      const resp: any = await lastValueFrom(
+        this.permService.obtenerPermisos(page, pageSize)
+      );
+      const rows: any[] = Array.isArray(resp?.data) ? resp.data : [];
+      all.push(...rows.map((item) => this.mapPermisoRow(item)));
+
+      const meta = resp?.paginated || {};
+      const total = Number(meta.total ?? resp?.total);
+      totalPages =
+        Number(meta.lastPage) ||
+        Number(resp?.pages) ||
+        (Number.isFinite(total) && total > 0
+          ? Math.max(1, Math.ceil(total / pageSize))
+          : page);
+
+      if (!rows.length) {
+        break;
+      }
+      page++;
+    } while (page <= totalPages);
+
+    return all;
+  }
+
+  async exportarExcel(): Promise<void> {
+    try {
+      const rows = await this.obtenerTodosLosPermisos();
+      const data = rows.map((row) => ({
+        Nombre: row.nombrePermiso,
+        Descripción: row.descripcionPermiso,
+        Módulo: row.nombreModulo,
+        Estatus: row.estatusTexto,
+      }));
+
+      await exportarTablaExcel({
+        sheetName: 'Permisos',
+        fileName: 'Permisos',
+        columns: [
+          { header: 'Nombre', key: 'Nombre', width: 36 },
+          { header: 'Descripción', key: 'Descripción', width: 40 },
+          { header: 'Módulo', key: 'Módulo', width: 28 },
+          { header: 'Estatus', key: 'Estatus', width: 16 },
+        ],
+        rows: data,
+      });
+    } catch (err: any) {
+      if (err?.message === 'EMPTY') {
+        Swal.fire({
+          title: 'Sin datos',
+          text: 'No hay permisos para exportar.',
+          icon: 'info',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Entendido',
+          background: '#141a21',
+          color: '#ffffff',
+        });
+        return;
+      }
+      console.error('Error al exportar permisos:', err);
+      Swal.fire({
+        title: '¡Ops!',
+        text: 'No se pudo generar el archivo Excel.',
+        icon: 'error',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Entendido',
+        background: '#141a21',
+        color: '#ffffff',
+      });
     }
   }
 }

@@ -8,9 +8,9 @@ export const interceptServiceInterceptor: HttpInterceptorFn = (req, next) => {
   const token = auth.getToken();
 
   const isPasswordResetFromLink =
-    req.url.includes('/login/cambiar/accesso') && req.method === 'PATCH';
+    req.url.includes('/login/cambiar/accesso') && req.method === 'POST';
 
-  // ✅ Si hay token, lo agrega al header Authorization (excepto PATCH cambio contraseña desde enlace, que usa token de la URL)
+  // ✅ Si hay token, lo agrega al header Authorization (excepto POST cambio contraseña desde enlace, que usa token de la URL)
   if (token && !isPasswordResetFromLink) {
     req = req.clone({
       setHeaders: {

@@ -9,6 +9,7 @@ import { AgregarUsuarioComponent } from './agregar-usuario/agregar-usuario.compo
 import { MaterialModule } from 'src/app/material.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PerfilUsuarioComponent } from './perfil-usuario/perfil-usuario.component';
+import { HasPermissionDirective } from 'src/app/core/haspermission.directive';
 
 
 @NgModule({
@@ -25,7 +26,8 @@ import { PerfilUsuarioComponent } from './perfil-usuario/perfil-usuario.componen
     DxButtonModule,
     MaterialModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    HasPermissionDirective
   ]
 })
 export class UsuariosModule { }

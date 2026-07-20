@@ -7,6 +7,11 @@ import { routeAnimation } from 'src/app/pipe/module-open.animation';
 import { RolesService } from 'src/app/services/moduleService/roles.service';
 import { Permiso } from 'src/app/entities/permiso.enum';
 import Swal from 'sweetalert2';
+import {
+  estatusTexto,
+  exportarTablaExcel,
+  resolverEstatusActivo,
+} from 'src/app/shared/utils/excel-export.util';
 
 @Component({
   selector: 'app-lista-roles',
@@ -73,21 +78,7 @@ export class ListaRolesComponent implements OnInit {
             toNum(resp?.pages) ??
             Math.max(1, Math.ceil(totalRegistros / take));
 
-          const dataTransformada = rows.map((item: any) => {
-            const id = Number(item?.id ?? item?.Id ?? item?.idRol);
-            return {
-              ...item,
-              id,
-              nombre: item?.nombre ?? item?.Nombre ?? '',
-              estatus: Number(item?.estatus ?? item?.Estatus ?? 0),
-              estatusTexto:
-                Number(item?.estatus ?? item?.Estatus) === 1
-                  ? 'Activo'
-                  : Number(item?.estatus ?? item?.Estatus) === 0
-                    ? 'Inactivo'
-                    : null,
-            };
-          });
+          const dataTransformada = rows.map((item: any) => this.mapRolRow(item));
 
           this.totalRegistros = totalRegistros;
           this.paginaActual = paginaActual;
@@ -284,6 +275,91 @@ export class ListaRolesComponent implements OnInit {
     } else {
       this.autoExpandAllGroups = !this.autoExpandAllGroups;
       this.dataGrid.instance.refresh();
+    }
+  }
+
+  private mapRolRow(item: any): any {
+    const estatus = resolverEstatusActivo(item);
+    return {
+      ...item,
+      id: Number(item?.id ?? item?.Id ?? item?.idRol),
+      nombre: item?.nombre ?? item?.Nombre ?? '',
+      estatus,
+      estatusTexto: estatusTexto(estatus),
+    };
+  }
+
+  private async obtenerTodosLosRoles(): Promise<any[]> {
+    const pageSize = 100;
+    let page = 1;
+    let totalPages = 1;
+    const all: any[] = [];
+
+    do {
+      const resp: any = await lastValueFrom(
+        this.rolesService.obtenerRolesData(page, pageSize),
+      );
+      const rows: any[] = Array.isArray(resp?.data) ? resp.data : [];
+      all.push(...rows.map((item) => this.mapRolRow(item)));
+
+      const meta = resp?.paginated || {};
+      const total = Number(meta.total ?? resp?.total);
+      totalPages =
+        Number(meta.lastPage) ||
+        Number(resp?.pages) ||
+        (Number.isFinite(total) && total > 0
+          ? Math.max(1, Math.ceil(total / pageSize))
+          : page);
+
+      if (!rows.length) {
+        break;
+      }
+      page++;
+    } while (page <= totalPages);
+
+    return all;
+  }
+
+  async exportarExcel(): Promise<void> {
+    try {
+      const rows = await this.obtenerTodosLosRoles();
+      const data = rows.map((row) => ({
+        Nombre: row.nombre,
+        Estatus: row.estatusTexto,
+      }));
+
+      await exportarTablaExcel({
+        sheetName: 'Roles',
+        fileName: 'Roles',
+        columns: [
+          { header: 'Nombre', key: 'Nombre', width: 40 },
+          { header: 'Estatus', key: 'Estatus', width: 18 },
+        ],
+        rows: data,
+      });
+    } catch (err: any) {
+      if (err?.message === 'EMPTY') {
+        Swal.fire({
+          title: 'Sin datos',
+          text: 'No hay roles para exportar.',
+          icon: 'info',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Entendido',
+          background: '#141a21',
+          color: '#ffffff',
+        });
+        return;
+      }
+      console.error('Error al exportar roles:', err);
+      Swal.fire({
+        title: '¡Ops!',
+        text: 'No se pudo generar el archivo Excel.',
+        icon: 'error',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Entendido',
+        background: '#141a21',
+        color: '#ffffff',
+      });
     }
   }
 }

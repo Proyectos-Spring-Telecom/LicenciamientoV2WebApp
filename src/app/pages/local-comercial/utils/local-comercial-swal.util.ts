@@ -87,7 +87,7 @@ export function mostrarSwalCodigoPostalNoEncontrado(
   const cpTxt = cp ? ` (${cp})` : '';
   Swal.fire({
     ...SWAL_SISTEMA,
-    title: 'No se pudo consultar el código postal',
+    title: 'Error al consultar el código postal',
     html: `
       <p style="text-align:center;margin:0 0 10px;line-height:1.45;">
         No encontramos datos automáticos para el código postal${cpTxt}.

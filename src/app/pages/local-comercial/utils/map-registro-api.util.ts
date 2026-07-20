@@ -307,7 +307,7 @@ const LC_DOC_DETALLE: Array<{ keys: string[]; titulo: string; idTipoFoto?: numbe
   },
   {
     keys: ['LicenciaConstruccion.FirmaDRO'],
-    titulo: 'Firma del DRO',
+    titulo: 'Firma del Director Responsable de Obra',
     idTipoFoto: 26,
   },
   {

@@ -18,15 +18,27 @@
 
     <div class="surface">
         <div class="d-flex flex-wrap gap-10 justify-content-end w-100">
-            <div >
-                <button (click)="agregarUsuario()" mat-flat-button class="bg-secondary">
-                    <i class="fa fa-plus"></i> Agregar</button>
-            </div>
             <button (click)="limpiarCampos()" mat-flat-button class="bg-success"><i class="fa fa-eraser"></i>
                 Limpiar</button>
             <button (click)="toggleExpandGroups()" mat-flat-button class="bg-warn">
                 <i [class]="autoExpandAllGroups ? 'fa fa-expand' : 'fa fa-compress'" aria-hidden="true"></i>
                 {{ autoExpandAllGroups ? ' Contraer Grupos' : ' Expandir Grupos' }}
+            </button>
+            <div *appHasPermission="'4'">
+                <button (click)="agregarUsuario()" mat-flat-button class="bg-secondary">
+                    <i class="fa fa-plus"></i> Agregar</button>
+            </div>
+            <button type="button" class="mon-hist__btn mon-hist__btn--export" (click)="exportarExcel()">
+                <svg class="mon-hist__btn-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                    <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" />
+                    <path d="M8 11h8v7H8z" />
+                    <path d="M8 15h8" />
+                    <path d="M11 11v7" />
+                </svg>
+                <span>Exportar</span>
             </button>
         </div>
         <div class="mt-3">
@@ -40,14 +52,14 @@
                 <dxo-filter-row [visible]="showFilterRow"></dxo-filter-row>
                 <dxo-header-filter [visible]="showHeaderFilter"></dxo-header-filter>
                 <dxo-grouping #expand [autoExpandAll]="autoExpandAllGroups"></dxo-grouping>
-                <dxi-column caption="Acciones" cellTemplate="acciones" alignment="center" [width]="150"></dxi-column>
+                <dxi-column caption="Acciones" cellTemplate="acciones" alignment="center" *appHasPermission="['5', '6']" [width]="150"></dxi-column>
                 <dxi-column dataField="FotoPerfil" caption="Imagen" cellTemplate="imagen" [width]="200"
                     alignment="center">
                     <dxo-header-filter [allowSearch]="true"></dxo-header-filter>
                 </dxi-column>
                 <dxi-column dataField="NombreCompleto" caption="Nombre" alignment="center"
                     dataType="string"></dxi-column>
-                <dxi-column dataField="Telefono" caption="Teléfono" alignment="center" dataType="string"></dxi-column>
+                <dxi-column dataField="PhoneNumber" caption="Teléfono" alignment="center" dataType="string"></dxi-column>
                 <dxi-column dataField="UserName" caption="Correo Electrónico" alignment="center"
                     dataType="string"></dxi-column>
                 <dxi-column dataField="RolNombre" caption="Rol" alignment="center" dataType="string"></dxi-column>
@@ -56,26 +68,26 @@
                     <img *ngIf="data.value == null" style="max-width: 100px;"
                         src="https://inmueblespring.s3.us-east-1.amazonaws.com/imagenes/user.png " />
                 </div>
-                <dxi-column dataField="estatus" caption="Estatus" alignment="center" dataType="string"
+                <dxi-column dataField="estatusTexto" caption="Estatus" alignment="center" dataType="string"
                     cellTemplate="est">
                     <div *dxTemplate="let f of 'est'">
                         <span *ngIf="toNum(f.data.estatus) === 1" class="estatus estatus-activo">
-                            Activo
+                            {{ f.data.estatusTexto }}
                         </span>
                         <span *ngIf="toNum(f.data.estatus) !== 1" class="estatus estatus-inactivo">
-                            Inactivo
+                            {{ f.data.estatusTexto }}
                         </span>
                     </div>
                 </dxi-column>
 
                 <div *dxTemplate="let row of 'acciones'" class="d-flex gap-3 justify-content-center">
-                    <div>
+                    <div *appHasPermission="'5'">
                         <button valueExpr="id" id="actualizarButton" class="btnAcciones"
                             (click)="actualizarUsuario(row.data.id)">
                             <i class="fa fa-edit"></i>
                         </button>
                     </div>
-                    <div>
+                    <div *appHasPermission="'6'">
                         @if (row.data.estatus === 0) {
                         <button id="pinButton" class="btnAcciones" (click)="activar(row.data)">
                             <i class="fa fa-arrow-up"></i>

@@ -1,7 +1,7 @@
 ﻿// @ts-nocheck
 import { routeAnimation } from 'src/app/pipe/module-open.animation';
 import { Router } from '@angular/router';
-import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, NgZone } from '@angular/core';
 import Swal from 'sweetalert2';
 import { User } from 'src/app/entities/User';
 import { LicenciamientoPermiso } from 'src/app/entities/licenciamiento-permiso.const';
@@ -12,20 +12,36 @@ import { DatePipe } from '@angular/common';
 import { LocalComercial } from '../../models/local-comercial';
 import { LocalComercialService } from '../../services/local-comercial.service';
 import { PreRegistroStateService } from '../../services/pre-registro-state.service';
+import { GoogleMapsLoaderService } from 'src/app/services/google-maps-loader.service';
+import { environment } from 'src/environments/environment';
+import { exportarTablaExcel } from 'src/app/shared/utils/excel-export.util';
+import {
+  exportarLocalesComercialesPdf,
+  mockLocalComercialPdfPayload,
+} from '../../utils/locales-comerciales-pdf.util';
 
 @Component({
   selector: 'app-lista-local-comercial',
   templateUrl: './lista-local-comercial.component.html',
-  styleUrls: ['./lista-local-comercial.component.css'],
+  styleUrls: ['./lista-local-comercial.component.scss'],
   standalone: false,
   animations: [routeAnimation]
 })
 
-export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
+export class ListaLocalComercialComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('gridContainer', { static: false }) dataGrid: DxDataGridComponent;
   public listaLocales: any;
   public datosReporte = [];
   public mensajeModulo: string = 'Locales Comerciales';
+  public exportMenuOpen = false;
+  private onDocClick = (ev: MouseEvent) => {
+    const target = ev.target as HTMLElement | null;
+    if (!target?.closest?.('.mon-hist__export-wrap')) {
+      this.ngZone.run(() => {
+        this.exportMenuOpen = false;
+      });
+    }
+  };
   public titulo: string = 'Licenciamiento';
 
   public permisoLocales: string;
@@ -289,7 +305,10 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
 	  private router: Router,
 	  private datepipe: DatePipe,
 	  private localComercialService: LocalComercialService,
-	  private preRegistroState: PreRegistroStateService) {
+	  private preRegistroState: PreRegistroStateService,
+	  private googleMapsLoader: GoogleMapsLoaderService,
+	  private ngZone: NgZone,
+  ) {
 		this.showHeaderFilter = true;
         this.showFilterRow = true;
   	}
@@ -298,10 +317,141 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
 		this.inicializarRangoFechas();
 		this.obtenerPermisos();
 		this.setupDataSource();
+		// Precarga Maps mientras el usuario ve la lista (detalle abre más rápido).
+		void this.googleMapsLoader.load(environment.googleMapsApiKey, ['maps', 'streetView']);
+		document.addEventListener('click', this.onDocClick);
 	}
 
 	ngAfterViewInit() {
 		/* CustomStore carga al montar el grid. */
+	}
+
+	ngOnDestroy() {
+		document.removeEventListener('click', this.onDocClick);
+		clearInterval(this.interval);
+	}
+
+	toggleExportMenu(event: MouseEvent): void {
+		event.stopPropagation();
+		this.exportMenuOpen = !this.exportMenuOpen;
+	}
+
+	cerrarExportMenu(): void {
+		this.exportMenuOpen = false;
+	}
+
+	private obtenerLocalesParaExport(): LocalComercial[] {
+		const base = this.filtrarPorEstatus(this.paginaActualData || []);
+		return Array.isArray(base) ? base : [];
+	}
+
+	/** PDF: incluye también locales en Baja aunque el filtro de la grilla los oculte. */
+	private obtenerLocalesParaPdf(): LocalComercial[] {
+		const todos = this.paginaActualData || [];
+		const visibles = this.obtenerLocalesParaExport();
+		const bajas = todos.filter((row) => this.estaDeBaja(row));
+		const map = new Map<number, LocalComercial>();
+		[...visibles, ...bajas].forEach((row) => {
+			const id = Number(row?.id);
+			if (Number.isFinite(id)) {
+				map.set(id, row);
+			}
+		});
+		return Array.from(map.values());
+	}
+
+	private etiquetaFiltroEstatus(): string {
+		const op = (this.opcionesFiltroEstatus || []).find(
+			(o) => o.id === this.filtroEstatus
+		);
+		return op?.nombre ?? 'Todos';
+	}
+
+	async exportarExcel(): Promise<void> {
+		this.cerrarExportMenu();
+		try {
+			const locales = this.obtenerLocalesParaExport();
+			const data = locales.map((row) => ({
+				Estatus: row.nombreEstatus ?? '',
+				RFC: row.rfc ?? '',
+				'Nombre Comercial': row.nombreComercial ?? '',
+				'Predio en obra': row.predioObraLabel ?? '',
+				Giro: row.giro ?? '',
+				Capturista: row.nombreCapturista ?? '',
+				Grupo: row.grupo ?? '',
+				'Fecha Expedición':
+					this.datepipe.transform(row.fechaCreacion ?? row.fechaHora, 'yyyy-MM-dd - h:mm a') ??
+					'',
+			}));
+
+			await exportarTablaExcel({
+				sheetName: 'Locales Comerciales',
+				fileName: 'Locales Comerciales',
+				columns: [
+					{ header: 'Estatus', key: 'Estatus', width: 24 },
+					{ header: 'RFC', key: 'RFC', width: 16 },
+					{ header: 'Nombre Comercial', key: 'Nombre Comercial', width: 32 },
+					{ header: 'Predio en obra', key: 'Predio en obra', width: 16 },
+					{ header: 'Giro', key: 'Giro', width: 22 },
+					{ header: 'Capturista', key: 'Capturista', width: 26 },
+					{ header: 'Grupo', key: 'Grupo', width: 12 },
+					{ header: 'Fecha Expedición', key: 'Fecha Expedición', width: 22 },
+				],
+				rows: data,
+			});
+		} catch (err: any) {
+			if (err?.message === 'EMPTY') {
+				Swal.fire({
+					title: 'Sin datos',
+					text: 'No hay locales para exportar con el filtro actual.',
+					icon: 'info',
+					confirmButtonColor: '#3085d6',
+					confirmButtonText: 'Entendido',
+					background: '#141a21',
+					color: '#ffffff',
+				});
+				return;
+			}
+			console.error('Error al exportar Excel:', err);
+			Swal.fire({
+				title: '¡Ops!',
+				text: 'No se pudo generar el archivo Excel.',
+				icon: 'error',
+				confirmButtonColor: '#3085d6',
+				confirmButtonText: 'Entendido',
+				background: '#141a21',
+				color: '#ffffff',
+			});
+		}
+	}
+
+	async exportarPdf(): Promise<void> {
+		this.cerrarExportMenu();
+		try {
+			const locales = this.obtenerLocalesParaPdf();
+			const payload =
+				locales.length > 0
+					? {
+							fechaInicial: this.fechaInicio,
+							fechaFinal: this.fechaFinal,
+							estatusFiltro: this.etiquetaFiltroEstatus(),
+							locales,
+						}
+					: mockLocalComercialPdfPayload();
+
+			await exportarLocalesComercialesPdf(payload);
+		} catch (err) {
+			console.error('Error al exportar PDF:', err);
+			Swal.fire({
+				title: '¡Ops!',
+				text: 'No se pudo generar el PDF.',
+				icon: 'error',
+				confirmButtonColor: '#3085d6',
+				confirmButtonText: 'Entendido',
+				background: '#141a21',
+				color: '#ffffff',
+			});
+		}
 	}
 
 	setupDataSource() {
@@ -562,11 +712,6 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit {
 		  this.loadingVisible = false;
 		}, 2000);
 	  }
-
-	ngOnDestroy() {
-		clearInterval(this.interval);
-	}
-
 
 /*------------------------------------
 	Obtención de Información en grids
