@@ -201,7 +201,7 @@ export class LocalComercialFormularioComponent implements OnInit {
   private cargandoDireccionEdicion = false;
   private sincronizandoDireccion = false;
 
-  /** Flujo pre-registro → alta: para regresar a Tipo de Local o Finalización (obra). */
+  /** Flujo pre-registro → alta: para regresar a Tipo de Local o Predio en obra. */
   public vieneDePreRegistro = false;
   public predioEnObraPreRegistro = false;
   private static readonly PRE_REGISTRO_STORAGE_KEY = 'lc.preRegistro';
@@ -358,6 +358,7 @@ export class LocalComercialFormularioComponent implements OnInit {
       LicenciaConstruccion: {
         TipoSolicitudLicencia: data.LcTipoSolicitudLicencia ?? '',
         DescripcionProyecto: data.LcDescripcionProyecto ?? '',
+        ClaveCatastral: data.LcClaveCatastral ?? '',
         SuperficieTerrenoM2: data.LcSuperficieTerrenoM2 ?? '',
         SuperficieTerrenoObraM2: data.LcSuperficieTerrenoObraM2 ?? '',
         DescripcionSistemaConstructivo: data.LcDescripcionSistemaConstructivo ?? '',
@@ -485,7 +486,7 @@ export class LocalComercialFormularioComponent implements OnInit {
 
   get etiquetaBannerRegresar(): string {
     if (!this.vieneDePreRegistro) return 'Regresar';
-    return this.predioEnObraPreRegistro ? 'Finalización del Trámite' : 'Tipo de Local';
+    return this.predioEnObraPreRegistro ? 'Predio en obra' : 'Tipo de Local';
   }
 
   onBannerRegresar(): void {

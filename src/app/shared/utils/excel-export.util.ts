@@ -9,6 +9,8 @@ export interface ExcelExportColumn {
   header: string;
   key: string;
   width?: number;
+  /** Color de fuente por valor exacto de la celda (hex, ej. `#16a34a`). */
+  valueFontColors?: Record<string, string>;
 }
 
 /**
@@ -44,8 +46,15 @@ export async function exportarTablaExcel(options: {
   });
 
   for (let r = 2; r <= worksheet.rowCount; r++) {
-    worksheet.getRow(r).eachCell((cell) => {
-      cell.font = { bold: false };
+    const row = worksheet.getRow(r);
+    row.eachCell((cell, colNumber) => {
+      const colDef = columns[colNumber - 1];
+      const raw = cell.value == null ? '' : String(cell.value);
+      const fontColor = colDef?.valueFontColors?.[raw];
+      cell.font = {
+        bold: false,
+        ...(fontColor ? { color: { argb: hexToArgb(fontColor) } } : {}),
+      };
       cell.alignment = { horizontal: 'center', vertical: 'middle' };
     });
   }
@@ -58,6 +67,18 @@ export async function exportarTablaExcel(options: {
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], { type: EXCEL_TYPE });
   FileSaver.saveAs(blob, `${fileName}${EXCEL_EXTENSION}`);
+}
+
+function hexToArgb(hex: string): string {
+  const h = hex.replace('#', '').trim();
+  const full =
+    h.length === 3
+      ? h
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : h;
+  return `FF${full.toUpperCase()}`;
 }
 
 /** Normaliza estatus numérico 1/0 desde distintas formas del API. */

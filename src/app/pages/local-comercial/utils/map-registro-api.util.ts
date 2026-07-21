@@ -363,6 +363,7 @@ function mapLicenciaConstruccionDetalle(api: any): LicenciaConstruccionDetalle |
       pick(lc, 'TipoSolicitudLicencia', 'tipoSolicitudLicencia')
     ),
     DescripcionProyecto: textoApi(pick(lc, 'DescripcionProyecto', 'descripcionProyecto')) || null,
+    ClaveCatastral: textoApi(pick(lc, 'ClaveCatastral', 'claveCatastral')) || null,
     SuperficieTerrenoM2: numeroApi(pick(lc, 'SuperficieTerrenoM2', 'superficieTerrenoM2')),
     SuperficieTerrenoObraM2: numeroApi(
       pick(lc, 'SuperficieTerrenoObraM2', 'superficieTerrenoObraM2')
@@ -472,6 +473,7 @@ function mapLicenciaConstruccionPatch(api: any): Record<string, unknown> {
   return {
     TipoSolicitudLicencia: numeroApi(pick(lc, 'TipoSolicitudLicencia', 'tipoSolicitudLicencia')) ?? '',
     DescripcionProyecto: textoApi(pick(lc, 'DescripcionProyecto', 'descripcionProyecto')),
+    ClaveCatastral: textoApi(pick(lc, 'ClaveCatastral', 'claveCatastral')),
     SuperficieTerrenoM2: numeroApi(pick(lc, 'SuperficieTerrenoM2', 'superficieTerrenoM2')) ?? '',
     SuperficieTerrenoObraM2:
       numeroApi(pick(lc, 'SuperficieTerrenoObraM2', 'superficieTerrenoObraM2')) ?? '',

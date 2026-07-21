@@ -2,6 +2,7 @@ export interface LicenciaConstruccionDetalle {
   Id?: number | null;
   TipoSolicitudLicencia?: number | string | null;
   DescripcionProyecto?: string | null;
+  ClaveCatastral?: string | null;
   SuperficieTerrenoM2?: number | string | null;
   SuperficieTerrenoObraM2?: number | string | null;
   DescripcionSistemaConstructivo?: string | null;

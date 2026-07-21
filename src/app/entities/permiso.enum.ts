@@ -36,20 +36,11 @@ export enum Permiso {
   ACTUALIZAR_PERMISO = 19,
 
   // Roles
-  CONSULTAR_ROLES = 23,
-  AGREGAR_ROL = 24,
-  ELIMINAR_ROL = 25,
-  ACTUALIZAR_ROL = 26,
+  CONSULTAR_ROLES = 34,
+  AGREGAR_ROL = 35,
+  ELIMINAR_ROL = 36,
+  ACTUALIZAR_ROL = 37,
 
-  // Registros / Luminarias (no usados en esta app)
-  VISUALIZAR_DETALLE_LUMINARIAS = 27,
-
-  // Capturista (no usados en esta app)
-  SVJ_AGERAS = 29,
-  VENENO = 30,
-  CAPTURISTA_720S = 31,
-  ONE_77 = 32,
-
-  // Datas (no usados en esta app)
-  PERMISO_PRUEBAS = 33,
+  //Tablero
+  CONSULTAR_TABLERO = 38,
 }

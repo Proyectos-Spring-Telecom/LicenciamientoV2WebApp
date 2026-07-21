@@ -154,10 +154,6 @@ export class MonitoreoComponent implements OnInit, OnDestroy {
     this.mapaComponent?.applyPredioFilter(predio);
   }
 
-  etiquetaPredio(local: LocalComercial): string {
-    return esPredioEnObra(local.predioObra) ? 'En obra' : 'Sin obra';
-  }
-
   esEnObra(local: LocalComercial): boolean {
     return esPredioEnObra(local.predioObra);
   }
@@ -183,7 +179,9 @@ export class MonitoreoComponent implements OnInit, OnDestroy {
       return;
     }
     mostrarCargandoLocalComercial('Obteniendo información del local comercial');
-    this.router.navigateByUrl('/local-comercial/detalle-local-comercial/' + id);
+    this.router.navigate(['/local-comercial/detalle-local-comercial', id], {
+      queryParams: { from: 'monitoreo' },
+    });
   }
 
   /** Contrae/expande solo la lista; la card de filtros del mapa es independiente. */

@@ -170,7 +170,7 @@ export class AgregarUsuarioComponent implements OnInit {
         nombre: u?.nombre ?? '',
         apellidoPaterno: u?.apellidoPaterno ?? '',
         apellidoMaterno: u?.apellidoMaterno ?? '',
-        telefono: u?.telefono ?? '',
+        telefono: u?.phoneNumber ?? '',
         idRol: u?.idRol != null ? Number(u.idRol) : null,
         idGrupo: u?.idGrupo != null ? Number(u.idGrupo) : null,
       });

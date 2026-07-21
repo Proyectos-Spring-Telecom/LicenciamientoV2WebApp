@@ -40,7 +40,7 @@ const MARKER_ICONS: Record<string, string> = {
   InformacionFaltante: 'assets/images/logos/marker_warning.png',
   Rechazo: 'assets/images/logos/marker_danger.png',
   'Rechazo o Sin respuesta': 'assets/images/logos/marker_danger.png',
-  Baja: 'assets/images/logos/marker_down.png',
+  Baja: 'assets/images/logos/marker_danger.png',
 };
 
 const MAP_STYLES_SIN_ESTABLECIMIENTOS: google.maps.MapTypeStyle[] = [
@@ -252,6 +252,7 @@ export class MapaComponent implements OnInit, OnDestroy {
       Revision: '#438AE3',
       'Rechazo o Sin respuesta': '#eb1919',
       Rechazo: '#eb1919',
+      Baja: '#eb1919',
       'Datos Correctos': '#52bb56',
       Correcto: '#52bb56',
     };
@@ -300,10 +301,9 @@ export class MapaComponent implements OnInit, OnDestroy {
     const nombreComercial = this.escapeHtml(this.textoTooltip(local.nombreComercial));
     const nombreEstatus = this.escapeHtml(this.textoTooltip(local.nombreEstatus));
     const predioEnObra = esPredioEnObra(local.predioObra);
-    const predioLabel = this.escapeHtml(predioEnObra ? 'En obra' : 'Sin obra');
-    const predioClass = predioEnObra
-      ? 'mon-veh-tooltip__head-label--obra'
-      : 'mon-veh-tooltip__head-label--sin-obra';
+    const predioBadge = predioEnObra
+      ? '<span class="mon-veh-tooltip__head-label mon-veh-tooltip__head-label--obra">En obra</span>'
+      : '';
     const grupo = this.escapeHtml(
       this.tieneValor(local.grupo) ? this.formatoGrupo(local.grupo) : 'Sin información',
     );
@@ -326,7 +326,7 @@ export class MapaComponent implements OnInit, OnDestroy {
       '<header class="mon-veh-tooltip__head mon-veh-tooltip__head--center">' +
       '<div class="mon-veh-tooltip__head-badges">' +
       `<span class="mon-veh-tooltip__head-label" style="background-color:${estatusColor}">${nombreEstatus}</span>` +
-      `<span class="mon-veh-tooltip__head-label ${predioClass}">${predioLabel}</span>` +
+      predioBadge +
       '</div>' +
       `<h3 class="mon-veh-tooltip__head-title">${nombreComercial}</h3>` +
       '</header>' +
@@ -523,7 +523,7 @@ export class MapaComponent implements OnInit, OnDestroy {
             const marker = new google.maps.Marker({
               position: { lat: local.lat, lng: local.lng },
               icon: this.getMarkerIcon(local.nombreEstatus, enObra),
-              title: `${local.nombreComercial || 'Local'}${enObra ? ' · En obra' : ' · Sin obra'}`,
+              title: `${local.nombreComercial || 'Local'}${enObra ? ' · En obra' : ''}`,
               animation: google.maps.Animation.DROP,
               zIndex: enObra ? 20 : 10,
             });
@@ -599,7 +599,9 @@ export class MapaComponent implements OnInit, OnDestroy {
                     return;
                   }
                   mostrarCargandoLocalComercial('Obteniendo información del local comercial');
-                  this.router.navigateByUrl('/local-comercial/detalle-local-comercial/' + id);
+                  this.router.navigate(['/local-comercial/detalle-local-comercial', id], {
+                    queryParams: { from: 'monitoreo' },
+                  });
                 });
               }
               if (closeBtn) {

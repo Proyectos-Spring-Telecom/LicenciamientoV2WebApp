@@ -45,6 +45,7 @@ const MARKER_ICONS: Record<string, string> = {
   InformacionFaltante: 'assets/images/logos/marker_warning.png',
   Rechazo: 'assets/images/logos/marker_danger.png',
   'Rechazo o Sin respuesta': 'assets/images/logos/marker_danger.png',
+  Baja: 'assets/images/logos/marker_danger.png',
 };
 
 const MAP_STYLES_SIN_ESTABLECIMIENTOS: google.maps.MapTypeStyle[] = [
@@ -455,7 +456,7 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
     if (nombre.includes('faltante')) {
       return 'detalle-estatus-badge--faltante';
     }
-    if (nombre.includes('rechazo')) {
+    if (nombre.includes('rechazo') || nombre.includes('baja')) {
       return 'detalle-estatus-badge--rechazo';
     }
 
@@ -467,6 +468,7 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
       case 1:
         return 'detalle-estatus-badge--faltante';
       case 2:
+      case 5:
         return 'detalle-estatus-badge--rechazo';
       default:
         return 'detalle-estatus-badge--desconocido';
@@ -610,6 +612,9 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
   buttonTextFifth = 'Regresar';
   loadIndicatorVisibleFifth = false;
 
+  /** true cuando se abrió el detalle desde el mapa/lista de monitoreo. */
+  private vieneDeMonitoreo = false;
+
   constructor(
     public router: Router,
     private activatedRoute: ActivatedRoute,
@@ -627,6 +632,8 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
     this.datosCargados = false;
     // Precarga Maps en paralelo al GET del detalle (solo maps + streetView).
     void this.googleMapsLoader.load(environment.googleMapsApiKey, ['maps', 'streetView']);
+    this.vieneDeMonitoreo =
+      this.activatedRoute.snapshot.queryParamMap.get('from') === 'monitoreo';
     this.routeSub = this.activatedRoute.params.subscribe((param) => {
       this.id = Number(param['id']);
       if (this.id) {
@@ -1577,6 +1584,10 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
     this.buttonTextFifth = 'Regresar...'
     this.loadIndicatorVisibleFifth = true;
     this.iconFifth = false;
+    if (this.vieneDeMonitoreo) {
+      this.router.navigateByUrl('/monitoreo');
+      return;
+    }
     this.router.navigateByUrl('/local-comercial/lista-local-comercial');
   }
 

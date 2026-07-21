@@ -76,10 +76,10 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit, OnDe
   /** Valores `datetime-local` (yyyy-MM-ddTHH:mm) */
   public fechaInicio: string | null = null;
   public fechaFinal: string | null = null;
-  /** `null` = todos excepto Baja (ocultos por defecto). */
+  /** `null` = todos los estatus (incluye Baja). */
   public filtroEstatus: number | null = null;
   public readonly opcionesFiltroEstatus: { id: number | null; nombre: string }[] = [
-    { id: null, nombre: 'Todos (sin Baja)' },
+    { id: null, nombre: 'Todos' },
     { id: 1, nombre: 'Información Faltante' },
     { id: 2, nombre: 'Rechazo o Sin respuesta' },
     { id: 3, nombre: 'Datos Correctos' },
@@ -233,6 +233,10 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit, OnDe
     return Number.isNaN(fecha.getTime()) ? null : fecha;
   }
 
+  private resolverTipoRegistroLabel(tipoRegistro: number): string {
+    return tipoRegistro === 1 ? 'Vivienda' : 'Local Comercial';
+  }
+
   /** Mapea la fila plana de POST /registros/por-rango-fechas al grid. */
   private mapRegistroToLocal(item: any): LocalComercial {
     const estatus = Number(
@@ -249,6 +253,8 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit, OnDe
 
     const predioObraRaw = this.pickField(item, 'predioObra', 'PredioObra');
     const predioObra = Number(predioObraRaw) === 1 ? 1 : 0;
+    const tipoRegistro =
+      Number(this.pickField(item, 'tipoRegistro', 'TipoRegistro')) === 1 ? 1 : 0;
 
     return {
       id: Number(this.pickField(item, 'id', 'Id') ?? 0),
@@ -256,6 +262,8 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit, OnDe
       nombreComercial: this.pickField(item, 'nombreComercial', 'NombreComercial'),
       predioObra,
       predioObraLabel: predioObra === 1 ? 'En obra' : 'Sin obra',
+      tipoRegistro,
+      tipoRegistroLabel: this.resolverTipoRegistroLabel(tipoRegistro),
       giro: this.pickField(item, 'giro', 'Giro', 'nombreGiro', 'NombreGiro'),
       nombreCapturista: this.resolverNombreCapturista(item),
       nombreEstatus: this.resolverNombreEstatus(estatus, nombreEstatusApi),
@@ -282,6 +290,7 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit, OnDe
         item.nombreEstatus
       );
       const predioObra = Number((item as any).predioObra) === 1 ? 1 : 0;
+      const tipoRegistro = Number((item as any).tipoRegistro) === 1 ? 1 : 0;
       return {
         ...item,
         urlLicencia: this.resolveFotoRuta(item.urlLicencia),
@@ -289,6 +298,8 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit, OnDe
         nombreComercial: this.formatGridText(item.nombreComercial),
         predioObra,
         predioObraLabel: predioObra === 1 ? 'En obra' : 'Sin obra',
+        tipoRegistro,
+        tipoRegistroLabel: this.resolverTipoRegistroLabel(tipoRegistro),
         giro: this.formatGridText(item.giro),
         nombreCapturista: this.formatGridText(item.nombreCapturista),
         grupo: this.formatGridText(item.grupo),
@@ -345,19 +356,8 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit, OnDe
 		return Array.isArray(base) ? base : [];
 	}
 
-	/** PDF: incluye también locales en Baja aunque el filtro de la grilla los oculte. */
 	private obtenerLocalesParaPdf(): LocalComercial[] {
-		const todos = this.paginaActualData || [];
-		const visibles = this.obtenerLocalesParaExport();
-		const bajas = todos.filter((row) => this.estaDeBaja(row));
-		const map = new Map<number, LocalComercial>();
-		[...visibles, ...bajas].forEach((row) => {
-			const id = Number(row?.id);
-			if (Number.isFinite(id)) {
-				map.set(id, row);
-			}
-		});
-		return Array.from(map.values());
+		return this.obtenerLocalesParaExport();
 	}
 
 	private etiquetaFiltroEstatus(): string {
@@ -371,10 +371,12 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit, OnDe
 		this.cerrarExportMenu();
 		try {
 			const locales = this.obtenerLocalesParaExport();
+			// Mismo orden que el grid (sin Acciones).
 			const data = locales.map((row) => ({
 				Estatus: row.nombreEstatus ?? '',
-				RFC: row.rfc ?? '',
 				'Nombre Comercial': row.nombreComercial ?? '',
+				'Tipo de registro': row.tipoRegistroLabel ?? '',
+				RFC: row.rfc ?? '',
 				'Predio en obra': row.predioObraLabel ?? '',
 				Giro: row.giro ?? '',
 				Capturista: row.nombreCapturista ?? '',
@@ -388,10 +390,38 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit, OnDe
 				sheetName: 'Locales Comerciales',
 				fileName: 'Locales Comerciales',
 				columns: [
-					{ header: 'Estatus', key: 'Estatus', width: 24 },
-					{ header: 'RFC', key: 'RFC', width: 16 },
+					{
+						header: 'Estatus',
+						key: 'Estatus',
+						width: 24,
+						valueFontColors: {
+							'Datos Correctos': '#16a34a',
+							Revisión: '#2563eb',
+							'Información Faltante': '#d97706',
+							'Rechazo o Sin respuesta': '#dc2626',
+							Baja: '#dc2626',
+						},
+					},
 					{ header: 'Nombre Comercial', key: 'Nombre Comercial', width: 32 },
-					{ header: 'Predio en obra', key: 'Predio en obra', width: 16 },
+					{
+						header: 'Tipo de registro',
+						key: 'Tipo de registro',
+						width: 18,
+						valueFontColors: {
+							'Local Comercial': '#059669',
+							Vivienda: '#7c3aed',
+						},
+					},
+					{ header: 'RFC', key: 'RFC', width: 16 },
+					{
+						header: 'Predio en obra',
+						key: 'Predio en obra',
+						width: 16,
+						valueFontColors: {
+							'En obra': '#ea580c',
+							'Sin obra': '#0d9488',
+						},
+					},
 					{ header: 'Giro', key: 'Giro', width: 22 },
 					{ header: 'Capturista', key: 'Capturista', width: 26 },
 					{ header: 'Grupo', key: 'Grupo', width: 12 },
@@ -583,6 +613,7 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit, OnDe
 				normalizar(row?.giro),
 				normalizar(row?.nombreCapturista),
 				normalizar(row?.nombreEstatus),
+				normalizar(row?.tipoRegistroLabel),
 			];
 			const hitExtras = extras.some((s) => s.includes(q));
 			return hitEnColumnas || hitExtras;
@@ -590,11 +621,11 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit, OnDe
 		grid?.option('dataSource', dataFiltrada);
 	}
 
-	/** Oculta Baja por defecto; si hay id de estatus, filtra solo ese. */
+	/** Si hay id de estatus, filtra solo ese; `null` = todos (incluye Baja). */
 	private filtrarPorEstatus(locales: LocalComercial[]): LocalComercial[] {
 		const data = locales || [];
 		if (this.filtroEstatus == null) {
-			return data.filter((row) => !this.estaDeBaja(row));
+			return data;
 		}
 		return data.filter((row) => Number(row.estatus) === Number(this.filtroEstatus));
 	}
@@ -629,6 +660,7 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit, OnDe
 					normalizar(row?.nombreCapturista),
 					normalizar(row?.nombreEstatus),
 					normalizar(row?.grupo),
+					normalizar(row?.tipoRegistroLabel),
 				];
 				return extras.some((s) => s.includes(q));
 			});

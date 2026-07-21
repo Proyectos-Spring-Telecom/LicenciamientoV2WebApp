@@ -6,12 +6,12 @@
     </div>
     <div class="perm-head__text">
       <span class="eyebrow">{{ title }}</span>
-      <h2>{{ mostrarApartadoObra ? 'Finalización del Trámite' : titulo }}</h2>
+      <h2>{{ mostrarApartadoObra ? 'Predio en obra' : titulo }}</h2>
     </div>
     <nav class="perm-head__crumbs" aria-label="Ruta">
       <span class="crumb">{{ title }}</span>
       <span class="sep">/</span>
-      <span class="crumb active">{{ mostrarApartadoObra ? 'Finalización del Trámite' : titulo }}</span>
+      <span class="crumb active">{{ mostrarApartadoObra ? 'Predio en obra' : titulo }}</span>
     </nav>
   </header>
 
@@ -255,7 +255,7 @@
         </div>
       </div>
 
-      <!-- ═══════ FORMULARIO 2: Finalización del Trámite (predio en obra) ═══════ -->
+      <!-- ═══════ FORMULARIO 2: Predio en obra ═══════ -->
       <div class="local-form-shell pre-reg-shell pre-reg-shell--obra"
         [hidden]="!mostrarApartadoObra"
         [class.is-step-hidden]="!mostrarApartadoObra"
@@ -266,11 +266,11 @@
             <div class="col-12 col-lg-8">
               <div class="local-form-banner__main">
                 <div class="local-form-banner__icon" aria-hidden="true">
-                  <mat-icon>assignment_turned_in</mat-icon>
+                  <mat-icon>construction</mat-icon>
                 </div>
                 <div class="local-form-banner__copy">
                   <!-- <span class="local-form-banner__step">Paso {{ pasoActualFlujo }} de {{ pasosTotalesFlujo }}</span> -->
-                  <div class="local-form-banner__title">Finalización del Trámite</div>
+                  <div class="local-form-banner__title">Predio en obra</div>
                   <p class="local-form-banner__subtitle">
                     Complete la información de obra, documentación y firmas para continuar.
                   </p>
@@ -298,7 +298,7 @@
             <span class="local-form-section__badge"><mat-icon>info</mat-icon></span>
             <div>
               <h4 class="local-form-section__title">Información general</h4>
-              <p class="local-form-section__desc">Datos del trámite de obra</p>
+              <p class="local-form-section__desc">Datos del predio en obra</p>
             </div>
           </div>
           <div class="row g-3 g-md-4">
@@ -328,7 +328,7 @@
                 </div>
               </div>
             </div>
-            <div class="col-12">
+            <div class="col-12 col-lg-6">
               <label class="form-label perm-label" for="preDesc">Descripción del proyecto</label>
               <div class="input-group input-group-lg perm-ig">
                 <span class="input-group-text fw-bold"><mat-icon>notes</mat-icon></span>
@@ -337,6 +337,18 @@
                     placeholder="Descripción del proyecto"
                     [(ngModel)]="descripcionProyecto" />
                   <label for="preDesc">Descripción del proyecto</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-6">
+              <label class="form-label perm-label" for="preClaveCatastral">Clave catastral</label>
+              <div class="input-group input-group-lg perm-ig">
+                <span class="input-group-text fw-bold"><mat-icon>pin</mat-icon></span>
+                <div class="form-floating flex-grow-1">
+                  <input id="preClaveCatastral" class="form-control" type="text"
+                    placeholder="Clave catastral"
+                    [(ngModel)]="claveCatastral" name="preClaveCatastral" />
+                  <label for="preClaveCatastral">Clave catastral</label>
                 </div>
               </div>
             </div>

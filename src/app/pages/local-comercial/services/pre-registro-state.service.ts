@@ -26,6 +26,7 @@ export interface PreRegistroScalarState {
   CP: string;
   LcTipoSolicitudLicencia: string | number;
   LcDescripcionProyecto: string;
+  LcClaveCatastral: string;
   LcSuperficieTerrenoM2: string | number;
   LcSuperficieTerrenoObraM2: string | number;
   LcDescripcionSistemaConstructivo: string;

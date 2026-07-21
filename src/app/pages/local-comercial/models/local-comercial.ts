@@ -13,6 +13,10 @@ export interface LocalComercial {
     predioObra?: number;
     /** Etiqueta legible para el grid */
     predioObraLabel?: string;
+    /** 0 = Local comercial, 1 = Vivienda */
+    tipoRegistro?: number;
+    /** Etiqueta legible: Local Comercial | Vivienda */
+    tipoRegistroLabel?: string;
     nombreEstatus: any;
     rfc: any;
     urlLicencia: any;

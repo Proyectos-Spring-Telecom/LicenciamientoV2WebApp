@@ -67,10 +67,9 @@
                   <div class="monitor-local-card__badges">
                     <span class="monitor-local-card__status">{{ etiquetaEstatus(local) }}</span>
                     <span
-                      class="monitor-local-card__predio"
-                      [class.monitor-local-card__predio--obra]="esEnObra(local)"
-                      [class.monitor-local-card__predio--sin]="!esEnObra(local)"
-                    >{{ etiquetaPredio(local) }}</span>
+                      *ngIf="esEnObra(local)"
+                      class="monitor-local-card__predio monitor-local-card__predio--obra"
+                    >En obra</span>
                   </div>
                   <h3 class="monitor-local-card__name">{{ local.nombreComercial || 'Sin nombre' }}</h3>
                 </div>

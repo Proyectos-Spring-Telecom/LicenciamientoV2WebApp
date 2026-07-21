@@ -438,14 +438,22 @@
     class="topbar-dd cardWithShadow dd-notifications profile-menu-custom"
   >
     <div class="p-x-16 p-y-20 b-b-1 profile-menu-custom__head">
-      <div class="d-flex align-items-center">
-        <div class="m-l-16">
-          <h6 class="f-w-600 m-0 d-flex align-items-center profile-menu-custom__name">
-            {{showNombre + ' ' + showApellidoPaterno + ' ' + showApellidoMaterno}} - 
-            <span class="d-block m-l-4 profile-menu-custom__grupo" *ngIf="showGrupo">Grupo: {{ showGrupo }}</span>
-          </h6>
-          <span class="d-block profile-menu-custom__role-line" *ngIf="showNombreRol">
-            Rol: {{ showNombreRol }}
+      <div class="profile-menu-custom__identity">
+        <span class="profile-menu-custom__meta profile-menu-custom__meta--name"
+          [title]="'Usuario: ' + showNombre + ' ' + showApellidoPaterno + ' ' + showApellidoMaterno">
+          <span class="profile-menu-custom__meta-label">Usuario:</span>
+          <span class="profile-menu-custom__meta-value">
+            {{ showNombre }} {{ showApellidoPaterno }} {{ showApellidoMaterno }}
+          </span>
+        </span>
+        <div class="profile-menu-custom__meta-row">
+          <span class="profile-menu-custom__meta" *ngIf="showGrupo" [title]="'Grupo: ' + showGrupo">
+            <span class="profile-menu-custom__meta-label">Grupo:</span>
+            <span class="profile-menu-custom__meta-value">{{ showGrupo }}</span>
+          </span>
+          <span class="profile-menu-custom__meta" *ngIf="showNombreRol" [title]="'Rol: ' + showNombreRol">
+            <span class="profile-menu-custom__meta-label">Rol:</span>
+            <span class="profile-menu-custom__meta-value">{{ showNombreRol }}</span>
           </span>
         </div>
       </div>
@@ -457,7 +465,12 @@
         [routerLink]="isLogoutProfile(profile) ? null : [profile.link]"
         (click)="onProfileAction(profile, $event)"
       >
-        <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center gap-8 profile-menu-custom__item-row">
+          <i-tabler
+            *ngIf="profile.icon"
+            [name]="profile.icon"
+            class="icon-18 d-flex profile-menu-custom__item-icon"
+          ></i-tabler>
           <h5 class="f-s-14 f-w-500 m-0 hover-text">
             {{ profile.title }}
           </h5>

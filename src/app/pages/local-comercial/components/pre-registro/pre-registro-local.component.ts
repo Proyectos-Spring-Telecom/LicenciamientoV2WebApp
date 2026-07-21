@@ -280,6 +280,7 @@ export class PreRegistroLocalComponent implements OnInit {
 
   public tipoLicencia = '';
   public descripcionProyecto = '';
+  public claveCatastral = '';
   public ubicacionConstruccion = '';
   public propietarioNombre = '';
   public propietarioRfc = '';
@@ -605,6 +606,7 @@ export class PreRegistroLocalComponent implements OnInit {
       this.tipoLicencia =
         tipoSol == null || tipoSol === '' ? this.tipoLicencia : String(tipoSol);
       this.descripcionProyecto = String(lc['DescripcionProyecto'] ?? this.descripcionProyecto);
+      this.claveCatastral = String(lc['ClaveCatastral'] ?? this.claveCatastral);
       this.superficieTerrenoM2 = String(lc['SuperficieTerrenoM2'] ?? this.superficieTerrenoM2);
       this.superficieTerrenoObraM2 = String(
         lc['SuperficieTerrenoObraM2'] ?? this.superficieTerrenoObraM2
@@ -687,6 +689,7 @@ export class PreRegistroLocalComponent implements OnInit {
     this.predioEnObra = !!data.predioEnObra;
     this.tipoLicencia = String(data.LcTipoSolicitudLicencia ?? this.tipoLicencia);
     this.descripcionProyecto = data.LcDescripcionProyecto ?? this.descripcionProyecto;
+    this.claveCatastral = data.LcClaveCatastral ?? this.claveCatastral;
     this.superficieTerrenoM2 = String(data.LcSuperficieTerrenoM2 ?? this.superficieTerrenoM2);
     this.superficieTerrenoObraM2 = String(data.LcSuperficieTerrenoObraM2 ?? this.superficieTerrenoObraM2);
     this.descripcionSistemaConstructivo =
@@ -920,6 +923,7 @@ export class PreRegistroLocalComponent implements OnInit {
       LicenciaConstruccion: {
         TipoSolicitudLicencia: data?.LcTipoSolicitudLicencia ?? '',
         DescripcionProyecto: data?.LcDescripcionProyecto ?? '',
+        ClaveCatastral: data?.LcClaveCatastral ?? '',
         SuperficieTerrenoM2: data?.LcSuperficieTerrenoM2 ?? '',
         SuperficieTerrenoObraM2: data?.LcSuperficieTerrenoObraM2 ?? '',
         DescripcionSistemaConstructivo: data?.LcDescripcionSistemaConstructivo ?? '',
@@ -1462,6 +1466,7 @@ export class PreRegistroLocalComponent implements OnInit {
         CP: this.codigoPostal,
         LcTipoSolicitudLicencia: TIPO_SOLICITUD_MAP[this.tipoLicencia] ?? this.tipoLicencia,
         LcDescripcionProyecto: this.descripcionProyecto,
+        LcClaveCatastral: this.claveCatastral,
         LcSuperficieTerrenoM2: this.superficieTerrenoM2,
         LcSuperficieTerrenoObraM2: this.superficieTerrenoObraM2,
         LcDescripcionSistemaConstructivo: this.descripcionSistemaConstructivo,

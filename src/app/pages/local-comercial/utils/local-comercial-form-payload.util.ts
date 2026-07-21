@@ -284,6 +284,7 @@ export function createRegistrosFormGroup(fb: FormBuilder): FormGroup {
     LicenciaConstruccion: fb.group({
       TipoSolicitudLicencia: [''],
       DescripcionProyecto: [''],
+      ClaveCatastral: [''],
       SuperficieTerrenoM2: [''],
       SuperficieTerrenoObraM2: [''],
       DescripcionSistemaConstructivo: [''],
@@ -713,6 +714,7 @@ function appendLicenciaConstruccion(
     parcial
   );
   appendCampo(formData, `${lc}.DescripcionProyecto`, v(`${lc}.DescripcionProyecto`), empty, parcial);
+  appendCampo(formData, `${lc}.ClaveCatastral`, v(`${lc}.ClaveCatastral`), empty, parcial);
   appendCampo(
     formData,
     `${lc}.SuperficieTerrenoM2`,
