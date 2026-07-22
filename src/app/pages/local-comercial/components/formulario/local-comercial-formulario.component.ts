@@ -762,7 +762,7 @@ export class LocalComercialFormularioComponent implements OnInit {
 
   private refrescarFlagsUiDesdeFormulario(): void {
     const tipoPersona = Number(this.localForm.get('Licencias.TipoPersona')?.value);
-    this.fisica = tipoPersona === 1 || tipoPersona === 0;
+    this.fisica = tipoPersona !== 2;
 
     const tienePrograma = this.localForm.get('ProteccionCivil.TienePrograma')?.value;
     this.tieneprograma =
@@ -790,7 +790,7 @@ export class LocalComercialFormularioComponent implements OnInit {
 
   obtenerTipoPersona(_id?) {
     const tipoPersona = Number(this.localForm?.get('Licencias.TipoPersona')?.value);
-    this.fisica = tipoPersona === 1 || tipoPersona === 0 || Number.isNaN(tipoPersona);
+    this.fisica = tipoPersona !== 2;
   }
 
   obtenerTieneProgram() {
@@ -806,11 +806,40 @@ export class LocalComercialFormularioComponent implements OnInit {
   }
 
   obtenerTipoPersonaSelect(value) {
-    if (value === 1 || value === 0) {
-      this.fisica = true;
-    }
-    if (value === 2) {
-      this.fisica = false;
+    this.aplicarVisibilidadTipoPersona(value);
+  }
+
+  onTipoPersonaChange(): void {
+    const value = this.localForm.get('Licencias.TipoPersona')?.value;
+    this.validarTipoPersona(value);
+    this.aplicarVisibilidadTipoPersona(value);
+  }
+
+  private aplicarVisibilidadTipoPersona(value: unknown): void {
+    const tipo = Number(value);
+    const esFisica = tipo !== 2;
+    this.fisica = esFisica;
+    if (esFisica) {
+      this.localForm.patchValue({
+        Licencias: {
+          RazonSocial: '',
+          ContactoRepresentante: {
+            Nombre: '',
+            ApellidoPaterno: '',
+            ApellidoMaterno: '',
+            Telefono: '',
+            Correo: '',
+          },
+        },
+      });
+    } else {
+      this.localForm.patchValue({
+        Licencias: {
+          NombrePropietario: '',
+          ApellidoPaternoPropietario: '',
+          ApellidoMaternoPropietario: '',
+        },
+      });
     }
   }
 

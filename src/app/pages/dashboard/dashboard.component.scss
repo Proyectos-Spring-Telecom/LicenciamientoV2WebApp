@@ -2,11 +2,11 @@
   padding-bottom: 16px;
 
   .dashboard-card {
-    border: none;
     border-radius: 10px;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
     overflow: hidden;
-    background: #1e293b;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 40%);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
 
     &__header {
       background: transparent;

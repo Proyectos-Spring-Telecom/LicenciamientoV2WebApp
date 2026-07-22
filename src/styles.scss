@@ -28,6 +28,25 @@ body.monitoreo-mapa-active {
   }
 }
 
+/* Selección de ubicación (locales): mapa full-page sin padding del layout.
+   OJO: aquí NO se colapsa ni oculta el sidebar; solo se libera el área de contenido. */
+body.ubicacion-mapa-active {
+  .layout-content-scroll {
+    padding-bottom: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .pageWrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  .layout-app-footer {
+    display: none !important;
+  }
+}
+
 /* Monitoreo: sidenav oculto hasta botón del header o hover en borde izquierdo */
 .monitoreo-sidebar-rail {
   position: fixed;

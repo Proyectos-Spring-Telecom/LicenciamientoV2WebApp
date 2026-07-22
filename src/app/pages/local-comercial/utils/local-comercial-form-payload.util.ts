@@ -245,12 +245,20 @@ export function createRegistrosFormGroup(fb: FormBuilder): FormGroup {
       ApellidoMaternoPropietario: [''],
       TipoPersona: [''],
       RFC: [''],
+      RazonSocial: [''],
       FechaExpedicion: [''],
       FechaRefrendo: [''],
       Estacionamiento: [''],
       Tipo: [1],
       FechaHora: [''],
       Contacto: fb.group({
+        Nombre: [''],
+        ApellidoPaterno: [''],
+        ApellidoMaterno: [''],
+        Telefono: [''],
+        Correo: [''],
+      }),
+      ContactoRepresentante: fb.group({
         Nombre: [''],
         ApellidoPaterno: [''],
         ApellidoMaterno: [''],
@@ -272,13 +280,6 @@ export function createRegistrosFormGroup(fb: FormBuilder): FormGroup {
       Telefono: [''],
       RegistroAcreditacion: [''],
       TienePrograma: [''],
-      ContactoRepresentante: fb.group({
-        Nombre: [''],
-        ApellidoPaterno: [''],
-        ApellidoMaterno: [''],
-        Telefono: [''],
-        Correo: [''],
-      }),
       vistoBueno: [''],
     }),
     LicenciaConstruccion: fb.group({
@@ -504,28 +505,28 @@ function appendSapacCatastroLicenciasProteccion(
   appendCampo(formData, 'Licencias.NombreComercial', v('Licencias.NombreComercial'), empty, parcial);
   appendCampo(formData, 'Licencias.Giro', v('Licencias.Giro'), empty, parcial);
   appendCampo(formData, 'Licencias.LicenciaSuelo', v('Licencias.LicenciaSuelo'), empty, parcial);
-  appendCampo(formData, 'Licencias.NombrePropietario', v('Licencias.NombrePropietario'), empty, parcial);
-  appendCampo(
-    formData,
-    'Licencias.ApellidoPaternoPropietario',
-    v('Licencias.ApellidoPaternoPropietario'),
-    empty,
-    parcial
-  );
-  appendCampo(
-    formData,
-    'Licencias.ApellidoMaternoPropietario',
-    v('Licencias.ApellidoMaternoPropietario'),
-    empty,
-    parcial
-  );
-  appendCampo(
-    formData,
-    'Licencias.TipoPersona',
-    mapTipoPersona(v('Licencias.TipoPersona')),
-    empty,
-    parcial
-  );
+  const tipoPersona = mapTipoPersona(v('Licencias.TipoPersona'));
+  const esPersonaMoral = tipoPersona === '2';
+  appendCampo(formData, 'Licencias.TipoPersona', tipoPersona, empty, parcial);
+  if (esPersonaMoral) {
+    appendCampo(formData, 'Licencias.RazonSocial', v('Licencias.RazonSocial'), empty, parcial);
+  } else {
+    appendCampo(formData, 'Licencias.NombrePropietario', v('Licencias.NombrePropietario'), empty, parcial);
+    appendCampo(
+      formData,
+      'Licencias.ApellidoPaternoPropietario',
+      v('Licencias.ApellidoPaternoPropietario'),
+      empty,
+      parcial
+    );
+    appendCampo(
+      formData,
+      'Licencias.ApellidoMaternoPropietario',
+      v('Licencias.ApellidoMaternoPropietario'),
+      empty,
+      parcial
+    );
+  }
   appendCampo(formData, 'Licencias.RFC', v('Licencias.RFC'), empty, parcial);
   appendCampo(
     formData,
@@ -601,6 +602,52 @@ function appendSapacCatastroLicenciasProteccion(
     );
   }
 
+  // Contacto representante de Licencias solo con persona moral
+  if (
+    esPersonaMoral &&
+    (tieneTexto(v('Licencias.ContactoRepresentante.Nombre')) ||
+      tieneTexto(v('Licencias.ContactoRepresentante.ApellidoPaterno')) ||
+      tieneTexto(v('Licencias.ContactoRepresentante.ApellidoMaterno')) ||
+      tieneTexto(v('Licencias.ContactoRepresentante.Telefono')) ||
+      tieneTexto(v('Licencias.ContactoRepresentante.Correo')))
+  ) {
+    appendCampo(
+      formData,
+      'Licencias.ContactoRepresentante.Nombre',
+      v('Licencias.ContactoRepresentante.Nombre'),
+      empty,
+      parcial
+    );
+    appendCampo(
+      formData,
+      'Licencias.ContactoRepresentante.ApellidoPaterno',
+      v('Licencias.ContactoRepresentante.ApellidoPaterno'),
+      empty,
+      parcial
+    );
+    appendCampo(
+      formData,
+      'Licencias.ContactoRepresentante.ApellidoMaterno',
+      v('Licencias.ContactoRepresentante.ApellidoMaterno'),
+      empty,
+      parcial
+    );
+    appendCampo(
+      formData,
+      'Licencias.ContactoRepresentante.Telefono',
+      v('Licencias.ContactoRepresentante.Telefono'),
+      empty,
+      parcial
+    );
+    appendCampo(
+      formData,
+      'Licencias.ContactoRepresentante.Correo',
+      v('Licencias.ContactoRepresentante.Correo'),
+      empty,
+      parcial
+    );
+  }
+
   appendDocumento(
     formData,
     'Licencias.licenciaFuncionamiento',
@@ -648,50 +695,6 @@ function appendSapacCatastroLicenciasProteccion(
     empty,
     parcial
   );
-
-  if (
-    tieneTexto(v('ProteccionCivil.ContactoRepresentante.Nombre')) ||
-    tieneTexto(v('ProteccionCivil.ContactoRepresentante.ApellidoPaterno')) ||
-    tieneTexto(v('ProteccionCivil.ContactoRepresentante.ApellidoMaterno')) ||
-    tieneTexto(v('ProteccionCivil.ContactoRepresentante.Telefono')) ||
-    tieneTexto(v('ProteccionCivil.ContactoRepresentante.Correo'))
-  ) {
-    appendCampo(
-      formData,
-      'ProteccionCivil.ContactoRepresentante.Nombre',
-      v('ProteccionCivil.ContactoRepresentante.Nombre'),
-      empty,
-      parcial
-    );
-    appendCampo(
-      formData,
-      'ProteccionCivil.ContactoRepresentante.ApellidoPaterno',
-      v('ProteccionCivil.ContactoRepresentante.ApellidoPaterno'),
-      empty,
-      parcial
-    );
-    appendCampo(
-      formData,
-      'ProteccionCivil.ContactoRepresentante.ApellidoMaterno',
-      v('ProteccionCivil.ContactoRepresentante.ApellidoMaterno'),
-      empty,
-      parcial
-    );
-    appendCampo(
-      formData,
-      'ProteccionCivil.ContactoRepresentante.Telefono',
-      v('ProteccionCivil.ContactoRepresentante.Telefono'),
-      empty,
-      parcial
-    );
-    appendCampo(
-      formData,
-      'ProteccionCivil.ContactoRepresentante.Correo',
-      v('ProteccionCivil.ContactoRepresentante.Correo'),
-      empty,
-      parcial
-    );
-  }
 
   appendDocumento(formData, 'ProteccionCivil.vistoBueno', valorDocumento('ProteccionCivil.vistoBueno'));
 }

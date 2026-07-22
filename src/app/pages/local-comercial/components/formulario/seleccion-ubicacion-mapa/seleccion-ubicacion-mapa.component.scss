@@ -1,0 +1,257 @@
+/* Vista full-page de selección de ubicación — mismo lienzo que el mapa de Monitoreo.
+   El sidebar del layout NO se toca; solo se ocupa el área de contenido. */
+
+:host {
+  display: block;
+  height: calc(100dvh - 68px);
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.ubi-mapa {
+  --ubi-accent: #14b8aa;
+  --ubi-bg: #0b1220;
+  --ubi-border: rgba(255, 255, 255, 0.12);
+  --ubi-muted: rgba(230, 241, 255, 0.7);
+
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--ubi-bg);
+  overflow: hidden;
+}
+
+.ubi-mapa__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Card flotante superior izquierda ── */
+.ubi-mapa__head {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 5;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  max-width: min(460px, calc(100% - 36px));
+  padding: 1rem 1.15rem;
+  border-radius: 18px;
+  border: 1px solid rgba(20, 184, 170, 0.4);
+  background:
+    linear-gradient(165deg, rgba(20, 184, 170, 0.22) 0%, transparent 58%),
+    rgba(8, 12, 24, 0.96);
+  color: #e6f1ff;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.ubi-mapa__badge {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  background: rgba(20, 184, 170, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(20, 184, 170, 0.4);
+  color: #fff;
+
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: #fff;
+  }
+}
+
+.ubi-mapa__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.ubi-mapa__eyebrow {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: color-mix(in srgb, var(--ubi-accent) 80%, #fff);
+}
+
+.ubi-mapa__title {
+  margin: 0;
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  color: #fff;
+}
+
+.ubi-mapa__hint {
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--ubi-muted);
+}
+
+/* ── Chip de dirección ── */
+.ubi-mapa__chip {
+  position: absolute;
+  left: 18px;
+  bottom: 126px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 36px);
+  padding: 0.5rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(20, 184, 170, 0.45);
+  color: #e6f1ff;
+  font-size: 0.8rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--ubi-accent);
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: min(64vw, 460px);
+  }
+}
+
+.ubi-mapa__chip--muted {
+  border-color: rgba(255, 255, 255, 0.16);
+  color: rgba(230, 241, 255, 0.75);
+
+  mat-icon {
+    color: rgba(230, 241, 255, 0.7);
+  }
+}
+
+.ubi-mapa__chip--loading mat-icon {
+  animation: ubi-spin 1s linear infinite;
+}
+
+@keyframes ubi-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Acciones flotantes ── */
+.ubi-mapa__actions {
+  position: absolute;
+  left: 18px;
+  bottom: 48px;
+  z-index: 6;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.ubi-mapa__actions .button-danger,
+.ubi-mapa__actions .button-success {
+  min-height: 50px;
+  height: 50px;
+}
+
+/* Fondos 100% opacos y aro blanco: los globales son translúcidos
+   y se pierden sobre el mapa claro */
+.ubi-mapa__actions .button-success {
+  background: #0f9d58 !important;
+  border: none !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5) !important;
+}
+
+.ubi-mapa__actions .button-danger {
+  background: #d92b3f !important;
+  border: none !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5) !important;
+}
+
+.ubi-mapa__confirm {
+  width: auto;
+  min-width: 210px;
+  padding: 0 16px;
+}
+
+.ubi-mapa__actions .button-success:disabled {
+  cursor: not-allowed;
+  background: #56705f !important;
+  filter: none;
+}
+
+.ubi-mapa__actions .fa {
+  color: inherit;
+}
+
+/* ── Responsive ── */
+@media (max-width: 767.98px) {
+  :host {
+    min-height: 360px;
+  }
+
+  .ubi-mapa__head {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    max-width: none;
+    padding: 0.8rem 0.9rem;
+    gap: 10px;
+  }
+
+  .ubi-mapa__badge {
+    width: 38px;
+    height: 38px;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .ubi-mapa__hint {
+    font-size: 0.8rem;
+  }
+
+  .ubi-mapa__chip {
+    left: 12px;
+    right: 12px;
+    bottom: 152px;
+    max-width: none;
+
+    span {
+      max-width: none;
+    }
+  }
+
+  .ubi-mapa__actions {
+    left: 12px;
+    right: 12px;
+    bottom: 28px;
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .ubi-mapa__actions button {
+    width: 100%;
+    margin: 0 !important;
+    min-width: 0;
+  }
+}

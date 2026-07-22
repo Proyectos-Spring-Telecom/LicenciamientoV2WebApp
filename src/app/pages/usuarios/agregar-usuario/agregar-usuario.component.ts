@@ -56,6 +56,18 @@ export class AgregarUsuarioComponent implements OnInit {
     return this.idUsuario != null && Number.isFinite(this.idUsuario);
   }
 
+  get requiereGrupo(): boolean {
+    const idRol = Number(this.usuarioForm?.get('idRol')?.value);
+    const rol = this.listaRoles.find((item) => Number(item.id) === idRol);
+    const nombreRol = String(rol?.nombre ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLowerCase();
+
+    return nombreRol === 'capturista' || nombreRol === 'supervisor';
+  }
+
   private get hasMayus(): boolean {
     return /[A-Z]/.test(this.pwdValue);
   }
@@ -92,8 +104,8 @@ export class AgregarUsuarioComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.obtenerRoles();
     this.initForm();
+    this.obtenerRoles();
 
     this.activatedRouted.params.subscribe((params) => {
       this.idUsuario = params['idUsuario'] != null ? Number(params['idUsuario']) : null;
@@ -123,11 +135,25 @@ export class AgregarUsuarioComponent implements OnInit {
         password: ['', [Validators.required]],
         confirmPassword: ['', [Validators.required]],
         idRol: [null, [Validators.required]],
-        idGrupo: [null, [Validators.required]],
+        idGrupo: [null],
         telefono: ['', [Validators.required]],
       },
       { validators: this.passwordsMatchValidator.bind(this) },
     );
+
+    this.usuarioForm.get('idRol')?.valueChanges.subscribe(() => {
+      this.actualizarValidadorGrupo();
+    });
+  }
+
+  private actualizarValidadorGrupo(): void {
+    const grupoControl = this.usuarioForm.get('idGrupo');
+    if (this.requiereGrupo) {
+      grupoControl?.setValidators([Validators.required]);
+    } else {
+      grupoControl?.clearValidators();
+    }
+    grupoControl?.updateValueAndValidity({ emitEvent: false });
   }
 
   private aplicarModoEdicion(): void {
@@ -146,6 +172,7 @@ export class AgregarUsuarioComponent implements OnInit {
         id: Number(r.id ?? r.Id),
         nombre: r.nombre ?? r.Nombre ?? '',
       }));
+      this.actualizarValidadorGrupo();
     });
   }
 
@@ -238,7 +265,7 @@ export class AgregarUsuarioComponent implements OnInit {
       password: v.password,
       confirmPassword: v.confirmPassword,
       idRol: Number(v.idRol),
-      idGrupo: Number(v.idGrupo),
+      idGrupo: v.idGrupo == null || v.idGrupo === '' ? null : Number(v.idGrupo),
       estatus: 1,
     };
   }
@@ -252,7 +279,7 @@ export class AgregarUsuarioComponent implements OnInit {
       apellidoMaterno: String(v.apellidoMaterno ?? '').trim(),
       telefono: String(v.telefono ?? '').trim(),
       idRol: Number(v.idRol),
-      idGrupo: Number(v.idGrupo),
+      idGrupo: v.idGrupo == null || v.idGrupo === '' ? null : Number(v.idGrupo),
     };
   }
 
@@ -373,7 +400,8 @@ export class AgregarUsuarioComponent implements OnInit {
       idRol: 'Rol',
       idGrupo: 'Grupo',
     };
-    const required = ['nombre', 'apellidoPaterno', 'apellidoMaterno', 'telefono', 'idRol', 'idGrupo'];
+    const required = ['nombre', 'apellidoPaterno', 'apellidoMaterno', 'telefono', 'idRol'];
+    if (this.requiereGrupo) required.push('idGrupo');
     const faltantes = required
       .filter((key) => {
         const ctrl = this.usuarioForm.get(key);

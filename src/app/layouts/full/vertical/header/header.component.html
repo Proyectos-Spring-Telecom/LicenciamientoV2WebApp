@@ -447,13 +447,13 @@
           </span>
         </span>
         <div class="profile-menu-custom__meta-row">
-          <span class="profile-menu-custom__meta" *ngIf="showGrupo" [title]="'Grupo: ' + showGrupo">
-            <span class="profile-menu-custom__meta-label">Grupo:</span>
-            <span class="profile-menu-custom__meta-value">{{ showGrupo }}</span>
-          </span>
           <span class="profile-menu-custom__meta" *ngIf="showNombreRol" [title]="'Rol: ' + showNombreRol">
             <span class="profile-menu-custom__meta-label">Rol:</span>
             <span class="profile-menu-custom__meta-value">{{ showNombreRol }}</span>
+          </span>
+          <span class="profile-menu-custom__meta" *ngIf="showGrupo" [title]="'Grupo: ' + showGrupo">
+            <span class="profile-menu-custom__meta-label">Grupo:</span>
+            <span class="profile-menu-custom__meta-value">{{ showGrupo }}</span>
           </span>
         </div>
       </div>

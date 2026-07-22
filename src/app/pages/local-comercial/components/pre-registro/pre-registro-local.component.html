@@ -1,5 +1,13 @@
-<!-- Solo modal visible hasta confirmar ubicación; luego entra el formulario -->
-<div *ngIf="ubicacionConfirmada" [@routeAnimation] class="card card--panel perm-wrapper">
+<!-- Mapa full-page (estilo Monitoreo) hasta confirmar ubicación; luego entra el formulario -->
+<app-seleccion-ubicacion-mapa
+  *ngIf="mostrarMapaUbicacion"
+  [lat]="lat"
+  [lng]="lng"
+  (confirmado)="onUbicacionConfirmada($event)"
+  (cancelado)="onUbicacionCancelada()"
+></app-seleccion-ubicacion-mapa>
+
+<div *ngIf="ubicacionConfirmada && !mostrarMapaUbicacion" [@routeAnimation] class="card card--panel perm-wrapper">
   <header class="perm-head perm-head--left" role="region" aria-label="Sección: Pre-registro de Local">
     <div class="perm-head__icon" aria-hidden="true">
       <mat-icon>{{ mostrarApartadoObra ? 'assignment_turned_in' : 'storefront' }}</mat-icon>

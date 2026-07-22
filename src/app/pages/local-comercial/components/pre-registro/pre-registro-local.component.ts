@@ -38,10 +38,7 @@ import {
   mapRegistroToFormPatch,
   unwrapRegistroResponse,
 } from '../../utils/map-registro-api.util';
-import {
-  SeleccionUbicacionModalComponent,
-  SeleccionUbicacionResult,
-} from '../formulario/seleccion-ubicacion-modal/seleccion-ubicacion-modal.component';
+import { SeleccionUbicacionResult } from '../formulario/seleccion-ubicacion-modal/seleccion-ubicacion-modal.component';
 import {
   SubirDocumentoModalComponent,
   SubirDocumentoData,
@@ -202,8 +199,10 @@ export class PreRegistroLocalComponent implements OnInit {
   /** Id de registro cuando el flujo es editar */
   public idRegistro: number | null = null;
 
-  /** false hasta confirmar ubicación en el modal */
+  /** false hasta confirmar ubicación en el mapa */
   public ubicacionConfirmada = false;
+  /** true mientras el mapa full-page de selección está visible */
+  public mostrarMapaUbicacion = false;
   public lat: number | null = null;
   public lng: number | null = null;
   public direccionSeleccionada = '';
@@ -720,46 +719,38 @@ export class PreRegistroLocalComponent implements OnInit {
     }
   }
 
+  /** Muestra el mapa full-page (reemplaza al antiguo modal de ubicación). */
   abrirModalUbicacion(): void {
-    const dialogRef = this.dialog.open(SeleccionUbicacionModalComponent, {
-      width: '95vw',
-      maxWidth: '960px',
-      maxHeight: '95vh',
-      panelClass: ['ubicacion-modal-panel', 'ubicacion-modal-panel--animated'],
-      autoFocus: false,
-      disableClose: true,
-      // Animación propia en CSS; evita el flash de Material al cerrar
-      enterAnimationDuration: '0ms',
-      exitAnimationDuration: '0ms',
-      data: {
-        lat: this.lat ?? undefined,
-        lng: this.lng ?? undefined,
-      },
-    });
+    this.mostrarMapaUbicacion = true;
+    this.scrollAlInicio();
+  }
 
-    dialogRef.afterClosed().subscribe((ubicacion: SeleccionUbicacionResult | undefined) => {
-      if (!ubicacion) {
-        if (!this.ubicacionConfirmada) {
-          this.redirigirLista();
-        }
-        return;
-      }
-      this.lat = ubicacion.lat;
-      this.lng = ubicacion.lng;
-      this.direccionSeleccionada = ubicacion.direccion?.trim() || '';
-      if (!this.ubicacionConstruccion || this.direccionSeleccionada) {
-        this.ubicacionConstruccion = this.direccionSeleccionada
-          || `${ubicacion.lat.toFixed(5)}, ${ubicacion.lng.toFixed(5)}`;
-      }
+  onUbicacionConfirmada(ubicacion: SeleccionUbicacionResult): void {
+    this.mostrarMapaUbicacion = false;
+    this.lat = ubicacion.lat;
+    this.lng = ubicacion.lng;
+    this.direccionSeleccionada = ubicacion.direccion?.trim() || '';
+    if (!this.ubicacionConstruccion || this.direccionSeleccionada) {
+      this.ubicacionConstruccion = this.direccionSeleccionada
+        || `${ubicacion.lat.toFixed(5)}, ${ubicacion.lng.toFixed(5)}`;
+    }
 
-      if (this.ubicacionConfirmada) {
-        // Solo actualizó la ubicación; el form ya está visible
-        return;
-      }
+    if (this.ubicacionConfirmada) {
+      // Solo actualizó la ubicación; el form ya está visible
+      return;
+    }
 
-      // Modal ya cerrado: entra todo el formulario con animación
-      this.ubicacionConfirmada = true;
-    });
+    // Mapa ya cerrado: entra todo el formulario con animación
+    this.ubicacionConfirmada = true;
+    this.scrollAlInicio();
+  }
+
+  onUbicacionCancelada(): void {
+    if (!this.ubicacionConfirmada) {
+      this.redirigirLista();
+      return;
+    }
+    this.mostrarMapaUbicacion = false;
   }
 
   seleccionarTipoRegistro(tipo: 'comercial' | 'vivienda'): void {

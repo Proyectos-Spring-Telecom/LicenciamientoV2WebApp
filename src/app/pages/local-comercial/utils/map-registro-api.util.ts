@@ -515,8 +515,12 @@ export function mapRegistroToFormPatch(apiRaw: any): Record<string, unknown> {
   const catastro = getBloque(api, 'catastro', 'Catastro');
   const licencias = getBloque(api, 'licencias', 'Licencias');
   const contacto = getBloque(licencias, 'contacto', 'Contacto');
+  const contactoRepresentante = getBloque(
+    licencias,
+    'contactoRepresentante',
+    'ContactoRepresentante'
+  );
   const pc = getBloque(api, 'proteccionCivil', 'ProteccionCivil');
-  const pcContacto = getBloque(pc, 'contactoRepresentante', 'ContactoRepresentante');
   const licenciaConstruccion = mapLicenciaConstruccionPatch(api);
 
   return {
@@ -564,6 +568,7 @@ export function mapRegistroToFormPatch(apiRaw: any): Record<string, unknown> {
       ),
       TipoPersona: numeroApi(pick(licencias, 'TipoPersona', 'tipoPersona')) ?? '',
       RFC: textoApi(pick(licencias, 'RFC', 'rfc')),
+      RazonSocial: textoApi(pick(licencias, 'RazonSocial', 'razonSocial')),
       FechaExpedicion: toDateInputValue(
         valorApi(pick(licencias, 'FechaExpedicion', 'fechaExpedicion')) as any
       ),
@@ -581,6 +586,17 @@ export function mapRegistroToFormPatch(apiRaw: any): Record<string, unknown> {
         Telefono: textoApi(pick(contacto, 'Telefono', 'telefono')),
         Correo: textoApi(pick(contacto, 'Correo', 'correo', 'email')),
       },
+      ContactoRepresentante: {
+        Nombre: textoApi(pick(contactoRepresentante, 'Nombre', 'nombre')),
+        ApellidoPaterno: textoApi(
+          pick(contactoRepresentante, 'ApellidoPaterno', 'apellidoPaterno')
+        ),
+        ApellidoMaterno: textoApi(
+          pick(contactoRepresentante, 'ApellidoMaterno', 'apellidoMaterno')
+        ),
+        Telefono: textoApi(pick(contactoRepresentante, 'Telefono', 'telefono')),
+        Correo: textoApi(pick(contactoRepresentante, 'Correo', 'correo', 'email')),
+      },
     },
     ProteccionCivil: {
       EsEmpresa: esEmpresaApiAForm(pick(pc, 'EsEmpresa', 'esEmpresa')),
@@ -592,13 +608,6 @@ export function mapRegistroToFormPatch(apiRaw: any): Record<string, unknown> {
       Telefono: textoApi(pick(pc, 'Telefono', 'telefono')),
       RegistroAcreditacion: textoApi(pick(pc, 'RegistroAcreditacion', 'registroAcreditacion')),
       TienePrograma: asFlag(pick(pc, 'TienePrograma', 'tienePrograma')),
-      ContactoRepresentante: {
-        Nombre: textoApi(pick(pcContacto, 'Nombre', 'nombre')),
-        ApellidoPaterno: textoApi(pick(pcContacto, 'ApellidoPaterno', 'apellidoPaterno')),
-        ApellidoMaterno: textoApi(pick(pcContacto, 'ApellidoMaterno', 'apellidoMaterno')),
-        Telefono: textoApi(pick(pcContacto, 'Telefono', 'telefono')),
-        Correo: textoApi(pick(pcContacto, 'Correo', 'correo', 'email')),
-      },
     },
     ...(Object.keys(licenciaConstruccion).length
       ? { LicenciaConstruccion: licenciaConstruccion }
@@ -628,8 +637,12 @@ export function mapRegistroToDetalleLocal(apiRaw: any): DetalleLocal {
   const catastro = getBloque(api, 'catastro', 'Catastro');
   const licencias = getBloque(api, 'licencias', 'Licencias');
   const contacto = getBloque(licencias, 'contacto', 'Contacto');
+  const contactoRepresentante = getBloque(
+    licencias,
+    'contactoRepresentante',
+    'ContactoRepresentante'
+  );
   const pc = getBloque(api, 'proteccionCivil', 'ProteccionCivil');
-  const pcContacto = getBloque(pc, 'contactoRepresentante', 'ContactoRepresentante');
 
   const entidad = textoApi(pick(api, 'entidadFederativa', 'EntidadFederativa'));
   const municipio = textoApi(pick(api, 'municipio', 'Municipio'));
@@ -705,7 +718,8 @@ export function mapRegistroToDetalleLocal(apiRaw: any): DetalleLocal {
     TienePrograma: tienePrograma,
     VistoBueno: textoApi(pick(pc, 'vistoBueno')),
     RfcProteccionCivil: textoApi(pick(pc, 'RFC', 'rfc')),
-    razonSocial: textoApi(pick(pc, 'RazonSocial', 'razonSocial')),
+    // Razón social de Licencias (PredioObra=0); distinta de ProteccionCivil.RazonSocial
+    razonSocial: textoApi(pick(licencias, 'RazonSocial', 'razonSocial')),
     direccion: {
       nombreEntidadFederativaLicencia: entidad || null,
       nombreMuncipioLicencia: municipio || null,
@@ -733,22 +747,19 @@ export function mapRegistroToDetalleLocal(apiRaw: any): DetalleLocal {
       contactoTelefono: textoApi(pick(contacto, 'Telefono', 'telefono')),
       contactoEmail: textoApi(pick(contacto, 'Correo', 'correo')),
     },
+    // ContactoRepresentante vive en Licencias (GET /registros/{id})
     representante: {
-      representanteLegalNombre: textoApi(
-        pick(pcContacto, 'Nombre', 'nombre') || pick(pc, 'Nombre', 'nombre')
-      ),
+      representanteLegalNombre: textoApi(pick(contactoRepresentante, 'Nombre', 'nombre')),
       representanteLegalPaterno: textoApi(
-        pick(pcContacto, 'ApellidoPaterno', 'apellidoPaterno') ||
-          pick(pc, 'ApellidoPaterno', 'apellidoPaterno')
+        pick(contactoRepresentante, 'ApellidoPaterno', 'apellidoPaterno')
       ),
       representanteLegalMaterno: textoApi(
-        pick(pcContacto, 'ApellidoMaterno', 'apellidoMaterno') ||
-          pick(pc, 'ApellidoMaterno', 'apellidoMaterno')
+        pick(contactoRepresentante, 'ApellidoMaterno', 'apellidoMaterno')
       ),
-      representanteLegalTelefono: textoApi(
-        pick(pcContacto, 'Telefono', 'telefono') || pick(pc, 'Telefono', 'telefono')
+      representanteLegalTelefono: textoApi(pick(contactoRepresentante, 'Telefono', 'telefono')),
+      representanteLegalEmail: textoApi(
+        pick(contactoRepresentante, 'Correo', 'correo', 'email')
       ),
-      representanteLegalEmail: textoApi(pick(pcContacto, 'Correo', 'correo')),
     } as any,
     proteccionCivil: {
       esEmpresa,

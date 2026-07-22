@@ -33,6 +33,7 @@ import { LocalComercialFormularioComponent } from './components/formulario/local
 import { DetalleLocalComercialComponent } from './components/detalle-local-comercial/detalle-local-comercial.component';
 import { GaleriaComponent } from './components/detalle-local-comercial/Galeria/galeria.component';
 import { SeleccionUbicacionModalComponent } from './components/formulario/seleccion-ubicacion-modal/seleccion-ubicacion-modal.component';
+import { SeleccionUbicacionMapaComponent } from './components/formulario/seleccion-ubicacion-mapa/seleccion-ubicacion-mapa.component';
 import { SubirDocumentoModalComponent } from './components/formulario/subir-documento-modal/subir-documento-modal.component';
 import { FileUploaderCardComponent } from './components/shared/file-uploader-card/file-uploader-card.component';
 import { BotonExportarTablaComponent } from './components/shared/boton-exportar-tabla/boton-exportar-tabla.component';
@@ -46,6 +47,7 @@ import { PreRegistroLocalComponent } from './components/pre-registro/pre-registr
     DetalleLocalComercialComponent,
     GaleriaComponent,
     SeleccionUbicacionModalComponent,
+    SeleccionUbicacionMapaComponent,
     SubirDocumentoModalComponent,
     FileUploaderCardComponent,
     BotonExportarTablaComponent,

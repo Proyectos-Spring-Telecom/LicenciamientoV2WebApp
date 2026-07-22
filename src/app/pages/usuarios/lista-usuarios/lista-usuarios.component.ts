@@ -12,6 +12,17 @@ import {
   resolverEstatusActivo,
 } from 'src/app/shared/utils/excel-export.util';
 
+/** Catálogo de grupos de usuario (id → nombre). */
+const GRUPOS_USUARIO: Record<number, string> = {
+  1: 'A',
+  2: 'B',
+  3: 'C',
+  4: 'D',
+  5: 'E',
+  6: 'F',
+  7: 'G',
+};
+
 @Component({
   selector: 'app-lista-usuarios',
   templateUrl: './lista-usuarios.component.html',
@@ -122,6 +133,7 @@ export class ListaUsuariosComponent implements OnInit {
         norm(row?.UserName),
         norm(row?.PhoneNumber),
         norm(row?.RolNombre),
+        norm(row?.GrupoNombre),
       ].some((s) => s.includes(q));
 
       return hitCols || estHit || hitExtras;
@@ -355,12 +367,15 @@ export class ListaUsuariosComponent implements OnInit {
     const materno = item?.ApellidoMaterno ?? item?.apellidoMaterno ?? '';
     const phoneNumber = item?.PhoneNumber ?? item?.phoneNumber ?? '-';
     const estatus = resolverEstatusActivo(item);
+    const idGrupo = Number(item?.IdGrupo ?? item?.idGrupo);
 
     return {
       ...item,
       id: Number(item?.Id ?? item?.id),
       idRol: Number(item?.IdRol ?? item?.idRol),
       idCliente: Number(item?.IdCliente ?? item?.idCliente),
+      idGrupo,
+      GrupoNombre: GRUPOS_USUARIO[idGrupo] ?? '-',
       PhoneNumber: phoneNumber,
       UserName: item?.UserName ?? item?.userName ?? '',
       RolNombre:
@@ -409,6 +424,7 @@ export class ListaUsuariosComponent implements OnInit {
         Nombre: row.NombreCompleto,
         Teléfono: row.PhoneNumber,
         'Correo Electrónico': row.UserName,
+        Grupo: row.GrupoNombre,
         Rol: row.RolNombre,
         Estatus: row.estatusTexto,
       }));
@@ -420,6 +436,7 @@ export class ListaUsuariosComponent implements OnInit {
           { header: 'Nombre', key: 'Nombre', width: 36 },
           { header: 'Teléfono', key: 'Teléfono', width: 18 },
           { header: 'Correo Electrónico', key: 'Correo Electrónico', width: 36 },
+          { header: 'Grupo', key: 'Grupo', width: 14 },
           { header: 'Rol', key: 'Rol', width: 22 },
           { header: 'Estatus', key: 'Estatus', width: 16 },
         ],

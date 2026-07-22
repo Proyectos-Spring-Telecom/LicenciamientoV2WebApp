@@ -26,9 +26,9 @@ export const DOCUMENTOS_LOCAL: DocumentoLocalConfig[] = [
   { controlName: 'Sapac.cuadromedidor', titulo: 'CUADRO MEDIDOR', idTipoFoto: 5, buttonClass: 'warning', tab: 'sapac', icon: 'image', ...DOCUMENTO_DEFAULTS },
   { controlName: 'Catastro.reciboPredial', titulo: 'RECIBO PREDIAL', idTipoFoto: 2, buttonClass: 'success', tab: 'catastral', icon: 'image', ...DOCUMENTO_DEFAULTS },
   { controlName: 'Licencias.licenciaFuncionamiento', titulo: 'LICENCIA DE FUNCIONAMIENTO', idTipoFoto: 1, buttonClass: 'success', tab: 'licenciamiento', icon: 'description', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'Licencias.fachada', titulo: 'FACHADA DEL ESTABLECIMIENTO', idTipoFoto: 6, buttonClass: 'primary', tab: 'licenciamiento', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'Licencias.bodega', titulo: 'BODEGA', idTipoFoto: 8, buttonClass: 'warning', tab: 'licenciamiento', icon: 'image', ...DOCUMENTO_DEFAULTS },
-  { controlName: 'Licencias.estacionamiento', titulo: 'ESTACIONAMIENTO', idTipoFoto: 7, buttonClass: 'danger', tab: 'licenciamiento', icon: 'image', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Licencias.fachada', titulo: 'FACHADA DEL ESTABLECIMIENTO', idTipoFoto: 6, buttonClass: 'primary', tab: 'licenciamiento', icon: 'fa-shop', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Licencias.bodega', titulo: 'BODEGA', idTipoFoto: 8, buttonClass: 'warning', tab: 'licenciamiento', icon: 'fa-warehouse', ...DOCUMENTO_DEFAULTS },
+  { controlName: 'Licencias.estacionamiento', titulo: 'ESTACIONAMIENTO', idTipoFoto: 7, buttonClass: 'danger', tab: 'licenciamiento', icon: 'fa-car', ...DOCUMENTO_DEFAULTS },
   { controlName: 'ProteccionCivil.vistoBueno', titulo: 'VISTO BUENO', idTipoFoto: 9, buttonClass: 'success', tab: 'proteccion', icon: 'description', ...DOCUMENTO_DEFAULTS },
 ];
 
