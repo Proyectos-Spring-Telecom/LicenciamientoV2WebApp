@@ -509,7 +509,7 @@
               <div class="respuesta" *ngIf="tieneValor(informacion.licenciaSuelo)">{{informacion.licenciaSuelo}}</div>
               <div class="respuesta_null" *ngIf="!tieneValor(informacion.licenciaSuelo)">Sin Informaci&oacute;n </div>
             </div>
-            <div class="route-animations-elements detalle-campo">
+            <div class="route-animations-elements detalle-campo" *ngIf="mostrarContenido">
               <i class="fa fa-user"></i> &nbsp;&nbsp;
               <div class="informacion">Propietario:</div>
               <div class="respuesta" *ngIf="nombrePropietarioCompleto">{{ nombrePropietarioCompleto }}</div>

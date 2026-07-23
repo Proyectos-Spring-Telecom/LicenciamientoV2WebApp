@@ -300,26 +300,7 @@ const LC_DOC_DETALLE: Array<{ keys: string[]; titulo: string; idTipoFoto?: numbe
     titulo: 'Otros documentos',
     idTipoFoto: 18,
   },
-  {
-    keys: ['LicenciaConstruccion.FirmaPropietario'],
-    titulo: 'Firma del propietario',
-    idTipoFoto: 25,
-  },
-  {
-    keys: ['LicenciaConstruccion.FirmaDRO'],
-    titulo: 'Firma del Director Responsable de Obra',
-    idTipoFoto: 26,
-  },
-  {
-    keys: ['LicenciaConstruccion.FirmaCorresponsable'],
-    titulo: 'Firma del corresponsable',
-    idTipoFoto: 27,
-  },
-  {
-    keys: ['LicenciaConstruccion.FirmaResponsableRecepcionDocumento'],
-    titulo: 'Firma de recepción de documentos',
-    idTipoFoto: 28,
-  },
+  // Firmas (tipos 25–28) no se muestran en el detalle ni en la galería LC.
 ];
 
 export function buildDocumentosLicenciaConstruccionDetalle(
@@ -623,11 +604,10 @@ const NOMBRE_ESTATUS: Record<number, string> = {
   5: 'Baja',
 };
 
+/** Sapac.IdTipoServicio: 1 = SM, 2 = SP. */
 const NOMBRE_TIPO_SERVICIO: Record<number, string> = {
-  1: 'Doméstico',
-  2: 'Comercial',
-  3: 'Industrial',
-  4: 'Público',
+  1: 'SM',
+  2: 'SP',
 };
 
 /** Mapea GET /registros/{id} al modelo de la vista detalle. */

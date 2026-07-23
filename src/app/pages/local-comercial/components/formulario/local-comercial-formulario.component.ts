@@ -36,6 +36,7 @@ import {
   mostrarCargandoLocalComercial,
   mostrarSwalError,
   mostrarSwalExito,
+  mensajeErrorServicioLocal,
   ocultarCargandoLocalComercial,
 } from '../../utils/local-comercial-swal.util';
 import {
@@ -565,7 +566,14 @@ export class LocalComercialFormularioComponent implements OnInit {
     }
     const take = (path: string): File | null => {
       const v = this.localForm.get(path)?.value;
-      return v instanceof File && v.name ? v : null;
+      if (v instanceof File && v.name) {
+        return v;
+      }
+      if (Array.isArray(v)) {
+        const f = v.find((item) => item instanceof File && item.name);
+        return f || null;
+      }
+      return null;
     };
     const patch: PreRegistroFilesState = {};
     const map: Array<[string, keyof PreRegistroFilesState]> = [
@@ -590,6 +598,13 @@ export class LocalComercialFormularioComponent implements OnInit {
       ['LicenciaConstruccion.JuegoDePlanosArquitectonicos2', 'LcJuegoDePlanosArquitectonicos2'],
       ['LicenciaConstruccion.JuegoDePlanosArquitectonicos3', 'LcJuegoDePlanosArquitectonicos3'],
       ['LicenciaConstruccion.otros', 'LcOtrosDocs'],
+      ['LicenciaConstruccion.FirmaPropietario', 'LcFirmaPropietario'],
+      ['LicenciaConstruccion.FirmaDRO', 'LcFirmaDRO'],
+      ['LicenciaConstruccion.FirmaCorresponsable', 'LcFirmaCorresponsable'],
+      [
+        'LicenciaConstruccion.FirmaResponsableRecepcionDocumento',
+        'LcFirmaResponsableRecepcionDocumento',
+      ],
     ];
     map.forEach(([path, key]) => {
       const file = take(path);
@@ -851,6 +866,7 @@ export class LocalComercialFormularioComponent implements OnInit {
   /**Registrar Local Comercial */
   agregarLocal() {
     this.sincronizarCamposRaizAntesDeEnviar();
+    this.sincronizarArchivosFormularioEnEstado();
     this.reaplicarArchivosDesdePreRegistro();
     this.loadIndicatorVisible = true;
     this.botonSuccess = 'Enviando...'
@@ -879,11 +895,11 @@ export class LocalComercialFormularioComponent implements OnInit {
             this.redirigir();
           });
         },
-        () => {
+        (err) => {
           ocultarCargandoLocalComercial(() => {
             mostrarSwalError({
               title: '¡Ops!',
-              text: '¡Error al agregar el local!',
+              text: mensajeErrorServicioLocal(err, '¡Error al agregar el local!'),
             });
             this.loadIndicatorVisible = false;
             this.botonSuccess = 'Guardar';
@@ -897,6 +913,7 @@ export class LocalComercialFormularioComponent implements OnInit {
   /**Actualizar local — PATCH /registros_actualizar (parcial) */
   actualizarLocal() {
     this.sincronizarCamposRaizAntesDeEnviar();
+    this.sincronizarArchivosFormularioEnEstado();
     this.reaplicarArchivosDesdePreRegistro();
     this.loading = true;
     const idRegistro = Number(this.id);
@@ -925,11 +942,14 @@ export class LocalComercialFormularioComponent implements OnInit {
             this.redirigir();
           });
         },
-        () => {
+        (err) => {
           ocultarCargandoLocalComercial(() => {
             mostrarSwalError({
               title: '¡Ops!',
-              text: '¡Error al intentar modificar los datos del local!',
+              text: mensajeErrorServicioLocal(
+                err,
+                '¡Error al intentar modificar los datos del local!'
+              ),
             });
             this.loadIndicatorVisible = false;
             this.botonSuccess = 'Guardar';
@@ -947,7 +967,12 @@ export class LocalComercialFormularioComponent implements OnInit {
 
   onDocumentoSeleccionado(controlName: string, archivo: File): void {
     const control = this.localForm.get(controlName);
+    if (!control) {
+      console.error(`[Local Comercial] Control de archivo no encontrado: ${controlName}`);
+      return;
+    }
     control.setValue(archivo);
+    control.markAsDirty();
     control.setErrors(null);
     this.documentosExistentes = {
       ...this.documentosExistentes,
@@ -1064,24 +1089,24 @@ export class LocalComercialFormularioComponent implements OnInit {
   /** Completa Latitud/Longitud/TipoRegistro/PredioObra antes de enviar. */
   private sincronizarCamposRaizAntesDeEnviar(): void {
     const v = (campo: string) => this.localForm.get(campo)?.value;
-    const patch: Record<string, unknown> = {};
 
+    // NUNCA hacer patch del grupo Licencias completo: el spread de .value
+    // puede pisar los File de licenciaFuncionamiento/fachada/etc.
     if (!v('Licencias.FechaHora')) {
-      patch['Licencias'] = {
-        ...(this.localForm.get('Licencias')?.value || {}),
-        FechaHora: new Date(),
-      };
+      this.localForm.get('Licencias.FechaHora')?.setValue(new Date(), { emitEvent: false });
     }
     if (v('PredioObra') === '' || v('PredioObra') == null) {
-      patch['PredioObra'] = Number(mapPredioObra(this.predioEnObraPreRegistro));
+      this.localForm
+        .get('PredioObra')
+        ?.setValue(Number(mapPredioObra(this.predioEnObraPreRegistro)), { emitEvent: false });
     }
     if (v('TipoRegistro') === '' || v('TipoRegistro') == null) {
       const stored = this.preRegistroState.peekScalar();
-      patch['TipoRegistro'] = Number(mapTipoRegistro(stored?.tipoRegistro ?? 0) || '0');
-    }
-
-    if (Object.keys(patch).length) {
-      this.localForm.patchValue(patch);
+      this.localForm
+        .get('TipoRegistro')
+        ?.setValue(Number(mapTipoRegistro(stored?.tipoRegistro ?? 0) || '0'), {
+          emitEvent: false,
+        });
     }
   }
 

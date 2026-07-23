@@ -37,6 +37,45 @@ export const DOCUMENTOS_CATASTRAL = DOCUMENTOS_LOCAL.filter((d) => d.tab === 'ca
 export const DOCUMENTOS_LICENCIAMIENTO = DOCUMENTOS_LOCAL.filter((d) => d.tab === 'licenciamiento');
 export const DOCUMENTOS_PROTECCION = DOCUMENTOS_LOCAL.filter((d) => d.tab === 'proteccion');
 
+/**
+ * Paths de FormGroup → FormData para todos los string($binary).
+ * Incluye alias cortos del pre-registro de obra.
+ */
+export const BINARY_CONTROL_PATHS = [
+  'Sapac.reciboSapac',
+  'Sapac.caratulamedidor',
+  'Sapac.cuadromedidor',
+  'Catastro.reciboPredial',
+  'Licencias.licenciaFuncionamiento',
+  'Licencias.fachada',
+  'Licencias.estacionamiento',
+  'Licencias.bodega',
+  'ProteccionCivil.vistoBueno',
+  'LicenciaConstruccion.constanciaAlineamiento',
+  'LicenciaConstruccion.constanciaNumero',
+  'LicenciaConstruccion.fileLicenciaUsoSuelo',
+  'LicenciaConstruccion.filePlanoAutorizado',
+  'LicenciaConstruccion.fileLicenciaFraccionamiento',
+  'LicenciaConstruccion.ConstanciaPropietario',
+  'LicenciaConstruccion.Factibilidad',
+  'LicenciaConstruccion.RecibosImpuestoPredial',
+  'LicenciaConstruccion.JuegoDePlanosArquitectonicos1',
+  'LicenciaConstruccion.JuegoDePlanosArquitectonicos2',
+  'LicenciaConstruccion.JuegoDePlanosArquitectonicos3',
+  'LicenciaConstruccion.otros',
+  'LicenciaConstruccion.FirmaPropietario',
+  'LicenciaConstruccion.FirmaDRO',
+  'LicenciaConstruccion.FirmaCorresponsable',
+  'LicenciaConstruccion.FirmaResponsableRecepcionDocumento',
+] as const;
+
+export type BinaryControlPath = (typeof BINARY_CONTROL_PATHS)[number];
+
+/** ¿Es un File real listo para multipart? */
+export function esFileCargado(valor: unknown): valor is File {
+  return typeof File !== 'undefined' && valor instanceof File && !!valor.name?.trim();
+}
+
 const CONTROL_BY_TIPO_FOTO = DOCUMENTOS_LOCAL.reduce((acc, doc) => {
   acc[doc.idTipoFoto] = doc.controlName;
   return acc;
@@ -84,8 +123,15 @@ export function resolverValorDocumentoFormData(
   urlExistente?: string | null,
   conservarUrlRemota = false
 ): File | string {
-  if (valorControl instanceof File) {
+  if (esFileCargado(valorControl)) {
     return valorControl;
+  }
+  // Array con un File (controles que alguna vez fueron multi)
+  if (Array.isArray(valorControl)) {
+    const primero = valorControl.find((item) => esFileCargado(item));
+    if (primero) {
+      return primero;
+    }
   }
   if (conservarUrlRemota && urlExistente) {
     const url = urlExistente.trim();
@@ -94,6 +140,10 @@ export function resolverValorDocumentoFormData(
     }
   }
   if (valorControl === null || valorControl === undefined) {
+    return '';
+  }
+  // Evitar "[object Object]" de borradores serializados
+  if (typeof valorControl === 'object') {
     return '';
   }
   return String(valorControl);

@@ -791,7 +791,7 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
       sector: '1',
       ruta: 'A',
       folio: 'F-001',
-      nombreTipoServicio: 'Doméstico',
+      nombreTipoServicio: 'SM',
       medidor: 'M-100',
       clave: 1001,
       m2: 45,

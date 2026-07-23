@@ -77,6 +77,31 @@ export function mostrarSwalError(options: {
   });
 }
 
+/**
+ * Extrae el mensaje que regresa el API (texto plano o JSON).
+ * Ej: El archivo "Sapac.reciboSapac" tiene una extensión no permitida
+ */
+export function mensajeErrorServicioLocal(err: unknown, fallback: string): string {
+  const body = (err as { error?: unknown; message?: string } | null)?.error;
+  if (typeof body === 'string' && body.trim()) {
+    return body.trim();
+  }
+  if (body && typeof body === 'object') {
+    const o = body as Record<string, unknown>;
+    for (const key of ['mensaje', 'message', 'error', 'title', 'detail']) {
+      const val = o[key];
+      if (typeof val === 'string' && val.trim()) {
+        return val.trim();
+      }
+    }
+  }
+  const msg = (err as { message?: string } | null)?.message;
+  if (typeof msg === 'string' && msg.trim() && !msg.startsWith('Http failure')) {
+    return msg.trim();
+  }
+  return fallback;
+}
+
 /** NO BORRAR — Error Sepomex: alerta amigable; el error real va a consola. */
 export function mostrarSwalCodigoPostalNoEncontrado(
   error?: unknown,
