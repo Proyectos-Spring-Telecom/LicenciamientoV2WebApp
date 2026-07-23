@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import { routeAnimation } from 'src/app/pipe/module-open.animation';
 import { Router, ActivatedRoute } from '@angular/router';
 import { LocalComercialService } from './../../services/local-comercial.service';

@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import { routeAnimation } from 'src/app/pipe/module-open.animation';
 import { Router } from '@angular/router';
 import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, NgZone } from '@angular/core';
