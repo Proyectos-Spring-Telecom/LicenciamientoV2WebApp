@@ -789,12 +789,157 @@ export class LocalComercialFormularioComponent implements OnInit {
   }
 
   changeValue(checked) {
+    // UI 0/1 → API vía mapEsEmpresa: 0→1 (física), 1→2 (moral/empresa)
     this.localForm.get('ProteccionCivil.EsEmpresa')?.setValue(checked ? 1 : 0);
+    if (!checked) {
+      this.localForm.patchValue({
+        ProteccionCivil: { RazonSocial: '', RFC: '' },
+      });
+    }
   }
 
   checkedBox() {
     const local = this.localForm.get('ProteccionCivil.EsEmpresa')?.value;
-    return local == true || local === 1 || local === '1';
+    // Form 1 = empresa; API 2 también por si llega sin mapear
+    return (
+      local === true ||
+      local === 1 ||
+      local === '1' ||
+      local === 2 ||
+      local === '2'
+    );
+  }
+
+  /**
+   * En editar: check si el tab tiene al menos un dato.
+   * En alta: check si ya se avanzó de ese paso.
+   */
+  isTabDone(index: number): boolean {
+    if (this.activeTab === index) {
+      return false;
+    }
+    if (this.id) {
+      return this.tabTieneInformacion(index);
+    }
+    return this.activeTab > index;
+  }
+
+  private tabTieneInformacion(index: number): boolean {
+    switch (index) {
+      case 0:
+        return this.grupoTieneDatos('Sapac', [
+          'NumeroCuenta',
+          'Nombre',
+          'ApellidoPaterno',
+          'ApellidoMaterno',
+          'RFC',
+          'Sector',
+          'Ruta',
+          'Folio',
+          'IdTipoServicio',
+          'Medidor',
+        ]) || this.documentosTabConInfo(this.documentosSapac);
+      case 1:
+        return this.grupoTieneDatos('Catastro', [
+          'Clave',
+          'M2',
+          'Superficie',
+          'UsoSuelo',
+        ]) || this.documentosTabConInfo(this.documentosCatastral);
+      case 2:
+        return (
+          this.grupoTieneDatos('Licencias', [
+            'Registro',
+            'NombreComercial',
+            'Giro',
+            'LicenciaSuelo',
+            'NombrePropietario',
+            'ApellidoPaternoPropietario',
+            'ApellidoMaternoPropietario',
+            'TipoPersona',
+            'RFC',
+            'RazonSocial',
+            'FechaExpedicion',
+            'FechaRefrendo',
+            'Estacionamiento',
+          ]) ||
+          this.grupoTieneDatos('Licencias.Contacto', [
+            'Nombre',
+            'ApellidoPaterno',
+            'ApellidoMaterno',
+            'Telefono',
+            'Correo',
+          ]) ||
+          this.grupoTieneDatos('Licencias.ContactoRepresentante', [
+            'Nombre',
+            'ApellidoPaterno',
+            'ApellidoMaterno',
+            'Telefono',
+            'Correo',
+          ]) ||
+          this.documentosTabConInfo(this.documentosLicenciamiento)
+        );
+      case 3:
+        return (
+          this.grupoTieneDatos('ProteccionCivil', [
+            'RazonSocial',
+            'RFC',
+            'Nombre',
+            'ApellidoPaterno',
+            'ApellidoMaterno',
+            'Telefono',
+            'RegistroAcreditacion',
+            'TienePrograma',
+          ]) ||
+          this.checkedBox() ||
+          this.documentosTabConInfo(this.documentosProteccion)
+        );
+      default:
+        return false;
+    }
+  }
+
+  private grupoTieneDatos(path: string, keys: string[]): boolean {
+    const group = this.localForm?.get(path);
+    if (!group) {
+      return false;
+    }
+    return keys.some((key) => this.valorTieneInfo(group.get(key)?.value));
+  }
+
+  private documentosTabConInfo(
+    docs: Array<{ controlName: string }> | undefined
+  ): boolean {
+    if (!docs?.length) {
+      return false;
+    }
+    return docs.some((doc) => {
+      const controlVal = this.localForm?.get(doc.controlName)?.value;
+      if (this.valorTieneInfo(controlVal)) {
+        return true;
+      }
+      const remote = this.documentosExistentes?.[doc.controlName];
+      return typeof remote === 'string' && remote.trim().length > 0;
+    });
+  }
+
+  private valorTieneInfo(valor: unknown): boolean {
+    if (valor == null || valor === '') {
+      return false;
+    }
+    if (valor instanceof File) {
+      return true;
+    }
+    if (typeof valor === 'string') {
+      return valor.trim().length > 0;
+    }
+    if (typeof valor === 'number') {
+      return !Number.isNaN(valor);
+    }
+    if (typeof valor === 'boolean') {
+      return valor;
+    }
+    return true;
   }
 
   obtenerEstadosLicencia() {
@@ -889,7 +1034,7 @@ export class LocalComercialFormularioComponent implements OnInit {
         () => {
           ocultarCargandoLocalComercial(() => {
             mostrarSwalExito({
-              title: '¡Operación exitosa!',
+              title: '¡Operación Exitosa!',
               text: '¡Se ha agregado de manera exitosa el local comercial!',
             });
             this.redirigir();
@@ -936,7 +1081,7 @@ export class LocalComercialFormularioComponent implements OnInit {
         () => {
           ocultarCargandoLocalComercial(() => {
             mostrarSwalExito({
-              title: '¡Operación exitosa!',
+              title: '¡Operación Exitosa!',
               html: '¡Los datos de la <b>Licencia</b> se han modificado de manera exitosa!',
             });
             this.redirigir();

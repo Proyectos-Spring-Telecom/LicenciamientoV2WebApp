@@ -681,13 +681,13 @@
               <div class="respuesta" *ngIf="formatearSiNo(informacion.proteccionCivil.esEmpresa)">{{ formatearSiNo(informacion.proteccionCivil.esEmpresa) }}</div>
               <div class="respuesta_null" *ngIf="!formatearSiNo(informacion.proteccionCivil.esEmpresa)">Sin Informaci&oacute;n </div>
             </div>
-            <div *ngIf="!showRazonSocialPC" class="route-animations-elements detalle-campo">
+            <div *ngIf="showRazonSocialPC" class="route-animations-elements detalle-campo">
               <i class="fa fa-user"></i> &nbsp;&nbsp;
               <div class="informacion">Raz&oacute;n Social:</div>
               <div class="respuesta">{{informacion.proteccionCivil.razonSocial}}</div>
               <div class="respuesta_null" *ngIf="informacion.proteccionCivil.razonSocial == null || !this.informacion.proteccionCivil.razonSocial">Sin Informaci&oacute;n </div>
             </div>
-            <div *ngIf="!showRFCPC" class="route-animations-elements detalle-campo">
+            <div *ngIf="showRFCPC" class="route-animations-elements detalle-campo">
               <i class="fa fa-lock"></i> &nbsp;&nbsp;
               <div class="informacion">RFC:</div>
               <div class="respuesta">{{informacion.proteccionCivil.rfc}}</div>
@@ -836,8 +836,10 @@
             </div>
             <mat-divider></mat-divider>
             <div class="card-body detalle-media-body">
-              <div *ngIf="tieneUbicacionMapa" id="map" class="detalle-map"></div>
-              <div *ngIf="!tieneUbicacionMapa" class="not-street text-center detalle-map">
+              <div *ngIf="tieneUbicacionMapa" class="detalle-map-host">
+                <div id="map" class="detalle-map"></div>
+              </div>
+              <div *ngIf="!tieneUbicacionMapa" class="not-street text-center detalle-map-empty">
                 <p class="street"><i class="fa fa-map-marker"></i>&nbsp;&nbsp;Sin ubicaci&oacute;n registrada</p>
               </div>
             </div>

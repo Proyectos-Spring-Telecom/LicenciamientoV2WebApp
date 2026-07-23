@@ -57,11 +57,11 @@
               class="local-form-step local-form-step--{{ tab.accent }}"
               role="tab"
               [class.is-active]="activeTab === i"
-              [class.is-done]="activeTab > i"
+              [class.is-done]="isTabDone(i)"
               [attr.aria-selected]="activeTab === i"
               (click)="setActiveTab(i)">
               <span class="local-form-step__index">
-                <i class="fa fa-check" *ngIf="activeTab > i; else stepNum"></i>
+                <i class="fa fa-check" *ngIf="isTabDone(i); else stepNum"></i>
                 <ng-template #stepNum>{{ i + 1 }}</ng-template>
               </span>
               <span class="local-form-step__meta">
@@ -661,6 +661,51 @@
 
               <div class="local-form-section">
                 <div class="local-form-section__head">
+                  <span class="local-form-section__badge"><mat-icon>business</mat-icon></span>
+                  <div>
+                    <h4 class="local-form-section__title">Gesti&oacute;n por empresa</h4>
+                    <p class="local-form-section__desc">Indica si una empresa realiza la gesti&oacute;n</p>
+                  </div>
+                </div>
+                <div class="result local-form-row-gap" formGroupName="ProteccionCivil">
+                  <div class="local-proteccion-empresa-row row g-3 g-md-4">
+                    <div class="proteccion-empresa-col col-12 col-md-4">
+                      <div class="proteccion-empresa-field fury-flex-form-field">
+                        <span class="proteccion-empresa-title">
+                          <i class="fa fa-store"></i>&nbsp;&iquest;La gesti&oacute;n la realiza una Empresa?
+                        </span>
+                        <label class="toggle-switch">
+                          <input id="es-empresa-proteccion" type="checkbox" [checked]="checkedBox()"
+                            (change)="changeValue($any($event.target).checked)">
+                          <div class="toggle-switch-background">
+                            <div class="toggle-switch-handle"></div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                    <app-local-perm-field *ngIf="checkedBox()" @proteccionEmpresaFields
+                      label="Raz&oacute;n Social" icon="work" fieldId="razonSocialProteccionCivil"
+                      colClass="col-12 col-md-4">
+                      <div class="form-floating flex-grow-1">
+                        <input formControlName="RazonSocial" class="form-control" id="razonSocialProteccionCivil" placeholder="Raz&oacute;n Social">
+                        <label for="razonSocialProteccionCivil">Raz&oacute;n Social</label>
+                      </div>
+                    </app-local-perm-field>
+                    <app-local-perm-field *ngIf="checkedBox()" @proteccionEmpresaFields
+                      label="RFC" icon="account_circle" fieldId="rfcProteccionCivil"
+                      colClass="col-12 col-md-4">
+                      <div class="form-floating flex-grow-1">
+                        <input formControlName="RFC" class="form-control" id="rfcProteccionCivil" placeholder="RFC" maxlength="13"
+                          (keypress)="blockNonAlphanumericKey($event)" (input)="onRfcInput($event, 'ProteccionCivil.RFC')">
+                        <label for="rfcProteccionCivil">RFC</label>
+                      </div>
+                    </app-local-perm-field>
+                  </div>
+                </div>
+              </div>
+
+              <div class="local-form-section">
+                <div class="local-form-section__head">
                   <span class="local-form-section__badge"><mat-icon>health_and_safety</mat-icon></span>
                   <div>
                     <h4 class="local-form-section__title">Representante y acreditaci&oacute;n</h4>
@@ -708,51 +753,6 @@
                       </select>
                     </div>
                   </app-local-perm-field>
-                </div>
-              </div>
-
-              <div class="local-form-section">
-                <div class="local-form-section__head">
-                  <span class="local-form-section__badge"><mat-icon>business</mat-icon></span>
-                  <div>
-                    <h4 class="local-form-section__title">Gesti&oacute;n por empresa</h4>
-                    <p class="local-form-section__desc">Indica si una empresa realiza la gesti&oacute;n</p>
-                  </div>
-                </div>
-                <div class="result local-form-row-gap" formGroupName="ProteccionCivil">
-                  <div class="local-proteccion-empresa-row row g-3 g-md-4">
-                    <div class="proteccion-empresa-col col-12 col-md-4">
-                      <div class="proteccion-empresa-field fury-flex-form-field">
-                        <span class="proteccion-empresa-title">
-                          <i class="fa fa-store"></i>&nbsp;&iquest;La gesti&oacute;n la realiza una Empresa?
-                        </span>
-                        <label class="toggle-switch">
-                          <input id="es-empresa-proteccion" type="checkbox" [checked]="checkedBox()"
-                            (change)="changeValue($any($event.target).checked)">
-                          <div class="toggle-switch-background">
-                            <div class="toggle-switch-handle"></div>
-                          </div>
-                        </label>
-                      </div>
-                    </div>
-                    <app-local-perm-field *ngIf="checkedBox()" @proteccionEmpresaFields
-                      label="Raz&oacute;n Social" icon="work" fieldId="razonSocialProteccionCivil"
-                      colClass="col-12 col-md-4">
-                      <div class="form-floating flex-grow-1">
-                        <input formControlName="RazonSocial" class="form-control" id="razonSocialProteccionCivil" placeholder="Raz&oacute;n Social">
-                        <label for="razonSocialProteccionCivil">Raz&oacute;n Social</label>
-                      </div>
-                    </app-local-perm-field>
-                    <app-local-perm-field *ngIf="checkedBox()" @proteccionEmpresaFields
-                      label="RFC" icon="account_circle" fieldId="rfcProteccionCivil"
-                      colClass="col-12 col-md-4">
-                      <div class="form-floating flex-grow-1">
-                        <input formControlName="RFC" class="form-control" id="rfcProteccionCivil" placeholder="RFC" maxlength="13"
-                          (keypress)="blockNonAlphanumericKey($event)" (input)="onRfcInput($event, 'ProteccionCivil.RFC')">
-                        <label for="rfcProteccionCivil">RFC</label>
-                      </div>
-                    </app-local-perm-field>
-                  </div>
                 </div>
               </div>
 

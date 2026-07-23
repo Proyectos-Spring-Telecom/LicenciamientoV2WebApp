@@ -489,16 +489,19 @@
 
 .local-form-tab-nav__btn--next {
   border-color: color-mix(in srgb, var(--lf-accent) 45%, transparent);
-  color: color-mix(in srgb, var(--lf-accent) 70%, #fff);
+  color: #ffffff;
   margin-left: 0;
   background: color-mix(in srgb, var(--lf-accent) 12%, transparent);
 }
 
-/* Iconos de Cancelar / Guardar en blanco (no el gris global de .fa) */
+/* Iconos de Cancelar / Guardar / Siguiente en blanco (no el gris global de .fa) */
 .local-form-tab-nav .button-success .fa,
 .local-form-tab-nav .button-success .fas,
 .local-form-tab-nav .button-danger .fa,
-.local-form-tab-nav .button-danger .fas {
+.local-form-tab-nav .button-danger .fas,
+.local-form-tab-nav__btn--next,
+.local-form-tab-nav__btn--next .fa,
+.local-form-tab-nav__btn--next .fas {
   color: #ffffff !important;
 }
 

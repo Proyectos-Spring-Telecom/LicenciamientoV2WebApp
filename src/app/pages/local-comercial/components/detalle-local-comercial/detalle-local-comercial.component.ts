@@ -33,7 +33,7 @@ var currentInfoWindow = null;
 let map: google.maps.Map;
 
 const MARKER_ASPECT_RATIO = 739 / 1067;
-const MARKER_DISPLAY_HEIGHT = 54;
+const MARKER_DISPLAY_HEIGHT = 68;
 const MARKER_DISPLAY_WIDTH = Math.round(MARKER_DISPLAY_HEIGHT * MARKER_ASPECT_RATIO);
 
 const MARKER_ICONS: Record<string, string> = {
@@ -964,12 +964,15 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
     }
 
     const pc = this.informacion.proteccionCivil;
-    if (pc?.esEmpresa === false) {
-      this.typeEmpresa = 'No';
+    // EsEmpresa API: 1 física → No; 2 moral/empresa → Sí (+ Razón Social y RFC)
+    if (pc?.esEmpresa === true) {
+      this.typeEmpresa = 'Sí';
       this.showRazonSocialPC = true;
       this.showRFCPC = true;
     } else {
-      this.typeEmpresa = 'Sí';
+      this.typeEmpresa = 'No';
+      this.showRazonSocialPC = false;
+      this.showRFCPC = false;
     }
 
     if (pc?.tienePrograma === true) {
@@ -1047,6 +1050,21 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
     requestAnimationFrame(go);
     setTimeout(go, 80);
     setTimeout(go, 250);
+    setTimeout(go, 500);
+  }
+
+  /** Tras flex layout, Street View debe recalcular tamaño del contenedor. */
+  private refrescarVistaStreetView(token: number): void {
+    const go = () => {
+      if (token !== this.mapaInitToken || !this.panorama) {
+        return;
+      }
+      google.maps.event.trigger(this.panorama, 'resize');
+    };
+    requestAnimationFrame(go);
+    setTimeout(go, 80);
+    setTimeout(go, 250);
+    setTimeout(go, 500);
   }
 
   private actualizarStreetView(
@@ -1074,6 +1092,7 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
         this.processSVData(data, status);
         if (this.isAvailable && this.panorama) {
           this.panorama.setVisible(true);
+          this.refrescarVistaStreetView(token);
         } else if (this.panorama) {
           this.panorama.setVisible(false);
         }

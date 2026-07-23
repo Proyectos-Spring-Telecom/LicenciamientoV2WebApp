@@ -122,7 +122,30 @@
       </div>
     </section>
 
-    <div class="mt-3">
+    <div class="mt-5 lista-local__grid-wrap">
+      <div class="lista-local__search-bar" role="search" aria-label="Buscar en el grid">
+        <label class="lista-local__search" for="lista-local-search">
+          <i class="fa fa-search" aria-hidden="true"></i>
+          <input
+            id="lista-local-search"
+            type="search"
+            name="listaLocalSearch"
+            autocomplete="off"
+            placeholder="Buscar en el grid..."
+            [(ngModel)]="textoBusquedaGrid"
+            (ngModelChange)="onTextoBusquedaGridChange($event)"
+          />
+          <button
+            *ngIf="textoBusquedaGrid"
+            type="button"
+            class="lista-local__search-clear"
+            aria-label="Limpiar búsqueda"
+            (click)="limpiarBusquedaGrid()">
+            <i class="fa fa-times" aria-hidden="true"></i>
+          </button>
+        </label>
+      </div>
+
       <dx-data-grid
         #gridContainer
         id="gridContainer"
@@ -148,11 +171,9 @@
         }"
         (onPageIndexChanged)="onPageIndexChanged($event)"
         (onOptionChanged)="onGridOptionChanged($event)">
-        <dxo-search-panel [visible]="true" [width]="200" placeholder="Buscar..."></dxo-search-panel>
+        <dxo-search-panel [visible]="false" [highlightSearchText]="true"></dxo-search-panel>
         <dxo-toolbar>
           <dxi-item name="groupPanel" location="before"></dxi-item>
-          <dxi-item name="exportButton" location="after" [options]="{ text: 'Exportar Grid', icon: 'export' }" [showText]="'always'"></dxi-item>
-          <dxi-item name="searchPanel" location="after"></dxi-item>
         </dxo-toolbar>
         <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[100]" [showInfo]="true"></dxo-pager>
         <dxo-group-panel [emptyPanelText]="mensajeAgrupar" [visible]="true"></dxo-group-panel>

@@ -67,6 +67,7 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit, OnDe
   public totalPaginas: number = 0;
   public paginaActualData: LocalComercial[] = [];
   public filtroActivo: string = '';
+  public textoBusquedaGrid: string = '';
 
   private _gap = 16;
   gap = `${this._gap}px`;
@@ -959,10 +960,22 @@ export class ListaLocalComercialComponent implements OnInit, AfterViewInit, OnDe
 		}
 	}
 
+	onTextoBusquedaGridChange(texto: string): void {
+		const value = (texto ?? '').toString();
+		this.textoBusquedaGrid = value;
+		this.dataGrid?.instance?.option('searchPanel.text', value);
+	}
+
+	limpiarBusquedaGrid(): void {
+		this.onTextoBusquedaGridChange('');
+	}
+
 	limpiarCampos() {
 		this.dataGrid?.instance?.clearGrouping();
 		this.dataGrid?.instance?.pageIndex(0);
 		this.filtroActivo = '';
+		this.textoBusquedaGrid = '';
+		this.dataGrid?.instance?.option('searchPanel.text', '');
 		this.filtroEstatus = null;
 		this.setupDataSource();
 		this.dataGrid?.instance?.refresh();

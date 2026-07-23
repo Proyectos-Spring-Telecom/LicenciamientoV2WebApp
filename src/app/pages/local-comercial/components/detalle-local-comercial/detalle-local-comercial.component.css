@@ -690,21 +690,42 @@
   flex-direction: column;
 }
 
-#detalle .detalle-map {
-  width: 100%;
-  height: 590px;
-  color: #ffffff;
-}
-
+/* Rellena el alto de la tarjeta (mismo padding vía .detalle-media-body). */
+#detalle .detalle-map-host,
 #detalle .detalle-street-host {
   width: 100%;
-  min-height: 615px;
+  flex: 1 1 auto;
+  min-height: 590px;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
+#detalle .detalle-map,
 #detalle .detalle-street {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: 615px;
+  height: 100%;
   color: #ffffff;
+}
+
+#detalle .detalle-media-body > .not-street.detalle-map-empty,
+#detalle .detalle-media-body > .not-street.detalle-street {
+  position: relative;
+  inset: auto;
+  flex: 1 1 auto;
+  min-height: 590px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+#detalle .detalle-street-host > .not-street.detalle-street {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ── Bloques de información: header/divisor fuera del grid de campos ── */

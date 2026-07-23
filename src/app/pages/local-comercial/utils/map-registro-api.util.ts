@@ -72,6 +72,15 @@ function asBoolFlag(valor: unknown): boolean {
   return v === true || v === 1 || v === '1' || v === 'true';
 }
 
+/**
+ * ProteccionCivil.EsEmpresa (API): 1 = persona física (No), 2 = persona moral / empresa (Sí).
+ * No usar asBoolFlag: el 1 API no significa “sí”.
+ */
+function asEsEmpresaBool(valor: unknown): boolean {
+  const v = valorApi(valor);
+  return v === 2 || v === '2' || v === true || v === 'true';
+}
+
 function getBloque(api: any, camel: string, pascal: string): any {
   return api?.[pascal] ?? api?.[camel] ?? {};
 }
@@ -637,7 +646,7 @@ export function mapRegistroToDetalleLocal(apiRaw: any): DetalleLocal {
   const idTipoServicio = numeroApi(pick(sapac, 'IdTipoServicio', 'idTipoServicio'));
   const estacionamiento = asBoolFlag(pick(licencias, 'Estacionamiento'));
   const tienePrograma = asBoolFlag(pick(pc, 'TienePrograma', 'tienePrograma'));
-  const esEmpresa = asBoolFlag(pick(pc, 'EsEmpresa', 'esEmpresa'));
+  const esEmpresa = asEsEmpresaBool(pick(pc, 'EsEmpresa', 'esEmpresa'));
   const fotos = mergeFotosRegistro(api);
   const predioObra = numeroApi(pick(api, 'predioObra', 'PredioObra')) ?? 0;
   const licenciaConstruccion = mapLicenciaConstruccionDetalle(api);

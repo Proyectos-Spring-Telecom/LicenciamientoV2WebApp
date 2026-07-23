@@ -881,7 +881,7 @@ export class PreRegistroLocalComponent implements OnInit {
       next: () => {
         ocultarCargandoLocalComercial(() => {
           mostrarSwalExito({
-            title: '¡Operación exitosa!',
+            title: '¡!',
             text: this.idRegistro
               ? '¡Se ha actualizado de manera exitosa el local comercial!'
               : '¡Se ha agregado de manera exitosa el local comercial!',

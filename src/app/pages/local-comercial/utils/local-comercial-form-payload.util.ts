@@ -202,7 +202,9 @@ export function mapPredioObra(valor: unknown): string {
  */
 export function mapEsEmpresa(valor: unknown): string {
   if (valor === 2 || valor === '2') return '2';
+  // UI checkbox ON (1) o true → moral
   if (valor === true || valor === 1 || valor === '1' || valor === 'true') return '2';
+  // UI checkbox OFF (0) o false → física
   if (valor === false || valor === 0 || valor === '0' || valor === 'false') return '1';
   return '';
 }
