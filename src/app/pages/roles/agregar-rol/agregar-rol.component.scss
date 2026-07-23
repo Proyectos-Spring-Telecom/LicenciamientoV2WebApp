@@ -74,8 +74,9 @@
 
   .perm-module-card__head {
     display: flex;
-    align-items: center;
-    gap: 0.9rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.75rem 0.9rem;
     margin-bottom: 0.4rem;
     flex-shrink: 0;
   }
@@ -93,7 +94,7 @@
   }
 
   .perm-module-card__text {
-    flex: 1;
+    flex: 1 1 8rem;
     min-width: 0;
   }
 
@@ -101,11 +102,17 @@
     font-size: 1rem;
     font-weight: 600;
     color: #ffffff;
+    overflow-wrap: break-word;
+    word-break: normal;
+    hyphens: none;
   }
 
   .perm-module-card__desc {
     font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.6);
+    overflow-wrap: break-word;
+    word-break: normal;
+    hyphens: none;
   }
 
   .perm-module-card__bulk {
@@ -113,6 +120,7 @@
     align-items: center;
     gap: 0.4rem;
     margin-left: auto;
+    flex-shrink: 0;
   }
 
   .perm-module-card__bulk-label {
@@ -198,17 +206,24 @@
     display: flex;
     flex-direction: column;
     gap: 0.1rem;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .perm-pill__name {
     font-size: 0.85rem;
     font-weight: 500;
     color: #ffffff;
+    overflow-wrap: break-word;
+    word-break: normal;
+    hyphens: none;
   }
 
   .perm-pill__desc {
     font-size: 0.78rem;
     color: rgba(255, 255, 255, 0.6);
+    overflow-wrap: break-word;
+    word-break: normal;
   }
 
   .perm-pill__toggle {
@@ -217,6 +232,7 @@
     align-items: center;
     cursor: pointer;
     user-select: none;
+    flex-shrink: 0;
   }
 
   .perm-pill__toggle input {

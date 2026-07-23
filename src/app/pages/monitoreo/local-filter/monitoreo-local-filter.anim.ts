@@ -1,4 +1,13 @@
-import { animate, keyframes, query, stagger, style, transition, trigger } from '@angular/animations';
+import {
+  animate,
+  group,
+  keyframes,
+  query,
+  stagger,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 
 export const monLocFilterClearAnim = trigger('monLocFilterClearAnim', [
   transition(':enter', [
@@ -46,34 +55,41 @@ export const monLocFilterShellAnim = trigger('monLocFilterShellAnim', [
       transform: 'translateY(-14px) scale(0.92)',
       transformOrigin: 'top left',
     }),
-    animate(
-      '280ms cubic-bezier(0.22, 1, 0.36, 1)',
-      keyframes([
-        style({
-          opacity: 1,
-          transform: 'translateY(2px) scale(1.03)',
-          offset: 0.65,
-        }),
-        style({
-          opacity: 1,
-          transform: 'translateY(0) scale(1)',
-          offset: 1,
-        }),
-      ]),
-    ),
+    // Ocultar chips antes del pop del shell para evitar el flash (todos → ocultos → stagger).
     query(
-      '.mon-loc-filter__estatus-chip',
-      [
-        style({ opacity: 0, transform: 'translateY(10px) scale(0.88)' }),
-        stagger(40, [
-          animate(
-            '200ms cubic-bezier(0.22, 1, 0.36, 1)',
-            style({ opacity: 1, transform: 'translateY(0) scale(1)' }),
-          ),
-        ]),
-      ],
+      '.mon-loc-filter__estatus-chip, .mon-loc-filter__predio-chip',
+      style({ opacity: 0, transform: 'translateY(10px) scale(0.88)' }),
       { optional: true },
     ),
+    group([
+      animate(
+        '280ms cubic-bezier(0.22, 1, 0.36, 1)',
+        keyframes([
+          style({
+            opacity: 1,
+            transform: 'translateY(2px) scale(1.03)',
+            offset: 0.65,
+          }),
+          style({
+            opacity: 1,
+            transform: 'translateY(0) scale(1)',
+            offset: 1,
+          }),
+        ]),
+      ),
+      query(
+        '.mon-loc-filter__estatus-chip, .mon-loc-filter__predio-chip',
+        [
+          stagger(40, [
+            animate(
+              '200ms 80ms cubic-bezier(0.22, 1, 0.36, 1)',
+              style({ opacity: 1, transform: 'translateY(0) scale(1)' }),
+            ),
+          ]),
+        ],
+        { optional: true },
+      ),
+    ]),
   ]),
   transition(':leave', [
     animate(

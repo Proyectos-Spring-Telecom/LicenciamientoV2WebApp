@@ -36,6 +36,7 @@ import {
   mostrarCargandoLocalComercial,
   mostrarSwalError,
   mostrarSwalExito,
+  mensajeErrorServicioLocal,
   ocultarCargandoLocalComercial,
 } from '../../utils/local-comercial-swal.util';
 import {
@@ -201,7 +202,7 @@ export class LocalComercialFormularioComponent implements OnInit {
   private cargandoDireccionEdicion = false;
   private sincronizandoDireccion = false;
 
-  /** Flujo pre-registro → alta: para regresar a Tipo de Local o Finalización (obra). */
+  /** Flujo pre-registro → alta: para regresar a Tipo de Local o Predio en obra. */
   public vieneDePreRegistro = false;
   public predioEnObraPreRegistro = false;
   private static readonly PRE_REGISTRO_STORAGE_KEY = 'lc.preRegistro';
@@ -358,6 +359,7 @@ export class LocalComercialFormularioComponent implements OnInit {
       LicenciaConstruccion: {
         TipoSolicitudLicencia: data.LcTipoSolicitudLicencia ?? '',
         DescripcionProyecto: data.LcDescripcionProyecto ?? '',
+        ClaveCatastral: data.LcClaveCatastral ?? '',
         SuperficieTerrenoM2: data.LcSuperficieTerrenoM2 ?? '',
         SuperficieTerrenoObraM2: data.LcSuperficieTerrenoObraM2 ?? '',
         DescripcionSistemaConstructivo: data.LcDescripcionSistemaConstructivo ?? '',
@@ -485,7 +487,7 @@ export class LocalComercialFormularioComponent implements OnInit {
 
   get etiquetaBannerRegresar(): string {
     if (!this.vieneDePreRegistro) return 'Regresar';
-    return this.predioEnObraPreRegistro ? 'Finalización del Trámite' : 'Tipo de Local';
+    return this.predioEnObraPreRegistro ? 'Predio en obra' : 'Tipo de Local';
   }
 
   onBannerRegresar(): void {
@@ -564,7 +566,14 @@ export class LocalComercialFormularioComponent implements OnInit {
     }
     const take = (path: string): File | null => {
       const v = this.localForm.get(path)?.value;
-      return v instanceof File && v.name ? v : null;
+      if (v instanceof File && v.name) {
+        return v;
+      }
+      if (Array.isArray(v)) {
+        const f = v.find((item) => item instanceof File && item.name);
+        return f || null;
+      }
+      return null;
     };
     const patch: PreRegistroFilesState = {};
     const map: Array<[string, keyof PreRegistroFilesState]> = [
@@ -589,6 +598,13 @@ export class LocalComercialFormularioComponent implements OnInit {
       ['LicenciaConstruccion.JuegoDePlanosArquitectonicos2', 'LcJuegoDePlanosArquitectonicos2'],
       ['LicenciaConstruccion.JuegoDePlanosArquitectonicos3', 'LcJuegoDePlanosArquitectonicos3'],
       ['LicenciaConstruccion.otros', 'LcOtrosDocs'],
+      ['LicenciaConstruccion.FirmaPropietario', 'LcFirmaPropietario'],
+      ['LicenciaConstruccion.FirmaDRO', 'LcFirmaDRO'],
+      ['LicenciaConstruccion.FirmaCorresponsable', 'LcFirmaCorresponsable'],
+      [
+        'LicenciaConstruccion.FirmaResponsableRecepcionDocumento',
+        'LcFirmaResponsableRecepcionDocumento',
+      ],
     ];
     map.forEach(([path, key]) => {
       const file = take(path);
@@ -761,7 +777,7 @@ export class LocalComercialFormularioComponent implements OnInit {
 
   private refrescarFlagsUiDesdeFormulario(): void {
     const tipoPersona = Number(this.localForm.get('Licencias.TipoPersona')?.value);
-    this.fisica = tipoPersona === 1 || tipoPersona === 0;
+    this.fisica = tipoPersona !== 2;
 
     const tienePrograma = this.localForm.get('ProteccionCivil.TienePrograma')?.value;
     this.tieneprograma =
@@ -773,12 +789,157 @@ export class LocalComercialFormularioComponent implements OnInit {
   }
 
   changeValue(checked) {
+    // UI 0/1 → API vía mapEsEmpresa: 0→1 (física), 1→2 (moral/empresa)
     this.localForm.get('ProteccionCivil.EsEmpresa')?.setValue(checked ? 1 : 0);
+    if (!checked) {
+      this.localForm.patchValue({
+        ProteccionCivil: { RazonSocial: '', RFC: '' },
+      });
+    }
   }
 
   checkedBox() {
     const local = this.localForm.get('ProteccionCivil.EsEmpresa')?.value;
-    return local == true || local === 1 || local === '1';
+    // Form 1 = empresa; API 2 también por si llega sin mapear
+    return (
+      local === true ||
+      local === 1 ||
+      local === '1' ||
+      local === 2 ||
+      local === '2'
+    );
+  }
+
+  /**
+   * En editar: check si el tab tiene al menos un dato.
+   * En alta: check si ya se avanzó de ese paso.
+   */
+  isTabDone(index: number): boolean {
+    if (this.activeTab === index) {
+      return false;
+    }
+    if (this.id) {
+      return this.tabTieneInformacion(index);
+    }
+    return this.activeTab > index;
+  }
+
+  private tabTieneInformacion(index: number): boolean {
+    switch (index) {
+      case 0:
+        return this.grupoTieneDatos('Sapac', [
+          'NumeroCuenta',
+          'Nombre',
+          'ApellidoPaterno',
+          'ApellidoMaterno',
+          'RFC',
+          'Sector',
+          'Ruta',
+          'Folio',
+          'IdTipoServicio',
+          'Medidor',
+        ]) || this.documentosTabConInfo(this.documentosSapac);
+      case 1:
+        return this.grupoTieneDatos('Catastro', [
+          'Clave',
+          'M2',
+          'Superficie',
+          'UsoSuelo',
+        ]) || this.documentosTabConInfo(this.documentosCatastral);
+      case 2:
+        return (
+          this.grupoTieneDatos('Licencias', [
+            'Registro',
+            'NombreComercial',
+            'Giro',
+            'LicenciaSuelo',
+            'NombrePropietario',
+            'ApellidoPaternoPropietario',
+            'ApellidoMaternoPropietario',
+            'TipoPersona',
+            'RFC',
+            'RazonSocial',
+            'FechaExpedicion',
+            'FechaRefrendo',
+            'Estacionamiento',
+          ]) ||
+          this.grupoTieneDatos('Licencias.Contacto', [
+            'Nombre',
+            'ApellidoPaterno',
+            'ApellidoMaterno',
+            'Telefono',
+            'Correo',
+          ]) ||
+          this.grupoTieneDatos('Licencias.ContactoRepresentante', [
+            'Nombre',
+            'ApellidoPaterno',
+            'ApellidoMaterno',
+            'Telefono',
+            'Correo',
+          ]) ||
+          this.documentosTabConInfo(this.documentosLicenciamiento)
+        );
+      case 3:
+        return (
+          this.grupoTieneDatos('ProteccionCivil', [
+            'RazonSocial',
+            'RFC',
+            'Nombre',
+            'ApellidoPaterno',
+            'ApellidoMaterno',
+            'Telefono',
+            'RegistroAcreditacion',
+            'TienePrograma',
+          ]) ||
+          this.checkedBox() ||
+          this.documentosTabConInfo(this.documentosProteccion)
+        );
+      default:
+        return false;
+    }
+  }
+
+  private grupoTieneDatos(path: string, keys: string[]): boolean {
+    const group = this.localForm?.get(path);
+    if (!group) {
+      return false;
+    }
+    return keys.some((key) => this.valorTieneInfo(group.get(key)?.value));
+  }
+
+  private documentosTabConInfo(
+    docs: Array<{ controlName: string }> | undefined
+  ): boolean {
+    if (!docs?.length) {
+      return false;
+    }
+    return docs.some((doc) => {
+      const controlVal = this.localForm?.get(doc.controlName)?.value;
+      if (this.valorTieneInfo(controlVal)) {
+        return true;
+      }
+      const remote = this.documentosExistentes?.[doc.controlName];
+      return typeof remote === 'string' && remote.trim().length > 0;
+    });
+  }
+
+  private valorTieneInfo(valor: unknown): boolean {
+    if (valor == null || valor === '') {
+      return false;
+    }
+    if (valor instanceof File) {
+      return true;
+    }
+    if (typeof valor === 'string') {
+      return valor.trim().length > 0;
+    }
+    if (typeof valor === 'number') {
+      return !Number.isNaN(valor);
+    }
+    if (typeof valor === 'boolean') {
+      return valor;
+    }
+    return true;
   }
 
   obtenerEstadosLicencia() {
@@ -789,7 +950,7 @@ export class LocalComercialFormularioComponent implements OnInit {
 
   obtenerTipoPersona(_id?) {
     const tipoPersona = Number(this.localForm?.get('Licencias.TipoPersona')?.value);
-    this.fisica = tipoPersona === 1 || tipoPersona === 0 || Number.isNaN(tipoPersona);
+    this.fisica = tipoPersona !== 2;
   }
 
   obtenerTieneProgram() {
@@ -805,11 +966,40 @@ export class LocalComercialFormularioComponent implements OnInit {
   }
 
   obtenerTipoPersonaSelect(value) {
-    if (value === 1 || value === 0) {
-      this.fisica = true;
-    }
-    if (value === 2) {
-      this.fisica = false;
+    this.aplicarVisibilidadTipoPersona(value);
+  }
+
+  onTipoPersonaChange(): void {
+    const value = this.localForm.get('Licencias.TipoPersona')?.value;
+    this.validarTipoPersona(value);
+    this.aplicarVisibilidadTipoPersona(value);
+  }
+
+  private aplicarVisibilidadTipoPersona(value: unknown): void {
+    const tipo = Number(value);
+    const esFisica = tipo !== 2;
+    this.fisica = esFisica;
+    if (esFisica) {
+      this.localForm.patchValue({
+        Licencias: {
+          RazonSocial: '',
+          ContactoRepresentante: {
+            Nombre: '',
+            ApellidoPaterno: '',
+            ApellidoMaterno: '',
+            Telefono: '',
+            Correo: '',
+          },
+        },
+      });
+    } else {
+      this.localForm.patchValue({
+        Licencias: {
+          NombrePropietario: '',
+          ApellidoPaternoPropietario: '',
+          ApellidoMaternoPropietario: '',
+        },
+      });
     }
   }
 
@@ -821,6 +1011,7 @@ export class LocalComercialFormularioComponent implements OnInit {
   /**Registrar Local Comercial */
   agregarLocal() {
     this.sincronizarCamposRaizAntesDeEnviar();
+    this.sincronizarArchivosFormularioEnEstado();
     this.reaplicarArchivosDesdePreRegistro();
     this.loadIndicatorVisible = true;
     this.botonSuccess = 'Enviando...'
@@ -843,17 +1034,17 @@ export class LocalComercialFormularioComponent implements OnInit {
         () => {
           ocultarCargandoLocalComercial(() => {
             mostrarSwalExito({
-              title: '¡Operación exitosa!',
+              title: '¡Operación Exitosa!',
               text: '¡Se ha agregado de manera exitosa el local comercial!',
             });
             this.redirigir();
           });
         },
-        () => {
+        (err) => {
           ocultarCargandoLocalComercial(() => {
             mostrarSwalError({
               title: '¡Ops!',
-              text: '¡Error al agregar el local!',
+              text: mensajeErrorServicioLocal(err, '¡Error al agregar el local!'),
             });
             this.loadIndicatorVisible = false;
             this.botonSuccess = 'Guardar';
@@ -867,6 +1058,7 @@ export class LocalComercialFormularioComponent implements OnInit {
   /**Actualizar local — PATCH /registros_actualizar (parcial) */
   actualizarLocal() {
     this.sincronizarCamposRaizAntesDeEnviar();
+    this.sincronizarArchivosFormularioEnEstado();
     this.reaplicarArchivosDesdePreRegistro();
     this.loading = true;
     const idRegistro = Number(this.id);
@@ -889,17 +1081,20 @@ export class LocalComercialFormularioComponent implements OnInit {
         () => {
           ocultarCargandoLocalComercial(() => {
             mostrarSwalExito({
-              title: '¡Operación exitosa!',
+              title: '¡Operación Exitosa!',
               html: '¡Los datos de la <b>Licencia</b> se han modificado de manera exitosa!',
             });
             this.redirigir();
           });
         },
-        () => {
+        (err) => {
           ocultarCargandoLocalComercial(() => {
             mostrarSwalError({
               title: '¡Ops!',
-              text: '¡Error al intentar modificar los datos del local!',
+              text: mensajeErrorServicioLocal(
+                err,
+                '¡Error al intentar modificar los datos del local!'
+              ),
             });
             this.loadIndicatorVisible = false;
             this.botonSuccess = 'Guardar';
@@ -917,7 +1112,12 @@ export class LocalComercialFormularioComponent implements OnInit {
 
   onDocumentoSeleccionado(controlName: string, archivo: File): void {
     const control = this.localForm.get(controlName);
+    if (!control) {
+      console.error(`[Local Comercial] Control de archivo no encontrado: ${controlName}`);
+      return;
+    }
     control.setValue(archivo);
+    control.markAsDirty();
     control.setErrors(null);
     this.documentosExistentes = {
       ...this.documentosExistentes,
@@ -1034,24 +1234,24 @@ export class LocalComercialFormularioComponent implements OnInit {
   /** Completa Latitud/Longitud/TipoRegistro/PredioObra antes de enviar. */
   private sincronizarCamposRaizAntesDeEnviar(): void {
     const v = (campo: string) => this.localForm.get(campo)?.value;
-    const patch: Record<string, unknown> = {};
 
+    // NUNCA hacer patch del grupo Licencias completo: el spread de .value
+    // puede pisar los File de licenciaFuncionamiento/fachada/etc.
     if (!v('Licencias.FechaHora')) {
-      patch['Licencias'] = {
-        ...(this.localForm.get('Licencias')?.value || {}),
-        FechaHora: new Date(),
-      };
+      this.localForm.get('Licencias.FechaHora')?.setValue(new Date(), { emitEvent: false });
     }
     if (v('PredioObra') === '' || v('PredioObra') == null) {
-      patch['PredioObra'] = Number(mapPredioObra(this.predioEnObraPreRegistro));
+      this.localForm
+        .get('PredioObra')
+        ?.setValue(Number(mapPredioObra(this.predioEnObraPreRegistro)), { emitEvent: false });
     }
     if (v('TipoRegistro') === '' || v('TipoRegistro') == null) {
       const stored = this.preRegistroState.peekScalar();
-      patch['TipoRegistro'] = Number(mapTipoRegistro(stored?.tipoRegistro ?? 0) || '0');
-    }
-
-    if (Object.keys(patch).length) {
-      this.localForm.patchValue(patch);
+      this.localForm
+        .get('TipoRegistro')
+        ?.setValue(Number(mapTipoRegistro(stored?.tipoRegistro ?? 0) || '0'), {
+          emitEvent: false,
+        });
     }
   }
 

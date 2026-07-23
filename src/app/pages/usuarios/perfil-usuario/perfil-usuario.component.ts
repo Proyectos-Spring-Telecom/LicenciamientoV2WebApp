@@ -11,16 +11,17 @@ type UserFromGetUser = {
   apellidoPaterno?: string;
   apellidoMaterno?: string;
   telefono?: string;
+  PhoneNumber?: string;
+  phoneNumber?: string;
   ultimoLogin?: string;
   fechaCreacion?: string;
   fotoPerfil?: string | null;
   userName?: string;
+  UserName?: string;
+  email?: string;
   rolNombre?: string;
-  nombreCliente?: string;
-  apellidoPaternoCliente?: string;
-  apellidoMaternoCliente?: string;
-  telefonoCliente?: any;
-  emailCliente?: any;
+  nombreRol?: string;
+  nombreGrupo?: string;
   activo?: boolean;
 };
 
@@ -56,11 +57,23 @@ export class PerfilUsuarioComponent {
     this.showNombre = user?.nombre ?? '';
     this.showApellidoPaterno = user?.apellidoPaterno ?? '';
     this.showApellidoMaterno = user?.apellidoMaterno ?? '';
-    this.showRol = user?.rolNombre ?? '';
+    this.showRol = user?.nombreRol ?? user?.rolNombre ?? '';
 
     this.showImage = this.hasValidFoto(user?.fotoPerfil)
       ? (user!.fotoPerfil as string)
       : this.DEFAULT_AVATAR;
+  }
+
+  get correoUsuario(): string {
+    const u = this.user as any;
+    if (!u) return '';
+    return String(u.UserName ?? u.userName ?? u.email ?? '').trim();
+  }
+
+  get telefonoUsuario(): string {
+    const u = this.user as any;
+    if (!u) return '';
+    return String(u.PhoneNumber ?? u.phoneNumber ?? u.telefono ?? '').trim();
   }
 
   private hasValidFoto(v: any): boolean {
@@ -77,19 +90,6 @@ export class PerfilUsuarioComponent {
 
   get showNombreCompleto(): string {
     const parts = [this.showNombre, this.showApellidoPaterno, this.showApellidoMaterno]
-      .map((x) => (x != null && x !== 'null' ? String(x).trim() : ''))
-      .filter((x) => x.length > 0);
-    return parts.length > 0 ? parts.join(' ') : this.SIN_REGISTRO;
-  }
-
-  get nombreClienteDisplay(): string {
-    const u = this.user;
-    if (!u) return this.SIN_REGISTRO;
-    const parts = [
-      u.nombreCliente,
-      u.apellidoPaternoCliente,
-      u.apellidoMaternoCliente,
-    ]
       .map((x) => (x != null && x !== 'null' ? String(x).trim() : ''))
       .filter((x) => x.length > 0);
     return parts.length > 0 ? parts.join(' ') : this.SIN_REGISTRO;

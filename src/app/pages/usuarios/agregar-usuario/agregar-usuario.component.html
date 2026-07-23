@@ -110,13 +110,19 @@
           </div>
 
           <div class="col-12 col-md-4">
-            <label for="idGrupo" class="form-label perm-label">Grupo</label>
+            <label for="idGrupo" class="form-label perm-label">
+              Grupo{{ requiereGrupo ? '' : ' (opcional)' }}
+            </label>
             <div class="input-group input-group-lg perm-ig">
               <span class="input-group-text fw-bold">
                 <mat-icon aria-hidden="true">groups</mat-icon>
               </span>
               <div class="form-floating flex-grow-1 perm-select-floating">
-                <select class="form-select" id="idGrupo" formControlName="idGrupo" required>
+                <select class="form-select" id="idGrupo" formControlName="idGrupo"
+                  [attr.required]="requiereGrupo ? '' : null">
+                  <option [ngValue]="null">
+                    {{ requiereGrupo ? 'Selecciona un grupo' : 'Sin grupo' }}
+                  </option>
                   <option *ngFor="let grupo of listaGrupos" [ngValue]="grupo.id">
                     {{ grupo.nombre }}
                   </option>

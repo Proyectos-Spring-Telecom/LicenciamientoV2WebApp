@@ -63,25 +63,76 @@ function appendCampo(
 }
 
 function appendDocumento(formData: FormData, clave: string, valor: File | string): void {
-  // Solo File real; cadenas vacías las toma el API como IFormFile sin extensión.
-  if (esArchivoEnviable(valor)) {
-    formData.append(clave, valor, valor.name);
+  // Solo File real cargado. Nombre con extensión permitida (jpg/jpeg/png/pdf).
+  if (!(valor instanceof File) || !valor.name?.trim()) {
+    return;
   }
+  const nombre = nombreArchivoConExtensionPermitida(valor);
+  if (!nombre) {
+    console.warn(
+      `[Local Comercial] Archivo omitido (${clave}): extensión no permitida →`,
+      valor.name,
+      valor.type
+    );
+    return;
+  }
+  formData.append(clave, valor, nombre);
+}
+
+function tieneArchivoCargado(valor: unknown): valor is File {
+  return valor instanceof File && !!valor.name?.trim();
 }
 
 function extensionArchivo(nombre: string): string {
-  const partes = nombre.split('.');
+  const base = nombre.split(/[/\\]/).pop() || nombre;
+  const partes = base.split('.');
   if (partes.length < 2) {
     return '';
   }
   return partes[partes.length - 1].trim().toLowerCase();
 }
 
+/** Extensión a partir del MIME (para archivos sin .jpg/.png/.pdf en el nombre). */
+function extensionDesdeMime(mime: string): string {
+  const m = (mime || '').toLowerCase();
+  if (m === 'image/jpeg' || m === 'image/jpg') return 'jpg';
+  if (m === 'image/png') return 'png';
+  if (m === 'application/pdf') return 'pdf';
+  return '';
+}
+
+/**
+ * Asegura filename con extensión permitida por el backend.
+ * Evita el error: El archivo "Sapac.reciboSapac" tiene una extensión no permitida.
+ */
+function nombreArchivoConExtensionPermitida(file: File): string | null {
+  const original = (file.name || '').trim().split(/[/\\]/).pop() || '';
+  const ext = extensionArchivo(original);
+  if (EXTENSIONES_PERMITIDAS.has(ext)) {
+    // Quitar caracteres raros del nombre; conservar extensión
+    const safeBase = original
+      .replace(/\.[^.]+$/, '')
+      .replace(/[^\w.\-()\sÁÉÍÓÚáéíóúñÑ]/gi, '_')
+      .trim() || 'archivo';
+    return `${safeBase}.${ext}`;
+  }
+  const desdeMime = extensionDesdeMime(file.type);
+  if (desdeMime) {
+    const base =
+      (original.replace(/\.[^.]+$/, '').trim() || 'archivo').replace(
+        /[^\w.\-()\sÁÉÍÓÚáéíóúñÑ]/gi,
+        '_'
+      ) || 'archivo';
+    return `${base}.${desdeMime}`;
+  }
+  return null;
+}
+
 function esArchivoEnviable(valor: unknown): valor is File {
   if (!(valor instanceof File) || !valor.name?.trim()) {
     return false;
   }
-  return EXTENSIONES_PERMITIDAS.has(extensionArchivo(valor.name));
+  return !!nombreArchivoConExtensionPermitida(valor);
 }
 
 function appendDocumentosMultiples(
@@ -151,7 +202,9 @@ export function mapPredioObra(valor: unknown): string {
  */
 export function mapEsEmpresa(valor: unknown): string {
   if (valor === 2 || valor === '2') return '2';
+  // UI checkbox ON (1) o true → moral
   if (valor === true || valor === 1 || valor === '1' || valor === 'true') return '2';
+  // UI checkbox OFF (0) o false → física
   if (valor === false || valor === 0 || valor === '0' || valor === 'false') return '1';
   return '';
 }
@@ -245,12 +298,20 @@ export function createRegistrosFormGroup(fb: FormBuilder): FormGroup {
       ApellidoMaternoPropietario: [''],
       TipoPersona: [''],
       RFC: [''],
+      RazonSocial: [''],
       FechaExpedicion: [''],
       FechaRefrendo: [''],
       Estacionamiento: [''],
       Tipo: [1],
       FechaHora: [''],
       Contacto: fb.group({
+        Nombre: [''],
+        ApellidoPaterno: [''],
+        ApellidoMaterno: [''],
+        Telefono: [''],
+        Correo: [''],
+      }),
+      ContactoRepresentante: fb.group({
         Nombre: [''],
         ApellidoPaterno: [''],
         ApellidoMaterno: [''],
@@ -272,18 +333,12 @@ export function createRegistrosFormGroup(fb: FormBuilder): FormGroup {
       Telefono: [''],
       RegistroAcreditacion: [''],
       TienePrograma: [''],
-      ContactoRepresentante: fb.group({
-        Nombre: [''],
-        ApellidoPaterno: [''],
-        ApellidoMaterno: [''],
-        Telefono: [''],
-        Correo: [''],
-      }),
       vistoBueno: [''],
     }),
     LicenciaConstruccion: fb.group({
       TipoSolicitudLicencia: [''],
       DescripcionProyecto: [''],
+      ClaveCatastral: [''],
       SuperficieTerrenoM2: [''],
       SuperficieTerrenoObraM2: [''],
       DescripcionSistemaConstructivo: [''],
@@ -384,11 +439,11 @@ export function buildLocalComercialFormData(
   if (esObra) {
     appendLicenciaConstruccion(formData, form, v, empty, valorDocumento, false);
     // Transversales 6/7/8 también con PredioObra=1
-    appendCatalogoFotograficoLicencias(formData, valorDocumento);
+    appendArchivosTransversalesLicencias(formData, valorDocumento);
   } else {
     appendSapacCatastroLicenciasProteccion(formData, v, empty, valorDocumento, false);
     // Fotos 1–9 (incluye fachada/estacionamiento/bodega)
-    appendCatalogoFotograficoLicencias(formData, valorDocumento);
+    appendArchivosTransversalesLicencias(formData, valorDocumento);
   }
 
   return formData;
@@ -400,7 +455,7 @@ export function buildLocalComercialFormData(
  * - Parcial: omite '' / null / undefined (no sobrescriben); `0` sí se envía
  * - No envía `Estatus`
  * - PredioObra efectivo: si se omite PredioObra vacío, el backend usa el almacenado
- * - Mismos nombres de campo/archivo que POST
+ * - Archivos: solo File recién cargados (string($binary) del contrato actualizar)
  */
 export function buildLocalComercialActualizarFormData(
   idRegistro: number,
@@ -443,23 +498,31 @@ export function buildLocalComercialActualizarFormData(
 
   if (esObra) {
     appendLicenciaConstruccion(formData, form, v, empty, valorDocumento, parcial);
-    appendCatalogoFotograficoLicencias(formData, valorDocumento);
+    // Transversales IdTipoFoto 6/7/8
+    appendArchivosTransversalesLicencias(formData, valorDocumento);
   } else {
     appendSapacCatastroLicenciasProteccion(formData, v, empty, valorDocumento, parcial);
-    appendCatalogoFotograficoLicencias(formData, valorDocumento);
+    appendArchivosTransversalesLicencias(formData, valorDocumento);
   }
 
   return formData;
 }
 
-/** Catálogo fotográfico (pre-registro): Fachada, Bodega, Estacionamiento. */
-function appendCatalogoFotograficoLicencias(
+/**
+ * Archivos transversales (PATCH/POST): fachada, estacionamiento, bodega.
+ * Se procesan con PredioObra=0 y PredioObra=1.
+ */
+function appendArchivosTransversalesLicencias(
   formData: FormData,
   valorDocumento: ValorDocumentoFn
 ): void {
   appendDocumento(formData, 'Licencias.fachada', valorDocumento('Licencias.fachada'));
   appendDocumento(formData, 'Licencias.bodega', valorDocumento('Licencias.bodega'));
-  appendDocumento(formData, 'Licencias.estacionamiento', valorDocumento('Licencias.estacionamiento'));
+  appendDocumento(
+    formData,
+    'Licencias.estacionamiento',
+    valorDocumento('Licencias.estacionamiento')
+  );
 }
 
 function appendSapacCatastroLicenciasProteccion(
@@ -503,28 +566,28 @@ function appendSapacCatastroLicenciasProteccion(
   appendCampo(formData, 'Licencias.NombreComercial', v('Licencias.NombreComercial'), empty, parcial);
   appendCampo(formData, 'Licencias.Giro', v('Licencias.Giro'), empty, parcial);
   appendCampo(formData, 'Licencias.LicenciaSuelo', v('Licencias.LicenciaSuelo'), empty, parcial);
-  appendCampo(formData, 'Licencias.NombrePropietario', v('Licencias.NombrePropietario'), empty, parcial);
-  appendCampo(
-    formData,
-    'Licencias.ApellidoPaternoPropietario',
-    v('Licencias.ApellidoPaternoPropietario'),
-    empty,
-    parcial
-  );
-  appendCampo(
-    formData,
-    'Licencias.ApellidoMaternoPropietario',
-    v('Licencias.ApellidoMaternoPropietario'),
-    empty,
-    parcial
-  );
-  appendCampo(
-    formData,
-    'Licencias.TipoPersona',
-    mapTipoPersona(v('Licencias.TipoPersona')),
-    empty,
-    parcial
-  );
+  const tipoPersona = mapTipoPersona(v('Licencias.TipoPersona'));
+  const esPersonaMoral = tipoPersona === '2';
+  appendCampo(formData, 'Licencias.TipoPersona', tipoPersona, empty, parcial);
+  if (esPersonaMoral) {
+    appendCampo(formData, 'Licencias.RazonSocial', v('Licencias.RazonSocial'), empty, parcial);
+  } else {
+    appendCampo(formData, 'Licencias.NombrePropietario', v('Licencias.NombrePropietario'), empty, parcial);
+    appendCampo(
+      formData,
+      'Licencias.ApellidoPaternoPropietario',
+      v('Licencias.ApellidoPaternoPropietario'),
+      empty,
+      parcial
+    );
+    appendCampo(
+      formData,
+      'Licencias.ApellidoMaternoPropietario',
+      v('Licencias.ApellidoMaternoPropietario'),
+      empty,
+      parcial
+    );
+  }
   appendCampo(formData, 'Licencias.RFC', v('Licencias.RFC'), empty, parcial);
   appendCampo(
     formData,
@@ -600,12 +663,58 @@ function appendSapacCatastroLicenciasProteccion(
     );
   }
 
+  // Contacto representante de Licencias solo con persona moral
+  if (
+    esPersonaMoral &&
+    (tieneTexto(v('Licencias.ContactoRepresentante.Nombre')) ||
+      tieneTexto(v('Licencias.ContactoRepresentante.ApellidoPaterno')) ||
+      tieneTexto(v('Licencias.ContactoRepresentante.ApellidoMaterno')) ||
+      tieneTexto(v('Licencias.ContactoRepresentante.Telefono')) ||
+      tieneTexto(v('Licencias.ContactoRepresentante.Correo')))
+  ) {
+    appendCampo(
+      formData,
+      'Licencias.ContactoRepresentante.Nombre',
+      v('Licencias.ContactoRepresentante.Nombre'),
+      empty,
+      parcial
+    );
+    appendCampo(
+      formData,
+      'Licencias.ContactoRepresentante.ApellidoPaterno',
+      v('Licencias.ContactoRepresentante.ApellidoPaterno'),
+      empty,
+      parcial
+    );
+    appendCampo(
+      formData,
+      'Licencias.ContactoRepresentante.ApellidoMaterno',
+      v('Licencias.ContactoRepresentante.ApellidoMaterno'),
+      empty,
+      parcial
+    );
+    appendCampo(
+      formData,
+      'Licencias.ContactoRepresentante.Telefono',
+      v('Licencias.ContactoRepresentante.Telefono'),
+      empty,
+      parcial
+    );
+    appendCampo(
+      formData,
+      'Licencias.ContactoRepresentante.Correo',
+      v('Licencias.ContactoRepresentante.Correo'),
+      empty,
+      parcial
+    );
+  }
+
   appendDocumento(
     formData,
     'Licencias.licenciaFuncionamiento',
     valorDocumento('Licencias.licenciaFuncionamiento')
   );
-  // Fachada / Bodega / Estacionamiento → appendCatalogoFotograficoLicencias (siempre)
+  // Fachada / Bodega / Estacionamiento → appendArchivosTransversalesLicencias (siempre)
 
   // ProteccionCivil.*
   appendCampo(
@@ -648,50 +757,6 @@ function appendSapacCatastroLicenciasProteccion(
     parcial
   );
 
-  if (
-    tieneTexto(v('ProteccionCivil.ContactoRepresentante.Nombre')) ||
-    tieneTexto(v('ProteccionCivil.ContactoRepresentante.ApellidoPaterno')) ||
-    tieneTexto(v('ProteccionCivil.ContactoRepresentante.ApellidoMaterno')) ||
-    tieneTexto(v('ProteccionCivil.ContactoRepresentante.Telefono')) ||
-    tieneTexto(v('ProteccionCivil.ContactoRepresentante.Correo'))
-  ) {
-    appendCampo(
-      formData,
-      'ProteccionCivil.ContactoRepresentante.Nombre',
-      v('ProteccionCivil.ContactoRepresentante.Nombre'),
-      empty,
-      parcial
-    );
-    appendCampo(
-      formData,
-      'ProteccionCivil.ContactoRepresentante.ApellidoPaterno',
-      v('ProteccionCivil.ContactoRepresentante.ApellidoPaterno'),
-      empty,
-      parcial
-    );
-    appendCampo(
-      formData,
-      'ProteccionCivil.ContactoRepresentante.ApellidoMaterno',
-      v('ProteccionCivil.ContactoRepresentante.ApellidoMaterno'),
-      empty,
-      parcial
-    );
-    appendCampo(
-      formData,
-      'ProteccionCivil.ContactoRepresentante.Telefono',
-      v('ProteccionCivil.ContactoRepresentante.Telefono'),
-      empty,
-      parcial
-    );
-    appendCampo(
-      formData,
-      'ProteccionCivil.ContactoRepresentante.Correo',
-      v('ProteccionCivil.ContactoRepresentante.Correo'),
-      empty,
-      parcial
-    );
-  }
-
   appendDocumento(formData, 'ProteccionCivil.vistoBueno', valorDocumento('ProteccionCivil.vistoBueno'));
 }
 
@@ -713,6 +778,7 @@ function appendLicenciaConstruccion(
     parcial
   );
   appendCampo(formData, `${lc}.DescripcionProyecto`, v(`${lc}.DescripcionProyecto`), empty, parcial);
+  appendCampo(formData, `${lc}.ClaveCatastral`, v(`${lc}.ClaveCatastral`), empty, parcial);
   appendCampo(
     formData,
     `${lc}.SuperficieTerrenoM2`,
@@ -751,7 +817,7 @@ function appendLicenciaConstruccion(
   appendCampo(formData, `${lc}.NumeroControl`, v(`${lc}.NumeroControl`), empty, parcial);
   appendCampo(formData, `${lc}.SeguimientoObra`, v(`${lc}.SeguimientoObra`), empty, parcial);
 
-  // Flags 0|1 siempre (Untitled-3). Homónimos con archivo: si hay File, solo el File (no texto).
+  // Flags 0|1. Homónimos con archivo: si hay File cargado, solo el File (no texto).
   const fileLicUso = valorDocumento(`${lc}.fileLicenciaUsoSuelo`);
   const filePlano = valorDocumento(`${lc}.filePlanoAutorizado`);
   const fileFrac = valorDocumento(`${lc}.fileLicenciaFraccionamiento`);
@@ -762,7 +828,7 @@ function appendLicenciaConstruccion(
     empty,
     parcial
   );
-  if (!esArchivoEnviable(fileLicUso)) {
+  if (!tieneArchivoCargado(fileLicUso)) {
     appendCampo(
       formData,
       `${lc}.LicenciaUsoSuelo`,
@@ -771,7 +837,7 @@ function appendLicenciaConstruccion(
       parcial
     );
   }
-  if (!esArchivoEnviable(filePlano)) {
+  if (!tieneArchivoCargado(filePlano)) {
     appendCampo(
       formData,
       `${lc}.PlanoAutorizado`,
@@ -780,7 +846,7 @@ function appendLicenciaConstruccion(
       parcial
     );
   }
-  if (!esArchivoEnviable(fileFrac)) {
+  if (!tieneArchivoCargado(fileFrac)) {
     appendCampo(
       formData,
       `${lc}.LicenciaFraccionamiento`,
@@ -863,7 +929,7 @@ function appendLicenciaConstruccion(
     );
   });
 
-  // Archivos LC: máx. 1 por campo
+  // Archivos LC (contrato actualizar/POST): máx. 1 por campo — solo si hay File cargado
   appendDocumento(formData, `${lc}.constanciaAlineamiento`, valorDocumento(`${lc}.constanciaAlineamiento`));
   appendDocumento(formData, `${lc}.constanciaNumero`, valorDocumento(`${lc}.constanciaNumero`));
   appendDocumento(formData, `${lc}.LicenciaUsoSuelo`, fileLicUso);
@@ -947,7 +1013,14 @@ export function generarJsonEnvioLocalComercial(
           valorDocumentoMultiple
         );
   const payload = formDataToJson(formData);
+  const archivosEnviados: Array<{ campo: string; nombre: string; tamano: number }> = [];
+  formData.forEach((valor, clave) => {
+    if (valor instanceof File) {
+      archivosEnviados.push({ campo: clave, nombre: valor.name, tamano: valor.size });
+    }
+  });
   console.group(`[Local Comercial] Payload (${operacion})`);
+  console.log('Archivos en FormData:', archivosEnviados);
   console.log('Objeto:', payload);
   console.log('JSON:', JSON.stringify(payload, null, 2));
   console.groupEnd();

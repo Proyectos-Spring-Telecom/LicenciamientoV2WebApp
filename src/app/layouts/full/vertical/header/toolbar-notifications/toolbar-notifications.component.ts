@@ -88,16 +88,10 @@ export class ToolbarNotificationsComponent implements OnInit, OnDestroy {
 
     this.predioItems = [
       {
-        icon: 'construction',
+        icon: 'build',
         name: 'En obra',
         colorClass: 'sym-item--obra',
-        hint: 'Predio en construcción',
-      },
-      {
-        icon: 'storefront',
-        name: 'Sin obra',
-        colorClass: 'sym-item--sin-obra',
-        hint: 'Establecimiento sin obra',
+        hint: 'Predio en construcción (icono especial en el mapa)',
       },
     ];
   }

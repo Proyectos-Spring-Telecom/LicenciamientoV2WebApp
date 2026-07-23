@@ -72,6 +72,15 @@ function asBoolFlag(valor: unknown): boolean {
   return v === true || v === 1 || v === '1' || v === 'true';
 }
 
+/**
+ * ProteccionCivil.EsEmpresa (API): 1 = persona física (No), 2 = persona moral / empresa (Sí).
+ * No usar asBoolFlag: el 1 API no significa “sí”.
+ */
+function asEsEmpresaBool(valor: unknown): boolean {
+  const v = valorApi(valor);
+  return v === 2 || v === '2' || v === true || v === 'true';
+}
+
 function getBloque(api: any, camel: string, pascal: string): any {
   return api?.[pascal] ?? api?.[camel] ?? {};
 }
@@ -300,26 +309,7 @@ const LC_DOC_DETALLE: Array<{ keys: string[]; titulo: string; idTipoFoto?: numbe
     titulo: 'Otros documentos',
     idTipoFoto: 18,
   },
-  {
-    keys: ['LicenciaConstruccion.FirmaPropietario'],
-    titulo: 'Firma del propietario',
-    idTipoFoto: 25,
-  },
-  {
-    keys: ['LicenciaConstruccion.FirmaDRO'],
-    titulo: 'Firma del Director Responsable de Obra',
-    idTipoFoto: 26,
-  },
-  {
-    keys: ['LicenciaConstruccion.FirmaCorresponsable'],
-    titulo: 'Firma del corresponsable',
-    idTipoFoto: 27,
-  },
-  {
-    keys: ['LicenciaConstruccion.FirmaResponsableRecepcionDocumento'],
-    titulo: 'Firma de recepción de documentos',
-    idTipoFoto: 28,
-  },
+  // Firmas (tipos 25–28) no se muestran en el detalle ni en la galería LC.
 ];
 
 export function buildDocumentosLicenciaConstruccionDetalle(
@@ -363,6 +353,7 @@ function mapLicenciaConstruccionDetalle(api: any): LicenciaConstruccionDetalle |
       pick(lc, 'TipoSolicitudLicencia', 'tipoSolicitudLicencia')
     ),
     DescripcionProyecto: textoApi(pick(lc, 'DescripcionProyecto', 'descripcionProyecto')) || null,
+    ClaveCatastral: textoApi(pick(lc, 'ClaveCatastral', 'claveCatastral')) || null,
     SuperficieTerrenoM2: numeroApi(pick(lc, 'SuperficieTerrenoM2', 'superficieTerrenoM2')),
     SuperficieTerrenoObraM2: numeroApi(
       pick(lc, 'SuperficieTerrenoObraM2', 'superficieTerrenoObraM2')
@@ -472,6 +463,7 @@ function mapLicenciaConstruccionPatch(api: any): Record<string, unknown> {
   return {
     TipoSolicitudLicencia: numeroApi(pick(lc, 'TipoSolicitudLicencia', 'tipoSolicitudLicencia')) ?? '',
     DescripcionProyecto: textoApi(pick(lc, 'DescripcionProyecto', 'descripcionProyecto')),
+    ClaveCatastral: textoApi(pick(lc, 'ClaveCatastral', 'claveCatastral')),
     SuperficieTerrenoM2: numeroApi(pick(lc, 'SuperficieTerrenoM2', 'superficieTerrenoM2')) ?? '',
     SuperficieTerrenoObraM2:
       numeroApi(pick(lc, 'SuperficieTerrenoObraM2', 'superficieTerrenoObraM2')) ?? '',
@@ -513,8 +505,12 @@ export function mapRegistroToFormPatch(apiRaw: any): Record<string, unknown> {
   const catastro = getBloque(api, 'catastro', 'Catastro');
   const licencias = getBloque(api, 'licencias', 'Licencias');
   const contacto = getBloque(licencias, 'contacto', 'Contacto');
+  const contactoRepresentante = getBloque(
+    licencias,
+    'contactoRepresentante',
+    'ContactoRepresentante'
+  );
   const pc = getBloque(api, 'proteccionCivil', 'ProteccionCivil');
-  const pcContacto = getBloque(pc, 'contactoRepresentante', 'ContactoRepresentante');
   const licenciaConstruccion = mapLicenciaConstruccionPatch(api);
 
   return {
@@ -562,6 +558,7 @@ export function mapRegistroToFormPatch(apiRaw: any): Record<string, unknown> {
       ),
       TipoPersona: numeroApi(pick(licencias, 'TipoPersona', 'tipoPersona')) ?? '',
       RFC: textoApi(pick(licencias, 'RFC', 'rfc')),
+      RazonSocial: textoApi(pick(licencias, 'RazonSocial', 'razonSocial')),
       FechaExpedicion: toDateInputValue(
         valorApi(pick(licencias, 'FechaExpedicion', 'fechaExpedicion')) as any
       ),
@@ -579,6 +576,17 @@ export function mapRegistroToFormPatch(apiRaw: any): Record<string, unknown> {
         Telefono: textoApi(pick(contacto, 'Telefono', 'telefono')),
         Correo: textoApi(pick(contacto, 'Correo', 'correo', 'email')),
       },
+      ContactoRepresentante: {
+        Nombre: textoApi(pick(contactoRepresentante, 'Nombre', 'nombre')),
+        ApellidoPaterno: textoApi(
+          pick(contactoRepresentante, 'ApellidoPaterno', 'apellidoPaterno')
+        ),
+        ApellidoMaterno: textoApi(
+          pick(contactoRepresentante, 'ApellidoMaterno', 'apellidoMaterno')
+        ),
+        Telefono: textoApi(pick(contactoRepresentante, 'Telefono', 'telefono')),
+        Correo: textoApi(pick(contactoRepresentante, 'Correo', 'correo', 'email')),
+      },
     },
     ProteccionCivil: {
       EsEmpresa: esEmpresaApiAForm(pick(pc, 'EsEmpresa', 'esEmpresa')),
@@ -590,13 +598,6 @@ export function mapRegistroToFormPatch(apiRaw: any): Record<string, unknown> {
       Telefono: textoApi(pick(pc, 'Telefono', 'telefono')),
       RegistroAcreditacion: textoApi(pick(pc, 'RegistroAcreditacion', 'registroAcreditacion')),
       TienePrograma: asFlag(pick(pc, 'TienePrograma', 'tienePrograma')),
-      ContactoRepresentante: {
-        Nombre: textoApi(pick(pcContacto, 'Nombre', 'nombre')),
-        ApellidoPaterno: textoApi(pick(pcContacto, 'ApellidoPaterno', 'apellidoPaterno')),
-        ApellidoMaterno: textoApi(pick(pcContacto, 'ApellidoMaterno', 'apellidoMaterno')),
-        Telefono: textoApi(pick(pcContacto, 'Telefono', 'telefono')),
-        Correo: textoApi(pick(pcContacto, 'Correo', 'correo', 'email')),
-      },
     },
     ...(Object.keys(licenciaConstruccion).length
       ? { LicenciaConstruccion: licenciaConstruccion }
@@ -612,11 +613,10 @@ const NOMBRE_ESTATUS: Record<number, string> = {
   5: 'Baja',
 };
 
+/** Sapac.IdTipoServicio: 1 = SM, 2 = SP. */
 const NOMBRE_TIPO_SERVICIO: Record<number, string> = {
-  1: 'Doméstico',
-  2: 'Comercial',
-  3: 'Industrial',
-  4: 'Público',
+  1: 'SM',
+  2: 'SP',
 };
 
 /** Mapea GET /registros/{id} al modelo de la vista detalle. */
@@ -626,8 +626,12 @@ export function mapRegistroToDetalleLocal(apiRaw: any): DetalleLocal {
   const catastro = getBloque(api, 'catastro', 'Catastro');
   const licencias = getBloque(api, 'licencias', 'Licencias');
   const contacto = getBloque(licencias, 'contacto', 'Contacto');
+  const contactoRepresentante = getBloque(
+    licencias,
+    'contactoRepresentante',
+    'ContactoRepresentante'
+  );
   const pc = getBloque(api, 'proteccionCivil', 'ProteccionCivil');
-  const pcContacto = getBloque(pc, 'contactoRepresentante', 'ContactoRepresentante');
 
   const entidad = textoApi(pick(api, 'entidadFederativa', 'EntidadFederativa'));
   const municipio = textoApi(pick(api, 'municipio', 'Municipio'));
@@ -642,7 +646,7 @@ export function mapRegistroToDetalleLocal(apiRaw: any): DetalleLocal {
   const idTipoServicio = numeroApi(pick(sapac, 'IdTipoServicio', 'idTipoServicio'));
   const estacionamiento = asBoolFlag(pick(licencias, 'Estacionamiento'));
   const tienePrograma = asBoolFlag(pick(pc, 'TienePrograma', 'tienePrograma'));
-  const esEmpresa = asBoolFlag(pick(pc, 'EsEmpresa', 'esEmpresa'));
+  const esEmpresa = asEsEmpresaBool(pick(pc, 'EsEmpresa', 'esEmpresa'));
   const fotos = mergeFotosRegistro(api);
   const predioObra = numeroApi(pick(api, 'predioObra', 'PredioObra')) ?? 0;
   const licenciaConstruccion = mapLicenciaConstruccionDetalle(api);
@@ -703,7 +707,8 @@ export function mapRegistroToDetalleLocal(apiRaw: any): DetalleLocal {
     TienePrograma: tienePrograma,
     VistoBueno: textoApi(pick(pc, 'vistoBueno')),
     RfcProteccionCivil: textoApi(pick(pc, 'RFC', 'rfc')),
-    razonSocial: textoApi(pick(pc, 'RazonSocial', 'razonSocial')),
+    // Razón social de Licencias (PredioObra=0); distinta de ProteccionCivil.RazonSocial
+    razonSocial: textoApi(pick(licencias, 'RazonSocial', 'razonSocial')),
     direccion: {
       nombreEntidadFederativaLicencia: entidad || null,
       nombreMuncipioLicencia: municipio || null,
@@ -731,22 +736,19 @@ export function mapRegistroToDetalleLocal(apiRaw: any): DetalleLocal {
       contactoTelefono: textoApi(pick(contacto, 'Telefono', 'telefono')),
       contactoEmail: textoApi(pick(contacto, 'Correo', 'correo')),
     },
+    // ContactoRepresentante vive en Licencias (GET /registros/{id})
     representante: {
-      representanteLegalNombre: textoApi(
-        pick(pcContacto, 'Nombre', 'nombre') || pick(pc, 'Nombre', 'nombre')
-      ),
+      representanteLegalNombre: textoApi(pick(contactoRepresentante, 'Nombre', 'nombre')),
       representanteLegalPaterno: textoApi(
-        pick(pcContacto, 'ApellidoPaterno', 'apellidoPaterno') ||
-          pick(pc, 'ApellidoPaterno', 'apellidoPaterno')
+        pick(contactoRepresentante, 'ApellidoPaterno', 'apellidoPaterno')
       ),
       representanteLegalMaterno: textoApi(
-        pick(pcContacto, 'ApellidoMaterno', 'apellidoMaterno') ||
-          pick(pc, 'ApellidoMaterno', 'apellidoMaterno')
+        pick(contactoRepresentante, 'ApellidoMaterno', 'apellidoMaterno')
       ),
-      representanteLegalTelefono: textoApi(
-        pick(pcContacto, 'Telefono', 'telefono') || pick(pc, 'Telefono', 'telefono')
+      representanteLegalTelefono: textoApi(pick(contactoRepresentante, 'Telefono', 'telefono')),
+      representanteLegalEmail: textoApi(
+        pick(contactoRepresentante, 'Correo', 'correo', 'email')
       ),
-      representanteLegalEmail: textoApi(pick(pcContacto, 'Correo', 'correo')),
     } as any,
     proteccionCivil: {
       esEmpresa,

@@ -181,7 +181,10 @@ input[type='datetime-local']::-webkit-calendar-picker-indicator,
 .local-form-tab-nav .button-success .fa,
 .local-form-tab-nav .button-success .fas,
 .local-form-tab-nav .button-danger .fa,
-.local-form-tab-nav .button-danger .fas {
+.local-form-tab-nav .button-danger .fas,
+.local-form-tab-nav__btn--next,
+.local-form-tab-nav__btn--next .fa,
+.local-form-tab-nav__btn--next .fas {
   color: #ffffff !important;
 }
 

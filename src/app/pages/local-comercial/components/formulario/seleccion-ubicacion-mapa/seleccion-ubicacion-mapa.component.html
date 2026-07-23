@@ -1,0 +1,41 @@
+<section class="ubi-mapa" aria-label="Selección de ubicación del local">
+  <div #mapContainer class="ubi-mapa__canvas"></div>
+
+  <!-- Card flotante superior izquierda (estilo Monitoreo) -->
+  <div class="ubi-mapa__head" role="region" aria-label="Instrucciones de ubicación">
+    <div class="ubi-mapa__badge" aria-hidden="true">
+      <mat-icon>pin_drop</mat-icon>
+    </div>
+    <div class="ubi-mapa__copy">
+      <span class="ubi-mapa__eyebrow">Paso inicial</span>
+      <h2 class="ubi-mapa__title">Ubicación del lugar</h2>
+      <p class="ubi-mapa__hint">
+        Haz clic en el mapa para colocar el pin. Si no queda bien, arrástralo hasta la posición correcta.
+      </p>
+    </div>
+  </div>
+
+  <!-- Chip de dirección -->
+  <div class="ubi-mapa__chip" *ngIf="markerPosition; else noPin"
+    [class.ubi-mapa__chip--loading]="resolviendoDireccion">
+    <mat-icon>{{ resolviendoDireccion ? 'hourglass_top' : 'check_circle' }}</mat-icon>
+    <span [title]="direccionSeleccionada || ''">{{ etiquetaDireccion }}</span>
+  </div>
+  <ng-template #noPin>
+    <div class="ubi-mapa__chip ubi-mapa__chip--muted">
+      <mat-icon>touch_app</mat-icon>
+      <span>Selecciona un punto en el mapa</span>
+    </div>
+  </ng-template>
+
+  <!-- Acciones flotantes -->
+  <div class="ubi-mapa__actions">
+    <button type="button" class="button-danger" (click)="cancelar()">
+      <i class="fa fa-times">&nbsp;&nbsp;</i>Cancelar
+    </button>
+    <button type="button" class="button-success ubi-mapa__confirm"
+      [disabled]="!markerPosition" (click)="confirmar()">
+      <i class="fa fa-check"></i>&nbsp;&nbsp;Confirmar ubicación
+    </button>
+  </div>
+</section>

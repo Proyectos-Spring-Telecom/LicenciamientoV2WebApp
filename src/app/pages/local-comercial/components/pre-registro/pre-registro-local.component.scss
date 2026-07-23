@@ -277,13 +277,55 @@ input[type='date']::-webkit-calendar-picker-indicator,
 }
 
 /* Switch section — mismo look que card activa (Local comercial), en grises.
-   Especificidad alta: local-form-tabs.css también pinta .local-form-section. */
+   Especificidad alta: local-form-tabs.css también pinta .local-form-section.
+   Hover con capa ::after (opacity) porque los gradients no interpolan bien. */
 .local-form-section.pre-reg-switch-section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   padding: 1.35rem 1.25rem;
   border-color: rgba(148, 163, 184, 0.55) !important;
   background:
     linear-gradient(145deg, rgba(148, 163, 184, 0.35), rgba(71, 85, 105, 0.55)) !important;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  transform: translateY(0);
+  transition:
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    transform 0.35s ease;
+}
+
+.local-form-section.pre-reg-switch-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(145deg, rgba(71, 85, 105, 0.72), rgba(30, 41, 59, 0.92));
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.local-form-section.pre-reg-switch-section:hover {
+  border-color: rgba(100, 116, 139, 0.75) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+.local-form-section.pre-reg-switch-section:hover::after {
+  opacity: 1;
+}
+
+.local-form-section.pre-reg-switch-section:focus-visible {
+  outline: 2px solid rgba(148, 163, 184, 0.85);
+  outline-offset: 2px;
+}
+
+.local-form-section.pre-reg-switch-section:active {
+  transform: translateY(0);
+  transition-duration: 0.15s;
 }
 
 .pre-reg-switch-row {

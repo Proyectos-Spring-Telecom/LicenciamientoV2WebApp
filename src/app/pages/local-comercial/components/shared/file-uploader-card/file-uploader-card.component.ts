@@ -110,6 +110,10 @@ export class FileUploaderCardComponent implements OnChanges, OnDestroy {
     return !!this.selectedFileName || !!this.remoteUrl?.trim() || !!this.localPreviewUrl;
   }
 
+  esIconoFontAwesome(): boolean {
+    return this.icon?.startsWith('fa-') ?? false;
+  }
+
   labelColorClass(): string {
     return `uploader-label--${this.colorVariant}`;
   }

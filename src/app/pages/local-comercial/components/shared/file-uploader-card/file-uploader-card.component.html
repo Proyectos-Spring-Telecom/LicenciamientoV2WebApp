@@ -15,7 +15,10 @@
 
       <div class="uploader__drop">
         <div class="uploader__icon" aria-hidden="true">
-          <mat-icon>{{ icon }}</mat-icon>
+          <i *ngIf="esIconoFontAwesome(); else matIcon" class="fa uploader__icon-fa" [ngClass]="icon"></i>
+          <ng-template #matIcon>
+            <mat-icon>{{ icon }}</mat-icon>
+          </ng-template>
         </div>
 
         <div class="uploader__copy">

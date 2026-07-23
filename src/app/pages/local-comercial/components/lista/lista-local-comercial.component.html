@@ -122,7 +122,30 @@
       </div>
     </section>
 
-    <div class="mt-3">
+    <div class="mt-5 lista-local__grid-wrap">
+      <div class="lista-local__search-bar" role="search" aria-label="Buscar en el grid">
+        <label class="lista-local__search" for="lista-local-search">
+          <i class="fa fa-search" aria-hidden="true"></i>
+          <input
+            id="lista-local-search"
+            type="search"
+            name="listaLocalSearch"
+            autocomplete="off"
+            placeholder="Buscar en el grid..."
+            [(ngModel)]="textoBusquedaGrid"
+            (ngModelChange)="onTextoBusquedaGridChange($event)"
+          />
+          <button
+            *ngIf="textoBusquedaGrid"
+            type="button"
+            class="lista-local__search-clear"
+            aria-label="Limpiar búsqueda"
+            (click)="limpiarBusquedaGrid()">
+            <i class="fa fa-times" aria-hidden="true"></i>
+          </button>
+        </label>
+      </div>
+
       <dx-data-grid
         #gridContainer
         id="gridContainer"
@@ -148,26 +171,25 @@
         }"
         (onPageIndexChanged)="onPageIndexChanged($event)"
         (onOptionChanged)="onGridOptionChanged($event)">
-        <dxo-search-panel [visible]="true" [width]="200" placeholder="Buscar..."></dxo-search-panel>
+        <dxo-search-panel [visible]="false" [highlightSearchText]="true"></dxo-search-panel>
         <dxo-toolbar>
           <dxi-item name="groupPanel" location="before"></dxi-item>
-          <dxi-item name="exportButton" location="after" [options]="{ text: 'Exportar Grid', icon: 'export' }" [showText]="'always'"></dxi-item>
-          <dxi-item name="searchPanel" location="after"></dxi-item>
         </dxo-toolbar>
         <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[100]" [showInfo]="true"></dxo-pager>
         <dxo-group-panel [emptyPanelText]="mensajeAgrupar" [visible]="true"></dxo-group-panel>
         <dxo-filter-row [visible]="showFilterRow"></dxo-filter-row>
         <dxo-header-filter [visible]="showHeaderFilter"></dxo-header-filter>
         <dxo-grouping [autoExpandAll]="autoExpandAllGroups"></dxo-grouping>
-        <dxo-export [enabled]="true" [allowExportSelectedData]="true"
+        <dxo-export [enabled]="false" [allowExportSelectedData]="true"
           [texts]="{ exportAll: 'Exportar todos los datos a Excel', exportSelectedRows: 'Exportar filas seleccionadas a Excel' }">
         </dxo-export>
 
         <dxi-column *appHasPermission="['8', '11', '10']" caption="Acciones" cellTemplate="acciones" alignment="center" [width]="180"></dxi-column>
         <!-- <dxi-column dataField="urlLicencia" caption="Licencia" alignment="center" cellTemplate="cellTemplate" [width]="190"></dxi-column> -->
-        <dxi-column dataField="nombreEstatus" caption="Estatus" alignment="center" cellTemplate="color" [width]="220" [minWidth]="180" [allowSearch]="true"></dxi-column>
-        <dxi-column dataField="rfc" caption="RFC" alignment="center" cellTemplate="textCell" [width]="130" [allowSearch]="true"></dxi-column>
+        <dxi-column dataField="nombreEstatus" caption="Estatus" alignment="center" cellTemplate="color" [width]="180" [minWidth]="180" [allowSearch]="true"></dxi-column>
         <dxi-column dataField="nombreComercial" caption="Nombre Comercial" alignment="center" cellTemplate="textCell" [allowSearch]="true"></dxi-column>
+        <dxi-column dataField="tipoRegistroLabel" caption="Tipo de registro" alignment="center" cellTemplate="tipoRegistroCell" [width]="160" [allowSearch]="true"></dxi-column>
+        <dxi-column dataField="rfc" caption="RFC" alignment="center" cellTemplate="textCell" [width]="130" [allowSearch]="true"></dxi-column>
         <dxi-column dataField="predioObraLabel" caption="Predio en obra" alignment="center" cellTemplate="predioObraCell" [width]="150" [allowSearch]="true"></dxi-column>
         <dxi-column dataField="giro" caption="Giro" alignment="center" cellTemplate="textCell" [width]="200" [allowSearch]="true"></dxi-column>
         <dxi-column dataField="nombreCapturista" caption="Capturista" alignment="center" cellTemplate="textCell" [width]="220" [allowSearch]="true"></dxi-column>
@@ -184,6 +206,10 @@
         </div>
         <div *dxTemplate="let cell of 'textCell'">
           <span [class.grid-sin-informacion]="cell.value === 'Sin Información'">{{ cell.value }}</span>
+        </div>
+        <div *dxTemplate="let p of 'tipoRegistroCell'">
+          <p *ngIf="p.data.tipoRegistro === 1" class="tipo-registro tipo-registro--vivienda">Vivienda</p>
+          <p *ngIf="p.data.tipoRegistro !== 1" class="tipo-registro tipo-registro--comercial">Local Comercial</p>
         </div>
         <div *dxTemplate="let p of 'predioObraCell'">
           <p *ngIf="p.data.predioObra === 1" class="predio-obra predio-obra--en" title="predioObra = 1">En obra</p>

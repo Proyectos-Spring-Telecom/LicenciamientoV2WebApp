@@ -72,6 +72,7 @@ export const navItems: NavItem[] = [
     displayName: 'Tablero',
     iconName: 'layout-dashboard',
     route: '/dashboard',
+    permission: Permiso.CONSULTAR_TABLERO,
   },
   {
     displayName: 'Monitoreo',

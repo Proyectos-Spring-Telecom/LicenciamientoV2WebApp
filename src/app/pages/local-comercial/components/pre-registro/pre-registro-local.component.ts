@@ -24,6 +24,7 @@ import {
   mostrarSwalCodigoPostalNoEncontrado,
   mostrarSwalError,
   mostrarSwalExito,
+  mensajeErrorServicioLocal,
   ocultarCargandoLocalComercial,
 } from '../../utils/local-comercial-swal.util';
 import {
@@ -38,10 +39,7 @@ import {
   mapRegistroToFormPatch,
   unwrapRegistroResponse,
 } from '../../utils/map-registro-api.util';
-import {
-  SeleccionUbicacionModalComponent,
-  SeleccionUbicacionResult,
-} from '../formulario/seleccion-ubicacion-modal/seleccion-ubicacion-modal.component';
+import { SeleccionUbicacionResult } from '../formulario/seleccion-ubicacion-modal/seleccion-ubicacion-modal.component';
 import {
   SubirDocumentoModalComponent,
   SubirDocumentoData,
@@ -202,8 +200,18 @@ export class PreRegistroLocalComponent implements OnInit {
   /** Id de registro cuando el flujo es editar */
   public idRegistro: number | null = null;
 
-  /** false hasta confirmar ubicación en el modal */
+  /**
+   * Firmas solo en alta. En edición (PredioObra=1) no se muestran
+   * FirmaPropietario / FirmaDRO / FirmaCorresponsable / FirmaResponsableRecepcionDocumento.
+   */
+  get mostrarFirmas(): boolean {
+    return !this.idRegistro;
+  }
+
+  /** false hasta confirmar ubicación en el mapa */
   public ubicacionConfirmada = false;
+  /** true mientras el mapa full-page de selección está visible */
+  public mostrarMapaUbicacion = false;
   public lat: number | null = null;
   public lng: number | null = null;
   public direccionSeleccionada = '';
@@ -280,6 +288,7 @@ export class PreRegistroLocalComponent implements OnInit {
 
   public tipoLicencia = '';
   public descripcionProyecto = '';
+  public claveCatastral = '';
   public ubicacionConstruccion = '';
   public propietarioNombre = '';
   public propietarioRfc = '';
@@ -605,6 +614,7 @@ export class PreRegistroLocalComponent implements OnInit {
       this.tipoLicencia =
         tipoSol == null || tipoSol === '' ? this.tipoLicencia : String(tipoSol);
       this.descripcionProyecto = String(lc['DescripcionProyecto'] ?? this.descripcionProyecto);
+      this.claveCatastral = String(lc['ClaveCatastral'] ?? this.claveCatastral);
       this.superficieTerrenoM2 = String(lc['SuperficieTerrenoM2'] ?? this.superficieTerrenoM2);
       this.superficieTerrenoObraM2 = String(
         lc['SuperficieTerrenoObraM2'] ?? this.superficieTerrenoObraM2
@@ -687,6 +697,7 @@ export class PreRegistroLocalComponent implements OnInit {
     this.predioEnObra = !!data.predioEnObra;
     this.tipoLicencia = String(data.LcTipoSolicitudLicencia ?? this.tipoLicencia);
     this.descripcionProyecto = data.LcDescripcionProyecto ?? this.descripcionProyecto;
+    this.claveCatastral = data.LcClaveCatastral ?? this.claveCatastral;
     this.superficieTerrenoM2 = String(data.LcSuperficieTerrenoM2 ?? this.superficieTerrenoM2);
     this.superficieTerrenoObraM2 = String(data.LcSuperficieTerrenoObraM2 ?? this.superficieTerrenoObraM2);
     this.descripcionSistemaConstructivo =
@@ -717,46 +728,38 @@ export class PreRegistroLocalComponent implements OnInit {
     }
   }
 
+  /** Muestra el mapa full-page (reemplaza al antiguo modal de ubicación). */
   abrirModalUbicacion(): void {
-    const dialogRef = this.dialog.open(SeleccionUbicacionModalComponent, {
-      width: '95vw',
-      maxWidth: '960px',
-      maxHeight: '95vh',
-      panelClass: ['ubicacion-modal-panel', 'ubicacion-modal-panel--animated'],
-      autoFocus: false,
-      disableClose: true,
-      // Animación propia en CSS; evita el flash de Material al cerrar
-      enterAnimationDuration: '0ms',
-      exitAnimationDuration: '0ms',
-      data: {
-        lat: this.lat ?? undefined,
-        lng: this.lng ?? undefined,
-      },
-    });
+    this.mostrarMapaUbicacion = true;
+    this.scrollAlInicio();
+  }
 
-    dialogRef.afterClosed().subscribe((ubicacion: SeleccionUbicacionResult | undefined) => {
-      if (!ubicacion) {
-        if (!this.ubicacionConfirmada) {
-          this.redirigirLista();
-        }
-        return;
-      }
-      this.lat = ubicacion.lat;
-      this.lng = ubicacion.lng;
-      this.direccionSeleccionada = ubicacion.direccion?.trim() || '';
-      if (!this.ubicacionConstruccion || this.direccionSeleccionada) {
-        this.ubicacionConstruccion = this.direccionSeleccionada
-          || `${ubicacion.lat.toFixed(5)}, ${ubicacion.lng.toFixed(5)}`;
-      }
+  onUbicacionConfirmada(ubicacion: SeleccionUbicacionResult): void {
+    this.mostrarMapaUbicacion = false;
+    this.lat = ubicacion.lat;
+    this.lng = ubicacion.lng;
+    this.direccionSeleccionada = ubicacion.direccion?.trim() || '';
+    if (!this.ubicacionConstruccion || this.direccionSeleccionada) {
+      this.ubicacionConstruccion = this.direccionSeleccionada
+        || `${ubicacion.lat.toFixed(5)}, ${ubicacion.lng.toFixed(5)}`;
+    }
 
-      if (this.ubicacionConfirmada) {
-        // Solo actualizó la ubicación; el form ya está visible
-        return;
-      }
+    if (this.ubicacionConfirmada) {
+      // Solo actualizó la ubicación; el form ya está visible
+      return;
+    }
 
-      // Modal ya cerrado: entra todo el formulario con animación
-      this.ubicacionConfirmada = true;
-    });
+    // Mapa ya cerrado: entra todo el formulario con animación
+    this.ubicacionConfirmada = true;
+    this.scrollAlInicio();
+  }
+
+  onUbicacionCancelada(): void {
+    if (!this.ubicacionConfirmada) {
+      this.redirigirLista();
+      return;
+    }
+    this.mostrarMapaUbicacion = false;
   }
 
   seleccionarTipoRegistro(tipo: 'comercial' | 'vivienda'): void {
@@ -878,7 +881,7 @@ export class PreRegistroLocalComponent implements OnInit {
       next: () => {
         ocultarCargandoLocalComercial(() => {
           mostrarSwalExito({
-            title: '¡Operación exitosa!',
+            title: '¡!',
             text: this.idRegistro
               ? '¡Se ha actualizado de manera exitosa el local comercial!'
               : '¡Se ha agregado de manera exitosa el local comercial!',
@@ -886,13 +889,16 @@ export class PreRegistroLocalComponent implements OnInit {
           this.redirigirLista();
         });
       },
-      error: () => {
+      error: (err) => {
         ocultarCargandoLocalComercial(() => {
           mostrarSwalError({
             title: '¡Ops!',
-            text: this.idRegistro
-              ? '¡Error al intentar modificar los datos del local!'
-              : '¡Error al agregar el local!',
+            text: mensajeErrorServicioLocal(
+              err,
+              this.idRegistro
+                ? '¡Error al intentar modificar los datos del local!'
+                : '¡Error al agregar el local!'
+            ),
           });
         });
       },
@@ -920,6 +926,7 @@ export class PreRegistroLocalComponent implements OnInit {
       LicenciaConstruccion: {
         TipoSolicitudLicencia: data?.LcTipoSolicitudLicencia ?? '',
         DescripcionProyecto: data?.LcDescripcionProyecto ?? '',
+        ClaveCatastral: data?.LcClaveCatastral ?? '',
         SuperficieTerrenoM2: data?.LcSuperficieTerrenoM2 ?? '',
         SuperficieTerrenoObraM2: data?.LcSuperficieTerrenoObraM2 ?? '',
         DescripcionSistemaConstructivo: data?.LcDescripcionSistemaConstructivo ?? '',
@@ -987,36 +994,34 @@ export class PreRegistroLocalComponent implements OnInit {
       }
     };
 
-    setFile('LicenciaConstruccion.constanciaAlineamiento', files.LcConstanciaAlineamientoFile);
-    setFile('LicenciaConstruccion.constanciaNumero', files.LcConstanciaNumero);
-    setFile('LicenciaConstruccion.fileLicenciaUsoSuelo', files.LcLicenciaUsoSueloFile);
-    setFile('LicenciaConstruccion.filePlanoAutorizado', files.LcPlanoAutorizadoFile);
-    setFile('LicenciaConstruccion.fileLicenciaFraccionamiento', files.LcLicenciaFraccionamientoFile);
-    setFile('LicenciaConstruccion.ConstanciaPropietario', files.LcConstanciaPropietario);
-    setFile('LicenciaConstruccion.Factibilidad', files.LcFactibilidad);
-    setFile('LicenciaConstruccion.RecibosImpuestoPredial', files.LcRecibosImpuestoPredial);
-    setFile('LicenciaConstruccion.JuegoDePlanosArquitectonicos1', files.LcJuegoDePlanosArquitectonicos1);
-    setFile('LicenciaConstruccion.JuegoDePlanosArquitectonicos2', files.LcJuegoDePlanosArquitectonicos2);
-    setFile('LicenciaConstruccion.JuegoDePlanosArquitectonicos3', files.LcJuegoDePlanosArquitectonicos3);
-    setFile('LicenciaConstruccion.otros', files.LcOtrosDocs);
-    setFile('LicenciaConstruccion.FirmaPropietario', files.LcFirmaPropietario);
-    setFile('LicenciaConstruccion.FirmaDRO', files.LcFirmaDRO);
-    setFile('LicenciaConstruccion.FirmaCorresponsable', files.LcFirmaCorresponsable);
+    const filesMerged: PreRegistroFilesState = {
+      ...files,
+      ...this.archivosSeleccionados,
+    };
+
+    setFile('LicenciaConstruccion.constanciaAlineamiento', filesMerged.LcConstanciaAlineamientoFile);
+    setFile('LicenciaConstruccion.constanciaNumero', filesMerged.LcConstanciaNumero);
+    setFile('LicenciaConstruccion.fileLicenciaUsoSuelo', filesMerged.LcLicenciaUsoSueloFile);
+    setFile('LicenciaConstruccion.filePlanoAutorizado', filesMerged.LcPlanoAutorizadoFile);
+    setFile('LicenciaConstruccion.fileLicenciaFraccionamiento', filesMerged.LcLicenciaFraccionamientoFile);
+    setFile('LicenciaConstruccion.ConstanciaPropietario', filesMerged.LcConstanciaPropietario);
+    setFile('LicenciaConstruccion.Factibilidad', filesMerged.LcFactibilidad);
+    setFile('LicenciaConstruccion.RecibosImpuestoPredial', filesMerged.LcRecibosImpuestoPredial);
+    setFile('LicenciaConstruccion.JuegoDePlanosArquitectonicos1', filesMerged.LcJuegoDePlanosArquitectonicos1);
+    setFile('LicenciaConstruccion.JuegoDePlanosArquitectonicos2', filesMerged.LcJuegoDePlanosArquitectonicos2);
+    setFile('LicenciaConstruccion.JuegoDePlanosArquitectonicos3', filesMerged.LcJuegoDePlanosArquitectonicos3);
+    setFile('LicenciaConstruccion.otros', filesMerged.LcOtrosDocs);
+    setFile('LicenciaConstruccion.FirmaPropietario', filesMerged.LcFirmaPropietario);
+    setFile('LicenciaConstruccion.FirmaDRO', filesMerged.LcFirmaDRO);
+    setFile('LicenciaConstruccion.FirmaCorresponsable', filesMerged.LcFirmaCorresponsable);
     setFile(
       'LicenciaConstruccion.FirmaResponsableRecepcionDocumento',
-      files.LcFirmaResponsableRecepcionDocumento,
+      filesMerged.LcFirmaResponsableRecepcionDocumento,
     );
     // Transversales (también con PredioObra=1) — nombres exactos Untitled / swagger
-    const fachada =
-      files.FachadaEstablecimiento ??
-      this.archivosSeleccionados.FachadaEstablecimiento ??
-      null;
-    const bodega = files.Bodega ?? this.archivosSeleccionados.Bodega ?? null;
-    const estacionamiento =
-      files.EstacionamientoIMG ?? this.archivosSeleccionados.EstacionamientoIMG ?? null;
-    setFile('Licencias.fachada', fachada);
-    setFile('Licencias.bodega', bodega);
-    setFile('Licencias.estacionamiento', estacionamiento);
+    setFile('Licencias.fachada', filesMerged.FachadaEstablecimiento);
+    setFile('Licencias.bodega', filesMerged.Bodega);
+    setFile('Licencias.estacionamiento', filesMerged.EstacionamientoIMG);
 
     return form;
   }
@@ -1035,28 +1040,68 @@ export class PreRegistroLocalComponent implements OnInit {
 
   private archivoPreRegistroPorControl(controlName: string): File | null {
     const files = this.preRegistroState.peekFiles();
-    const mapa: Record<string, File | null | undefined> = {
-      'Licencias.fachada': files.FachadaEstablecimiento ?? this.archivosSeleccionados.FachadaEstablecimiento,
-      'Licencias.bodega': files.Bodega ?? this.archivosSeleccionados.Bodega,
-      'Licencias.estacionamiento':
-        files.EstacionamientoIMG ?? this.archivosSeleccionados.EstacionamientoIMG,
-      'LicenciaConstruccion.constanciaAlineamiento': files.LcConstanciaAlineamientoFile,
-      'LicenciaConstruccion.constanciaNumero': files.LcConstanciaNumero,
-      'LicenciaConstruccion.fileLicenciaUsoSuelo': files.LcLicenciaUsoSueloFile,
-      'LicenciaConstruccion.filePlanoAutorizado': files.LcPlanoAutorizadoFile,
-      'LicenciaConstruccion.fileLicenciaFraccionamiento': files.LcLicenciaFraccionamientoFile,
-      'LicenciaConstruccion.ConstanciaPropietario': files.LcConstanciaPropietario,
-      'LicenciaConstruccion.Factibilidad': files.LcFactibilidad,
-      'LicenciaConstruccion.RecibosImpuestoPredial': files.LcRecibosImpuestoPredial,
-      'LicenciaConstruccion.JuegoDePlanosArquitectonicos1': files.LcJuegoDePlanosArquitectonicos1,
-      'LicenciaConstruccion.JuegoDePlanosArquitectonicos2': files.LcJuegoDePlanosArquitectonicos2,
-      'LicenciaConstruccion.JuegoDePlanosArquitectonicos3': files.LcJuegoDePlanosArquitectonicos3,
-      'LicenciaConstruccion.otros': files.LcOtrosDocs,
-      'LicenciaConstruccion.FirmaPropietario': files.LcFirmaPropietario,
-      'LicenciaConstruccion.FirmaDRO': files.LcFirmaDRO,
-      'LicenciaConstruccion.FirmaCorresponsable': files.LcFirmaCorresponsable,
-      'LicenciaConstruccion.FirmaResponsableRecepcionDocumento':
+    const local = this.archivosSeleccionados;
+    const pick = (
+      a: File | null | undefined,
+      b?: File | null | undefined
+    ): File | null => (a instanceof File && a.name ? a : b instanceof File && b.name ? b : null);
+
+    const mapa: Record<string, File | null> = {
+      'Licencias.fachada': pick(files.FachadaEstablecimiento, local.FachadaEstablecimiento),
+      'Licencias.bodega': pick(files.Bodega, local.Bodega),
+      'Licencias.estacionamiento': pick(files.EstacionamientoIMG, local.EstacionamientoIMG),
+      'LicenciaConstruccion.constanciaAlineamiento': pick(
+        files.LcConstanciaAlineamientoFile,
+        local.LcConstanciaAlineamientoFile
+      ),
+      'LicenciaConstruccion.constanciaNumero': pick(files.LcConstanciaNumero, local.LcConstanciaNumero),
+      'LicenciaConstruccion.fileLicenciaUsoSuelo': pick(
+        files.LcLicenciaUsoSueloFile,
+        local.LcLicenciaUsoSueloFile
+      ),
+      'LicenciaConstruccion.filePlanoAutorizado': pick(
+        files.LcPlanoAutorizadoFile,
+        local.LcPlanoAutorizadoFile
+      ),
+      'LicenciaConstruccion.fileLicenciaFraccionamiento': pick(
+        files.LcLicenciaFraccionamientoFile,
+        local.LcLicenciaFraccionamientoFile
+      ),
+      'LicenciaConstruccion.ConstanciaPropietario': pick(
+        files.LcConstanciaPropietario,
+        local.LcConstanciaPropietario
+      ),
+      'LicenciaConstruccion.Factibilidad': pick(files.LcFactibilidad, local.LcFactibilidad),
+      'LicenciaConstruccion.RecibosImpuestoPredial': pick(
+        files.LcRecibosImpuestoPredial,
+        local.LcRecibosImpuestoPredial
+      ),
+      'LicenciaConstruccion.JuegoDePlanosArquitectonicos1': pick(
+        files.LcJuegoDePlanosArquitectonicos1,
+        local.LcJuegoDePlanosArquitectonicos1
+      ),
+      'LicenciaConstruccion.JuegoDePlanosArquitectonicos2': pick(
+        files.LcJuegoDePlanosArquitectonicos2,
+        local.LcJuegoDePlanosArquitectonicos2
+      ),
+      'LicenciaConstruccion.JuegoDePlanosArquitectonicos3': pick(
+        files.LcJuegoDePlanosArquitectonicos3,
+        local.LcJuegoDePlanosArquitectonicos3
+      ),
+      'LicenciaConstruccion.otros': pick(files.LcOtrosDocs, local.LcOtrosDocs),
+      'LicenciaConstruccion.FirmaPropietario': pick(
+        files.LcFirmaPropietario,
+        local.LcFirmaPropietario
+      ),
+      'LicenciaConstruccion.FirmaDRO': pick(files.LcFirmaDRO, local.LcFirmaDRO),
+      'LicenciaConstruccion.FirmaCorresponsable': pick(
+        files.LcFirmaCorresponsable,
+        local.LcFirmaCorresponsable
+      ),
+      'LicenciaConstruccion.FirmaResponsableRecepcionDocumento': pick(
         files.LcFirmaResponsableRecepcionDocumento,
+        local.LcFirmaResponsableRecepcionDocumento
+      ),
     };
     return mapa[controlName] ?? null;
   }
@@ -1103,6 +1148,7 @@ export class PreRegistroLocalComponent implements OnInit {
 
   onDocumentoSeleccionado(controlName: string, file: File): void {
     if (controlName in this.docsChecklistFlags) {
+      // Solo flags integer (Escrituras / RecibosMunicipales): no hay campo binary en API
       this.docsChecklistFlags[controlName] = file;
       this.documentosExistentes = {
         ...this.documentosExistentes,
@@ -1113,6 +1159,7 @@ export class PreRegistroLocalComponent implements OnInit {
 
     const key = DOC_CONTROL_TO_FILE_KEY[controlName];
     if (!key) {
+      console.error(`[Pre-registro] Control de archivo sin mapeo: ${controlName}`);
       return;
     }
 
@@ -1462,6 +1509,7 @@ export class PreRegistroLocalComponent implements OnInit {
         CP: this.codigoPostal,
         LcTipoSolicitudLicencia: TIPO_SOLICITUD_MAP[this.tipoLicencia] ?? this.tipoLicencia,
         LcDescripcionProyecto: this.descripcionProyecto,
+        LcClaveCatastral: this.claveCatastral,
         LcSuperficieTerrenoM2: this.superficieTerrenoM2,
         LcSuperficieTerrenoObraM2: this.superficieTerrenoObraM2,
         LcDescripcionSistemaConstructivo: this.descripcionSistemaConstructivo,

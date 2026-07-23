@@ -8,7 +8,7 @@ const ESTATUS_MARKER_COLOR: Record<string, string> = {
   InformacionFaltante: '#f9c300',
   Rechazo: '#eb1919',
   'Rechazo o Sin respuesta': '#eb1919',
-  Baja: '#c84ec8',
+  Baja: '#eb1919',
 };
 
 const COLOR_DEFAULT = '#681330';
@@ -21,7 +21,7 @@ export function colorMarkerPorEstatus(nombreEstatus: string | null | undefined):
 
 /**
  * Pin SVG para predio en obra: color de estatus + aro/acento ámbar
- * e icono de casco/construcción integrado (sin badges flotantes).
+ * e icono Material "build" (llave/herramienta) integrado.
  */
 export function buildMarkerObraSvgDataUrl(nombreEstatus: string | null | undefined): string {
   const fill = colorMarkerPorEstatus(nombreEstatus);
@@ -49,12 +49,10 @@ export function buildMarkerObraSvgDataUrl(nombreEstatus: string | null | undefin
   <circle cx="28" cy="29" r="15.5" fill="none" stroke="url(#obraRing)" stroke-width="3.2"/>
   <circle cx="28" cy="29" r="13.2" fill="#fff"/>
 
-  <!-- Icono construcción (casco) -->
-  <g transform="translate(28 29)">
-    <path d="M-8 2.5c0-5.2 3.4-9.2 8-9.2s8 4 8 9.2" fill="${COLOR_OBRA}"/>
-    <path d="M-9.5 2.2h19" stroke="#1a1200" stroke-width="1.6" stroke-linecap="round" opacity="0.35"/>
-    <rect x="-9.2" y="1.6" width="18.4" height="4.2" rx="1.6" fill="${COLOR_OBRA}"/>
-    <path d="M-3.2-4.2h6.4v-2.1c0-.9-.8-1.6-1.7-1.6h-3c-.9 0-1.7.7-1.7 1.6v2.1z" fill="#fff" opacity="0.92"/>
+  <!-- Icono construcción (Material construction) -->
+  <g transform="translate(28 29) scale(0.78)" fill="${COLOR_OBRA}">
+    <path transform="translate(-12 -12)"
+      d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
   </g>
 
   <!-- Punta inferior -->

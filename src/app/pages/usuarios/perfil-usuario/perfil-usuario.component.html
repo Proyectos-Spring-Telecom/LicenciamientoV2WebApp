@@ -23,10 +23,7 @@
               <img [src]="showImage" alt="Avatar" (error)="onAvatarError()" />
             </div>
           </div>
-          <div class="chip-status is-on">
-            <span class="dot"></span>
-            Activo
-          </div>
+          <span class="estatus estatus-activo estatus--perfil">Activo</span>
         </div>
         <div class="side-meta">
           <div class="side-meta__name">
@@ -35,7 +32,7 @@
           <div class="side-pills">
             <div class="pill">
               <i class="fa fa-envelope"></i>
-              <span>{{ valueOrSinRegistro(user?.userName) }}</span>
+              <span>{{ valueOrSinRegistro(correoUsuario) }}</span>
             </div>
           </div>
         </div>
@@ -78,20 +75,20 @@
               </div>
               <div class="kv">
                 <div class="kv__row">
+                  <div class="kv__k">Correo</div>
+                  <div class="kv__v">{{ valueOrSinRegistro(correoUsuario) }}</div>
+                </div>
+                <div class="kv__row">
+                  <div class="kv__k">Rol</div>
+                  <div class="kv__v">{{ valueOrSinRegistro(user?.nombreRol ?? user?.rolNombre) }}</div>
+                </div>
+                <div class="kv__row">
+                  <div class="kv__k">Grupo</div>
+                  <div class="kv__v">{{ valueOrSinRegistro(user?.nombreGrupo) }}</div>
+                </div>
+                <div class="kv__row">
                   <div class="kv__k">Teléfono</div>
-                  <div class="kv__v">{{ valueOrSinRegistro(user?.telefono) }}</div>
-                </div>
-                <div class="kv__row">
-                  <div class="kv__k">Cliente</div>
-                  <div class="kv__v">{{ nombreClienteDisplay }}</div>
-                </div>
-                <div class="kv__row">
-                  <div class="kv__k">Teléfono Cliente</div>
-                  <div class="kv__v">{{ valueOrSinRegistro(user?.telefonoCliente) }}</div>
-                </div>
-                <div class="kv__row">
-                  <div class="kv__k">Correo Cliente</div>
-                  <div class="kv__v">{{ valueOrSinRegistro(user?.emailCliente) }}</div>
+                  <div class="kv__v">{{ valueOrSinRegistro(telefonoUsuario) }}</div>
                 </div>
               </div>
             </div>

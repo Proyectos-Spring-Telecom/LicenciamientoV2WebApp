@@ -142,6 +142,12 @@
                 <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.DescripcionProyecto)">Sin Informaci&oacute;n </div>
               </div>
               <div class="route-animations-elements detalle-campo">
+                <i class="fa fa-key"></i> &nbsp;&nbsp;
+                <div class="informacion">Clave catastral:</div>
+                <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.ClaveCatastral)">{{ licenciaConstruccion?.ClaveCatastral }}</div>
+                <div class="respuesta_null" *ngIf="!tieneValor(licenciaConstruccion?.ClaveCatastral)">Sin Informaci&oacute;n </div>
+              </div>
+              <div class="route-animations-elements detalle-campo">
                 <i class="fa fa-cogs"></i> &nbsp;&nbsp;
                 <div class="informacion">Sistema constructivo:</div>
                 <div class="respuesta" *ngIf="tieneValor(licenciaConstruccion?.DescripcionSistemaConstructivo)">{{ licenciaConstruccion?.DescripcionSistemaConstructivo }}</div>
@@ -503,7 +509,7 @@
               <div class="respuesta" *ngIf="tieneValor(informacion.licenciaSuelo)">{{informacion.licenciaSuelo}}</div>
               <div class="respuesta_null" *ngIf="!tieneValor(informacion.licenciaSuelo)">Sin Informaci&oacute;n </div>
             </div>
-            <div class="route-animations-elements detalle-campo">
+            <div class="route-animations-elements detalle-campo" *ngIf="mostrarContenido">
               <i class="fa fa-user"></i> &nbsp;&nbsp;
               <div class="informacion">Propietario:</div>
               <div class="respuesta" *ngIf="nombrePropietarioCompleto">{{ nombrePropietarioCompleto }}</div>
@@ -675,13 +681,13 @@
               <div class="respuesta" *ngIf="formatearSiNo(informacion.proteccionCivil.esEmpresa)">{{ formatearSiNo(informacion.proteccionCivil.esEmpresa) }}</div>
               <div class="respuesta_null" *ngIf="!formatearSiNo(informacion.proteccionCivil.esEmpresa)">Sin Informaci&oacute;n </div>
             </div>
-            <div *ngIf="!showRazonSocialPC" class="route-animations-elements detalle-campo">
+            <div *ngIf="showRazonSocialPC" class="route-animations-elements detalle-campo">
               <i class="fa fa-user"></i> &nbsp;&nbsp;
               <div class="informacion">Raz&oacute;n Social:</div>
               <div class="respuesta">{{informacion.proteccionCivil.razonSocial}}</div>
               <div class="respuesta_null" *ngIf="informacion.proteccionCivil.razonSocial == null || !this.informacion.proteccionCivil.razonSocial">Sin Informaci&oacute;n </div>
             </div>
-            <div *ngIf="!showRFCPC" class="route-animations-elements detalle-campo">
+            <div *ngIf="showRFCPC" class="route-animations-elements detalle-campo">
               <i class="fa fa-lock"></i> &nbsp;&nbsp;
               <div class="informacion">RFC:</div>
               <div class="respuesta">{{informacion.proteccionCivil.rfc}}</div>
@@ -764,15 +770,22 @@
 
               <div class="galeria-stage">
                 <ng-container *ngFor="let slide of [galeriaSlideLc]; trackBy: trackGaleriaSlide">
-                  <div class="galeria-stage__frame" [@galeriaPhoto]="galeriaDireccionLc">
+                  <div
+                    class="galeria-stage__frame"
+                    [class.galeria-stage__frame--empty]="esDocumentoLcActualPlaceholder()"
+                    [@galeriaPhoto]="galeriaDireccionLc">
                     <img
+                      *ngIf="!esDocumentoLcActualPlaceholder()"
                       [src]="slide.url"
                       class="galeria-imagen"
                       [alt]="slide.tipo"
                       (error)="onImageError($event)">
                     <div class="galeria-stage__placeholder" *ngIf="esDocumentoLcActualPlaceholder()">
-                      <i class="fa fa-picture-o"></i>
-                      <span>Sin imagen disponible</span>
+                      <span class="galeria-stage__placeholder-icon" aria-hidden="true">
+                        <i class="fa fa-file-image-o"></i>
+                      </span>
+                      <strong>Sin imagen disponible</strong>
+                      <span>Este documento no tiene vista previa</span>
                     </div>
                   </div>
                 </ng-container>
@@ -801,8 +814,14 @@
               </div>
               </ng-container>
               <ng-template #sinDocsLc>
-                <div class="not-street text-center detalle-map">
-                  <p class="street"><i class="fa fa-folder-open"></i>&nbsp;&nbsp;Sin archivos de licencia de construcci&oacute;n</p>
+                <div class="detalle-empty-state" role="status">
+                  <div class="detalle-empty-state__icon" aria-hidden="true">
+                    <i class="fa fa-file-archive-o"></i>
+                  </div>
+                  <strong class="detalle-empty-state__title">Sin documentos</strong>
+                  <p class="detalle-empty-state__text">
+                    A&uacute;n no hay archivos de licencia de construcci&oacute;n para este registro.
+                  </p>
                 </div>
               </ng-template>
             </div>
@@ -817,8 +836,10 @@
             </div>
             <mat-divider></mat-divider>
             <div class="card-body detalle-media-body">
-              <div *ngIf="tieneUbicacionMapa" id="map" class="detalle-map"></div>
-              <div *ngIf="!tieneUbicacionMapa" class="not-street text-center detalle-map">
+              <div *ngIf="tieneUbicacionMapa" class="detalle-map-host">
+                <div id="map" class="detalle-map"></div>
+              </div>
+              <div *ngIf="!tieneUbicacionMapa" class="not-street text-center detalle-map-empty">
                 <p class="street"><i class="fa fa-map-marker"></i>&nbsp;&nbsp;Sin ubicaci&oacute;n registrada</p>
               </div>
             </div>
@@ -859,8 +880,11 @@
               </div>
             </div>
             <mat-divider></mat-divider>
-            <div class="card-body detalle-media-body galeria-card-content">
-              <div class="galeria-header" *ngIf="informacion?.fotos?.length">
+            <div
+              class="card-body detalle-media-body galeria-card-content"
+              [class.galeria-card-content--solo-empty]="!informacion?.fotos?.length">
+              <ng-container *ngIf="informacion?.fotos?.length; else sinFotosDocumentos">
+              <div class="galeria-header">
                 <div class="galeria-tipo" [@galeriaMeta]="i">
                   <span class="galeria-tipo__icon" aria-hidden="true">
                     <i class="fa fa-file-image-o"></i>
@@ -873,23 +897,32 @@
                 <span class="galeria-counter-pill">{{ i + 1 }} / {{ informacion?.fotos?.length || 0 }}</span>
               </div>
 
-              <div class="galeria-stage">
+              <div class="galeria-stage" [class.galeria-stage--empty]="esFotoActualPlaceholder()">
                 <ng-container *ngFor="let slide of [galeriaSlide]; trackBy: trackGaleriaSlide">
-                  <div class="galeria-stage__frame" [@galeriaPhoto]="galeriaDireccion">
+                  <div
+                    class="galeria-stage__frame"
+                    [class.galeria-stage__frame--empty]="esFotoActualPlaceholder()"
+                    [@galeriaPhoto]="galeriaDireccion">
                     <img
+                      *ngIf="!esFotoActualPlaceholder()"
                       [src]="slide.url"
                       class="galeria-imagen"
                       [alt]="slide.tipo"
                       (error)="onImageError($event)">
-                    <div class="galeria-stage__placeholder" *ngIf="esFotoActualPlaceholder()">
-                      <i class="fa fa-picture-o"></i>
-                      <span>Sin imagen disponible</span>
+                    <div class="detalle-empty-state detalle-empty-state--embedded" *ngIf="esFotoActualPlaceholder()" role="status">
+                      <div class="detalle-empty-state__icon" aria-hidden="true">
+                        <i class="fa fa-file-image-o"></i>
+                      </div>
+                      <strong class="detalle-empty-state__title">Sin imagen disponible</strong>
+                      <p class="detalle-empty-state__text">
+                        Este documento no tiene vista previa.
+                      </p>
                     </div>
                   </div>
                 </ng-container>
               </div>
 
-              <div class="galeria-dots" *ngIf="!ocultaBtns && informacion?.fotos?.length">
+              <div class="galeria-dots" *ngIf="!ocultaBtns">
                 <button
                   type="button"
                   class="galeria-dots__item"
@@ -910,6 +943,18 @@
                   <i class="fa fa-chevron-right"></i>
                 </button>
               </div>
+              </ng-container>
+              <ng-template #sinFotosDocumentos>
+                <div class="detalle-empty-state" role="status">
+                  <div class="detalle-empty-state__icon" aria-hidden="true">
+                    <i class="fa fa-folder-open"></i>
+                  </div>
+                  <strong class="detalle-empty-state__title">Sin documentos</strong>
+                  <p class="detalle-empty-state__text">
+                    A&uacute;n no hay archivos documentales para este registro.
+                  </p>
+                </div>
+              </ng-template>
             </div>
           </div>
           </div>

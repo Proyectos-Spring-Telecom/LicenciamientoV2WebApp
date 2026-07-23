@@ -109,6 +109,7 @@ interface profiledd {
   title: string;
   link?: string;
   new?: boolean;
+  icon?: string;
 }
 
 interface apps {
@@ -472,33 +473,14 @@ export class HeaderComponent implements OnInit {
     {
       id: 1,
       title: 'Perfil de Usuario',
-      // link: '/',
+      link: '/usuarios/perfil-usuario',
+      icon: 'user',
     },
-    // {
-    //   id: 2,
-    //   title: 'My Projects',
-    //   link: '/',
-    // },
-    // {
-    //   id: 3,
-    //   title: 'Inbox',
-    //   new: true,
-    //   link: '/',
-    // },
-    // {
-    //   id: 4,
-    //   title: ' Mode',
-    //   link: '/',
-    // },
-    // {
-    //   id: 5,
-    //   title: ' Account Settings',
-    //   link: '/',
-    // },
     {
       id: 6,
       title: 'Cerrar Sesión',
       link: '/login',
+      icon: 'logout',
     },
   ];
 

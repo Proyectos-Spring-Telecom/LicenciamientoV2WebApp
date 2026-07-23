@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import { routeAnimation } from 'src/app/pipe/module-open.animation';
 import { Router, ActivatedRoute } from '@angular/router';
 import { LocalComercialService } from './../../services/local-comercial.service';
@@ -33,7 +33,7 @@ var currentInfoWindow = null;
 let map: google.maps.Map;
 
 const MARKER_ASPECT_RATIO = 739 / 1067;
-const MARKER_DISPLAY_HEIGHT = 54;
+const MARKER_DISPLAY_HEIGHT = 68;
 const MARKER_DISPLAY_WIDTH = Math.round(MARKER_DISPLAY_HEIGHT * MARKER_ASPECT_RATIO);
 
 const MARKER_ICONS: Record<string, string> = {
@@ -45,6 +45,7 @@ const MARKER_ICONS: Record<string, string> = {
   InformacionFaltante: 'assets/images/logos/marker_warning.png',
   Rechazo: 'assets/images/logos/marker_danger.png',
   'Rechazo o Sin respuesta': 'assets/images/logos/marker_danger.png',
+  Baja: 'assets/images/logos/marker_danger.png',
 };
 
 const MAP_STYLES_SIN_ESTABLECIMIENTOS: google.maps.MapTypeStyle[] = [
@@ -455,7 +456,7 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
     if (nombre.includes('faltante')) {
       return 'detalle-estatus-badge--faltante';
     }
-    if (nombre.includes('rechazo')) {
+    if (nombre.includes('rechazo') || nombre.includes('baja')) {
       return 'detalle-estatus-badge--rechazo';
     }
 
@@ -467,6 +468,7 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
       case 1:
         return 'detalle-estatus-badge--faltante';
       case 2:
+      case 5:
         return 'detalle-estatus-badge--rechazo';
       default:
         return 'detalle-estatus-badge--desconocido';
@@ -610,6 +612,9 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
   buttonTextFifth = 'Regresar';
   loadIndicatorVisibleFifth = false;
 
+  /** true cuando se abrió el detalle desde el mapa/lista de monitoreo. */
+  private vieneDeMonitoreo = false;
+
   constructor(
     public router: Router,
     private activatedRoute: ActivatedRoute,
@@ -627,6 +632,8 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
     this.datosCargados = false;
     // Precarga Maps en paralelo al GET del detalle (solo maps + streetView).
     void this.googleMapsLoader.load(environment.googleMapsApiKey, ['maps', 'streetView']);
+    this.vieneDeMonitoreo =
+      this.activatedRoute.snapshot.queryParamMap.get('from') === 'monitoreo';
     this.routeSub = this.activatedRoute.params.subscribe((param) => {
       this.id = Number(param['id']);
       if (this.id) {
@@ -784,7 +791,7 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
       sector: '1',
       ruta: 'A',
       folio: 'F-001',
-      nombreTipoServicio: 'Doméstico',
+      nombreTipoServicio: 'SM',
       medidor: 'M-100',
       clave: 1001,
       m2: 45,
@@ -957,12 +964,15 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
     }
 
     const pc = this.informacion.proteccionCivil;
-    if (pc?.esEmpresa === false) {
-      this.typeEmpresa = 'No';
+    // EsEmpresa API: 1 física → No; 2 moral/empresa → Sí (+ Razón Social y RFC)
+    if (pc?.esEmpresa === true) {
+      this.typeEmpresa = 'Sí';
       this.showRazonSocialPC = true;
       this.showRFCPC = true;
     } else {
-      this.typeEmpresa = 'Sí';
+      this.typeEmpresa = 'No';
+      this.showRazonSocialPC = false;
+      this.showRFCPC = false;
     }
 
     if (pc?.tienePrograma === true) {
@@ -1040,6 +1050,21 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
     requestAnimationFrame(go);
     setTimeout(go, 80);
     setTimeout(go, 250);
+    setTimeout(go, 500);
+  }
+
+  /** Tras flex layout, Street View debe recalcular tamaño del contenedor. */
+  private refrescarVistaStreetView(token: number): void {
+    const go = () => {
+      if (token !== this.mapaInitToken || !this.panorama) {
+        return;
+      }
+      google.maps.event.trigger(this.panorama, 'resize');
+    };
+    requestAnimationFrame(go);
+    setTimeout(go, 80);
+    setTimeout(go, 250);
+    setTimeout(go, 500);
   }
 
   private actualizarStreetView(
@@ -1067,6 +1092,7 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
         this.processSVData(data, status);
         if (this.isAvailable && this.panorama) {
           this.panorama.setVisible(true);
+          this.refrescarVistaStreetView(token);
         } else if (this.panorama) {
           this.panorama.setVisible(false);
         }
@@ -1577,6 +1603,10 @@ export class DetalleLocalComercialComponent implements OnInit, OnDestroy {
     this.buttonTextFifth = 'Regresar...'
     this.loadIndicatorVisibleFifth = true;
     this.iconFifth = false;
+    if (this.vieneDeMonitoreo) {
+      this.router.navigateByUrl('/monitoreo');
+      return;
+    }
     this.router.navigateByUrl('/local-comercial/lista-local-comercial');
   }
 

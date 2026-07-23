@@ -62,6 +62,8 @@
                 <dxi-column dataField="PhoneNumber" caption="Teléfono" alignment="center" dataType="string"></dxi-column>
                 <dxi-column dataField="UserName" caption="Correo Electrónico" alignment="center"
                     dataType="string"></dxi-column>
+
+                <dxi-column dataField="GrupoNombre" caption="Grupo" alignment="center" dataType="string"></dxi-column>
                 <dxi-column dataField="RolNombre" caption="Rol" alignment="center" dataType="string"></dxi-column>
                 <div *dxTemplate="let data of 'imagen'" style="text-align: center;">
                     <img *ngIf="data.value" style="max-width: 100px;" [src]="data.value" />

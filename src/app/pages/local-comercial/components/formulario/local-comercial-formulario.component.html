@@ -57,11 +57,11 @@
               class="local-form-step local-form-step--{{ tab.accent }}"
               role="tab"
               [class.is-active]="activeTab === i"
-              [class.is-done]="activeTab > i"
+              [class.is-done]="isTabDone(i)"
               [attr.aria-selected]="activeTab === i"
               (click)="setActiveTab(i)">
               <span class="local-form-step__index">
-                <i class="fa fa-check" *ngIf="activeTab > i; else stepNum"></i>
+                <i class="fa fa-check" *ngIf="isTabDone(i); else stepNum"></i>
                 <ng-template #stepNum>{{ i + 1 }}</ng-template>
               </span>
               <span class="local-form-step__meta">
@@ -419,30 +419,36 @@
                   </div>
                 </div>
                 <div class="row g-3 g-md-4" formGroupName="Licencias">
-                  <app-local-perm-field label="Nombre del Propietario" icon="person" fieldId="nombre">
+                  <app-local-perm-field label="Tipo Persona" icon="account_circle" fieldId="tipoPersona">
+                    <div class="form-floating flex-grow-1 perm-select-floating">
+                      <select class="form-select" id="tipoPersona" formControlName="TipoPersona"
+                        (change)="onTipoPersonaChange()">
+                        <option *ngFor="let persona of tipoPersona" [ngValue]="persona.valor">{{ persona.tipo }}</option>
+                      </select>
+                    </div>
+                  </app-local-perm-field>
+                  <app-local-perm-field *ngIf="fisica" label="Nombre del Propietario" icon="person" fieldId="nombre">
                     <div class="form-floating flex-grow-1">
                       <input formControlName="NombrePropietario" class="form-control" id="nombre" placeholder="Nombre del Propietario">
                       <label for="nombre">Nombre del Propietario</label>
                     </div>
                   </app-local-perm-field>
-                  <app-local-perm-field label="Apellido Paterno del Propietario" icon="badge" fieldId="apellidoPaterno">
+                  <app-local-perm-field *ngIf="fisica" label="Apellido Paterno del Propietario" icon="badge" fieldId="apellidoPaterno">
                     <div class="form-floating flex-grow-1">
                       <input formControlName="ApellidoPaternoPropietario" class="form-control" id="apellidoPaterno" placeholder="Apellido Paterno del Propietario">
                       <label for="apellidoPaterno">Apellido Paterno del Propietario</label>
                     </div>
                   </app-local-perm-field>
-                  <app-local-perm-field label="Apellido Materno del Propietario" icon="badge" fieldId="apellidoMaterno">
+                  <app-local-perm-field *ngIf="fisica" label="Apellido Materno del Propietario" icon="badge" fieldId="apellidoMaterno">
                     <div class="form-floating flex-grow-1">
                       <input formControlName="ApellidoMaternoPropietario" class="form-control" id="apellidoMaterno" placeholder="Apellido Materno del Propietario">
                       <label for="apellidoMaterno">Apellido Materno del Propietario</label>
                     </div>
                   </app-local-perm-field>
-                  <app-local-perm-field label="Tipo Persona" icon="account_circle" fieldId="tipoPersona">
-                    <div class="form-floating flex-grow-1 perm-select-floating">
-                      <select class="form-select" id="tipoPersona" formControlName="TipoPersona"
-                        (change)="validarTipoPersona(TipoPersona.value); obtenerTipoPersonaSelect(TipoPersona.value)" #TipoPersona>
-                        <option *ngFor="let persona of tipoPersona" [ngValue]="persona.valor">{{ persona.tipo }}</option>
-                      </select>
+                  <app-local-perm-field *ngIf="!fisica" label="Raz&oacute;n Social" icon="business" fieldId="razonSocialLicencias">
+                    <div class="form-floating flex-grow-1">
+                      <input formControlName="RazonSocial" class="form-control" id="razonSocialLicencias" placeholder="Raz&oacute;n Social">
+                      <label for="razonSocialLicencias">Raz&oacute;n Social</label>
                     </div>
                   </app-local-perm-field>
                   <app-local-perm-field label="RFC" icon="credit_card" fieldId="rfc">
@@ -497,6 +503,52 @@
                       <label for="contactoEmail">Correo Electr&oacute;nico del Contacto</label>
                     </div>
                   </app-local-perm-field>
+                  </ng-container>
+                </div>
+              </div>
+
+              <div class="local-form-section" *ngIf="!fisica">
+                <div class="local-form-section__head">
+                  <span class="local-form-section__badge"><mat-icon>contact_phone</mat-icon></span>
+                  <div>
+                    <h4 class="local-form-section__title">Contacto del representante</h4>
+                    <p class="local-form-section__desc">Datos de contacto del representante de Licencias</p>
+                  </div>
+                </div>
+                <div class="row g-3 g-md-4" formGroupName="Licencias">
+                  <ng-container formGroupName="ContactoRepresentante">
+                    <app-local-perm-field label="Nombre del Contacto Representante" icon="person" fieldId="contactoRepNombre">
+                      <div class="form-floating flex-grow-1">
+                        <input formControlName="Nombre" class="form-control" id="contactoRepNombre" placeholder="Nombre del Contacto Representante">
+                        <label for="contactoRepNombre">Nombre del Contacto Representante</label>
+                      </div>
+                    </app-local-perm-field>
+                    <app-local-perm-field label="Apellido Paterno" icon="badge" fieldId="contactoRepPaterno">
+                      <div class="form-floating flex-grow-1">
+                        <input formControlName="ApellidoPaterno" class="form-control" id="contactoRepPaterno" placeholder="Apellido Paterno">
+                        <label for="contactoRepPaterno">Apellido Paterno</label>
+                      </div>
+                    </app-local-perm-field>
+                    <app-local-perm-field label="Apellido Materno" icon="badge" fieldId="contactoRepMaterno">
+                      <div class="form-floating flex-grow-1">
+                        <input formControlName="ApellidoMaterno" class="form-control" id="contactoRepMaterno" placeholder="Apellido Materno">
+                        <label for="contactoRepMaterno">Apellido Materno</label>
+                      </div>
+                    </app-local-perm-field>
+                    <app-local-perm-field label="Tel&eacute;fono" icon="phone" fieldId="contactoRepTelefono">
+                      <div class="form-floating flex-grow-1">
+                        <input maxlength="10" inputmode="numeric" (keypress)="blockNonNumericKey($event)"
+                          (input)="onNumericInput($event, 'Licencias.ContactoRepresentante.Telefono', 10)"
+                          formControlName="Telefono" class="form-control" id="contactoRepTelefono" placeholder="Tel&eacute;fono">
+                        <label for="contactoRepTelefono">Tel&eacute;fono</label>
+                      </div>
+                    </app-local-perm-field>
+                    <app-local-perm-field label="Correo Electr&oacute;nico" icon="email" fieldId="contactoRepCorreo">
+                      <div class="form-floating flex-grow-1">
+                        <input formControlName="Correo" class="form-control" id="contactoRepCorreo" placeholder="Correo Electr&oacute;nico">
+                        <label for="contactoRepCorreo">Correo Electr&oacute;nico</label>
+                      </div>
+                    </app-local-perm-field>
                   </ng-container>
                 </div>
               </div>
@@ -609,6 +661,51 @@
 
               <div class="local-form-section">
                 <div class="local-form-section__head">
+                  <span class="local-form-section__badge"><mat-icon>business</mat-icon></span>
+                  <div>
+                    <h4 class="local-form-section__title">Gesti&oacute;n por empresa</h4>
+                    <p class="local-form-section__desc">Indica si una empresa realiza la gesti&oacute;n</p>
+                  </div>
+                </div>
+                <div class="result local-form-row-gap" formGroupName="ProteccionCivil">
+                  <div class="local-proteccion-empresa-row row g-3 g-md-4">
+                    <div class="proteccion-empresa-col col-12 col-md-4">
+                      <div class="proteccion-empresa-field fury-flex-form-field">
+                        <span class="proteccion-empresa-title">
+                          <i class="fa fa-store"></i>&nbsp;&iquest;La gesti&oacute;n la realiza una Empresa?
+                        </span>
+                        <label class="toggle-switch">
+                          <input id="es-empresa-proteccion" type="checkbox" [checked]="checkedBox()"
+                            (change)="changeValue($any($event.target).checked)">
+                          <div class="toggle-switch-background">
+                            <div class="toggle-switch-handle"></div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                    <app-local-perm-field *ngIf="checkedBox()" @proteccionEmpresaFields
+                      label="Raz&oacute;n Social" icon="work" fieldId="razonSocialProteccionCivil"
+                      colClass="col-12 col-md-4">
+                      <div class="form-floating flex-grow-1">
+                        <input formControlName="RazonSocial" class="form-control" id="razonSocialProteccionCivil" placeholder="Raz&oacute;n Social">
+                        <label for="razonSocialProteccionCivil">Raz&oacute;n Social</label>
+                      </div>
+                    </app-local-perm-field>
+                    <app-local-perm-field *ngIf="checkedBox()" @proteccionEmpresaFields
+                      label="RFC" icon="account_circle" fieldId="rfcProteccionCivil"
+                      colClass="col-12 col-md-4">
+                      <div class="form-floating flex-grow-1">
+                        <input formControlName="RFC" class="form-control" id="rfcProteccionCivil" placeholder="RFC" maxlength="13"
+                          (keypress)="blockNonAlphanumericKey($event)" (input)="onRfcInput($event, 'ProteccionCivil.RFC')">
+                        <label for="rfcProteccionCivil">RFC</label>
+                      </div>
+                    </app-local-perm-field>
+                  </div>
+                </div>
+              </div>
+
+              <div class="local-form-section">
+                <div class="local-form-section__head">
                   <span class="local-form-section__badge"><mat-icon>health_and_safety</mat-icon></span>
                   <div>
                     <h4 class="local-form-section__title">Representante y acreditaci&oacute;n</h4>
@@ -656,95 +753,6 @@
                       </select>
                     </div>
                   </app-local-perm-field>
-                </div>
-              </div>
-
-              <div class="local-form-section">
-                <div class="local-form-section__head">
-                  <span class="local-form-section__badge"><mat-icon>business</mat-icon></span>
-                  <div>
-                    <h4 class="local-form-section__title">Gesti&oacute;n por empresa</h4>
-                    <p class="local-form-section__desc">Indica si una empresa realiza la gesti&oacute;n</p>
-                  </div>
-                </div>
-                <div class="result local-form-row-gap" formGroupName="ProteccionCivil">
-                  <div class="local-proteccion-empresa-row row g-3 g-md-4">
-                    <div class="proteccion-empresa-field fury-flex-form-field col-12 col-md-4">
-                      <span class="proteccion-empresa-title">
-                        <i class="fa fa-store"></i>&nbsp;&iquest;La gesti&oacute;n la realiza una Empresa?
-                      </span>
-                      <label class="toggle-switch">
-                        <input id="es-empresa-proteccion" type="checkbox" [checked]="checkedBox()"
-                          (change)="changeValue($any($event.target).checked)">
-                        <div class="toggle-switch-background">
-                          <div class="toggle-switch-handle"></div>
-                        </div>
-                      </label>
-                    </div>
-                    <app-local-perm-field *ngIf="checkedBox()" @proteccionEmpresaFields
-                      label="Raz&oacute;n Social" icon="work" fieldId="razonSocialProteccionCivil"
-                      colClass="col-12 col-md-4">
-                      <div class="form-floating flex-grow-1">
-                        <input formControlName="RazonSocial" class="form-control" id="razonSocialProteccionCivil" placeholder="Raz&oacute;n Social">
-                        <label for="razonSocialProteccionCivil">Raz&oacute;n Social</label>
-                      </div>
-                    </app-local-perm-field>
-                    <app-local-perm-field *ngIf="checkedBox()" @proteccionEmpresaFields
-                      label="RFC" icon="account_circle" fieldId="rfcProteccionCivil"
-                      colClass="col-12 col-md-4">
-                      <div class="form-floating flex-grow-1">
-                        <input formControlName="RFC" class="form-control" id="rfcProteccionCivil" placeholder="RFC" maxlength="13"
-                          (keypress)="blockNonAlphanumericKey($event)" (input)="onRfcInput($event, 'ProteccionCivil.RFC')">
-                        <label for="rfcProteccionCivil">RFC</label>
-                      </div>
-                    </app-local-perm-field>
-                  </div>
-                </div>
-              </div>
-
-              <div class="local-form-section">
-                <div class="local-form-section__head">
-                  <span class="local-form-section__badge"><mat-icon>contact_phone</mat-icon></span>
-                  <div>
-                    <h4 class="local-form-section__title">Contacto del representante</h4>
-                    <p class="local-form-section__desc">Datos de contacto del representante ante Protecci&oacute;n Civil</p>
-                  </div>
-                </div>
-                <div class="row g-3 g-md-4" formGroupName="ProteccionCivil">
-                  <ng-container formGroupName="ContactoRepresentante">
-                    <app-local-perm-field label="Nombre del Contacto Representante" icon="person" fieldId="contactoRepNombre">
-                      <div class="form-floating flex-grow-1">
-                        <input formControlName="Nombre" class="form-control" id="contactoRepNombre" placeholder="Nombre del Contacto Representante">
-                        <label for="contactoRepNombre">Nombre del Contacto Representante</label>
-                      </div>
-                    </app-local-perm-field>
-                    <app-local-perm-field label="Apellido Paterno" icon="badge" fieldId="contactoRepPaterno">
-                      <div class="form-floating flex-grow-1">
-                        <input formControlName="ApellidoPaterno" class="form-control" id="contactoRepPaterno" placeholder="Apellido Paterno">
-                        <label for="contactoRepPaterno">Apellido Paterno</label>
-                      </div>
-                    </app-local-perm-field>
-                    <app-local-perm-field label="Apellido Materno" icon="badge" fieldId="contactoRepMaterno">
-                      <div class="form-floating flex-grow-1">
-                        <input formControlName="ApellidoMaterno" class="form-control" id="contactoRepMaterno" placeholder="Apellido Materno">
-                        <label for="contactoRepMaterno">Apellido Materno</label>
-                      </div>
-                    </app-local-perm-field>
-                    <app-local-perm-field label="Tel&eacute;fono" icon="phone" fieldId="contactoRepTelefono">
-                      <div class="form-floating flex-grow-1">
-                        <input maxlength="10" inputmode="numeric" (keypress)="blockNonNumericKey($event)"
-                          (input)="onNumericInput($event, 'ProteccionCivil.ContactoRepresentante.Telefono', 10)"
-                          formControlName="Telefono" class="form-control" id="contactoRepTelefono" placeholder="Tel&eacute;fono">
-                        <label for="contactoRepTelefono">Tel&eacute;fono</label>
-                      </div>
-                    </app-local-perm-field>
-                    <app-local-perm-field label="Correo Electr&oacute;nico" icon="email" fieldId="contactoRepCorreo">
-                      <div class="form-floating flex-grow-1">
-                        <input formControlName="Correo" class="form-control" id="contactoRepCorreo" placeholder="Correo Electr&oacute;nico">
-                        <label for="contactoRepCorreo">Correo Electr&oacute;nico</label>
-                      </div>
-                    </app-local-perm-field>
-                  </ng-container>
                 </div>
               </div>
 
